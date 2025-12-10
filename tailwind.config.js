@@ -6,10 +6,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        avenir: ['Avenir', 'sans-serif'],
-        times: ['"Times New Roman"', 'serif'],
+        avenir: ["var(--font-poppins)", "sans-serif"],
+        times: ['"Times New Roman"', "serif"],
       },
     },
   },
   plugins: [],
-}
+};
