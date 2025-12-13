@@ -340,7 +340,7 @@ const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
 const megaMenuContent = activeNavItem ? megaMenuData[activeNavItem as keyof typeof megaMenuData] : null;
 
   return (
-    <header className="font-sans">
+    <header className="">
       <PromoBannerContainer />
 
       <div
