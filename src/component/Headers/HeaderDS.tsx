@@ -16,7 +16,7 @@ import type {
   MobileMenuItem,
   MobileMenuContent,
   MegaMenuProps,
-  MobileMenuDrawerProps
+  MobileMenuDrawerProps,
 } from "@/types/menu";
 
 // --- MOBILE MENU DATA ---
@@ -47,9 +47,6 @@ const mobileMenuContent: MobileMenuContent = {
     { type: "banner", label: "GIFTS FOR THE DAYDREAMER" },
   ],
 };
-
-
-// -----------------------
 
 // --- DESKTOP MEGA MENU DATA (for reference/completeness, unchanged) ---
 const megaMenuData = {
@@ -163,22 +160,25 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   isMenuOpen,
   setIsMenuOpen,
 }) => {
-const [mobileActiveCategory, setMobileActiveCategory] =
-  useState<string | null>(null);
+  const [mobileActiveCategory, setMobileActiveCategory] = useState<
+    string | null
+  >(null);
 
-const [collapsibleStates, setCollapsibleStates] = useState<Record<string, boolean>>({});
+  const [collapsibleStates, setCollapsibleStates] = useState<
+    Record<string, boolean>
+  >({});
   const isLoggedIn = false;
 
   const activeCategoryData = mobileActiveCategory
     ? mobileMenuContent[mobileActiveCategory]
     : null;
 
-  const toggleCollapsible = (label:string) => {
+  const toggleCollapsible = (label: string) => {
     setCollapsibleStates((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-const hasDrilldown = (item: string): boolean =>
-  mobileMenuContent.hasOwnProperty(item);
+  const hasDrilldown = (item: string): boolean =>
+    mobileMenuContent.hasOwnProperty(item);
 
   return (
     <div
@@ -320,7 +320,7 @@ const hasDrilldown = (item: string): boolean =>
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
+  const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
   const navItems = [
     "New!",
     "Gifts",
@@ -337,7 +337,9 @@ const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
     "Outdoor",
     "Sale",
   ];
-const megaMenuContent = activeNavItem ? megaMenuData[activeNavItem as keyof typeof megaMenuData] : null;
+  const megaMenuContent = activeNavItem
+    ? megaMenuData[activeNavItem as keyof typeof megaMenuData]
+    : null;
 
   return (
     <header className="">
@@ -412,8 +414,8 @@ const megaMenuContent = activeNavItem ? megaMenuData[activeNavItem as keyof type
               <a
                 key={item}
                 href="#"
-                className={`
-                  text-gray-700 transition-colors text-sm font-medium relative border-b-2 pb-4
+                className={`font-heading heading text-xs
+                  text-gray-700 transition-colors font-medium relative border-b-2 pb-4
                   ${
                     activeNavItem === item
                       ? "text-amber-700 font-semibold  border-amber-700 "
