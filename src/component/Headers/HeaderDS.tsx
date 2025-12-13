@@ -12,10 +12,16 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import PromoBannerContainer from "./PromoBannerContainer";
+import type {
+  MobileMenuItem,
+  MobileMenuContent,
+  MegaMenuProps,
+  MobileMenuDrawerProps
+} from "@/types/menu";
 
 // --- MOBILE MENU DATA ---
 // Structure: Category Name -> Array of Menu Items
-const mobileMenuContent = {
+const mobileMenuContent: MobileMenuContent = {
   "Décor & Pillows": [
     { type: "link", label: "Candle Holders & Lanterns" },
     { type: "link", label: "Books" },
@@ -35,15 +41,14 @@ const mobileMenuContent = {
         "Holiday Tree Trimming Shop",
         "Holiday Mantel Décor",
       ],
-      expanded: true, // Start expanded based on screenshot
+      expanded: true,
     },
     { type: "link", label: "Pillows & Throws" },
-    // Banner/Image Section (mocked as a type for layout)
     { type: "banner", label: "GIFTS FOR THE DAYDREAMER" },
   ],
-  // Add drilldown data for other categories as needed
-  // e.g., 'Furniture': [{...}],
 };
+
+
 // -----------------------
 
 // --- DESKTOP MEGA MENU DATA (for reference/completeness, unchanged) ---
@@ -112,7 +117,7 @@ const megaMenuData = {
 // -----------------------
 
 // Desktop MegaMenu Component (Unchanged)
-const MegaMenu = ({ data }) => {
+const MegaMenu: React.FC<MegaMenuProps> = ({ data }) => {
   if (!data) return null;
   // ... (MegaMenu implementation remains the same)
   return (
@@ -152,25 +157,28 @@ const MegaMenu = ({ data }) => {
 
 // --- MOBILE MENU DRILLDOWN COMPONENTS ---
 
-const MobileMenuDrawer = ({
+const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   navItems,
   mobileMenuContent,
   isMenuOpen,
   setIsMenuOpen,
 }) => {
-  const [mobileActiveCategory, setMobileActiveCategory] = useState(null);
-  const [collapsibleStates, setCollapsibleStates] = useState({});
+const [mobileActiveCategory, setMobileActiveCategory] =
+  useState<string | null>(null);
+
+const [collapsibleStates, setCollapsibleStates] = useState<Record<string, boolean>>({});
   const isLoggedIn = false;
 
   const activeCategoryData = mobileActiveCategory
     ? mobileMenuContent[mobileActiveCategory]
     : null;
 
-  const toggleCollapsible = (label) => {
+  const toggleCollapsible = (label:string) => {
     setCollapsibleStates((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const hasDrilldown = (item) => mobileMenuContent.hasOwnProperty(item);
+const hasDrilldown = (item: string): boolean =>
+  mobileMenuContent.hasOwnProperty(item);
 
   return (
     <div
@@ -312,7 +320,7 @@ const MobileMenuDrawer = ({
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeNavItem, setActiveNavItem] = useState(null);
+const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
   const navItems = [
     "New!",
     "Gifts",
@@ -329,7 +337,7 @@ const Header = () => {
     "Outdoor",
     "Sale",
   ];
-  const megaMenuContent = activeNavItem ? megaMenuData[activeNavItem] : null;
+const megaMenuContent = activeNavItem ? megaMenuData[activeNavItem as keyof typeof megaMenuData] : null;
 
   return (
     <header className="font-sans">
