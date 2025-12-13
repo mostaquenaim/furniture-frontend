@@ -1,102 +1,97 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import {
+  Autoplay,
+  Navigation,
+  Pagination,
+  A11y,
+} from 'swiper/modules';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { PromoBanner } from '@/types/promo-banner';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 interface PromoBannerCarouselProps {
   banners: PromoBanner[];
 }
 
-export default function PromoBannerCarousel({ banners }: PromoBannerCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Auto-rotate banners every 5 seconds
-  useEffect(() => {
-    if (banners.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % banners.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [banners.length]);
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % banners.length);
-  };
-
+export default function PromoBannerCarousel({
+  banners,
+}: PromoBannerCarouselProps) {
   if (!banners || banners.length === 0) return null;
 
-  const currentBanner = banners[currentIndex];
-
   return (
-    <div
-      className="relative w-full py-2 px-4 flex items-center justify-between"
-      style={{ backgroundColor: currentBanner.bgColor }}
-    >
-      {/* Previous Button */}
-      {banners.length > 1 && (
-        <button
-          onClick={handlePrevious}
-          className="absolute left-2 top-1/2 -translate-y-1/2 text-white hover:opacity-80 transition-opacity z-10"
-          aria-label="Previous banner"
-        >
-          <ChevronLeft size={24} />
-        </button>
-      )}
+    <div className="relative w-full overflow-hidden">
+      <Swiper
+        modules={[Autoplay, Navigation, Pagination, A11y]}
+        speed={600}                 // smooth but not slow
+        loop={banners.length > 1}
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        }}
+        navigation={{
+          nextEl: '.promo-next',
+          prevEl: '.promo-prev',
+        }}
+        pagination={{
+          clickable: true,
+          el: '.promo-pagination',
+        }}
+        slidesPerView={1}
+        spaceBetween={0}
+        className="w-full"
+      >
+        {banners.map((banner) => (
+          <SwiperSlide key={banner.id}>
+            <div
+              className="w-full py-2 px-10 flex items-center justify-center text-center transition-colors duration-300"
+              style={{ backgroundColor: banner.bgColor }}
+            >
+              <div className="text-white text-sm md:text-base font-medium flex flex-wrap items-center justify-center gap-4">
+                <span>{banner.text}</span>
 
-      {/* Banner Content */}
-      <div className="flex-1 text-center px-12">
-        <div className="text-white text-sm md:text-base font-medium">
-          {currentBanner.text}
-          {currentBanner.links && currentBanner.links.length > 0 && (
-            <span className="inline-flex gap-4 ml-4">
-              {currentBanner.links.map((link, idx) => (
-                <a
-                  key={idx}
-                  href={link.url}
-                  className="underline hover:opacity-80 transition-opacity"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {link.text}
-                </a>
-              ))}
-            </span>
-          )}
-        </div>
-      </div>
+                {banner.links?.map((link, idx) => (
+                  <a
+                    key={idx}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline font-semibold hover:opacity-80 transition-opacity"
+                  >
+                    {link.text}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
-      {/* Next Button */}
+      {/* Navigation Arrows */}
       {banners.length > 1 && (
-        <button
-          onClick={handleNext}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:opacity-80 transition-opacity z-10"
-          aria-label="Next banner"
-        >
-          <ChevronRight size={24} />
-        </button>
-      )}
+        <>
+          <button
+            className="promo-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 text-white opacity-70 hover:opacity-100 transition"
+            aria-label="Previous banner"
+          >
+            <ChevronLeft size={22} />
+          </button>
 
-      {/* Indicators */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-1.5 pb-1">
-          {banners.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${
-                idx === currentIndex ? 'bg-white w-4' : 'bg-white/50'
-              }`}
-              aria-label={`Go to banner ${idx + 1}`}
-            />
-          ))}
-        </div>
+          <button
+            className="promo-next absolute right-3 top-1/2 -translate-y-1/2 z-10 text-white opacity-70 hover:opacity-100 transition"
+            aria-label="Next banner"
+          >
+            <ChevronRight size={22} />
+          </button>
+
+          {/* Pagination Dots */}
+          <div className="promo-pagination absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-2"></div>
+        </>
       )}
     </div>
   );
