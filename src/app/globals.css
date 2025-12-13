@@ -7,3 +7,7 @@ body {
 .heading {
   font-family: var(--font-cinzel);
 }
+
+.blue-link{
+    color: #387cd6
+}
