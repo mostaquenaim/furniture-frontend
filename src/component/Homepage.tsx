@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Home,
 } from "lucide-react";
+import Header from "./Headers/HeaderDS";
 
 export default function Homepage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -74,11 +75,36 @@ export default function Homepage() {
       imageURL:
         "https://ak1.ostkcdn.com/images/products/is/images/direct/958a602775c3b329aa3974b2e4d2524ac3a52019/3PCS-Modern-Couch-Set-Living-Room-Furniture-Set.jpg?impolicy=medium",
     },
-    { title: "Candles", category: "Home", imageURL: "" },
-    { title: "Plates", category: "Kitchen", imageURL: "" },
-    { title: "Table Settings", category: "Dining", imageURL: "" },
-    { title: "Bedroom", category: "Furniture", imageURL: "" },
-    { title: "Holiday", category: "Seasonal", imageURL: "" },
+    {
+      title: "Candles",
+      category: "Home",
+      imageURL:
+        "https://m.media-amazon.com/images/I/81UnZ6uFHhL._AC_UF894%2C1000_QL80_.jpg",
+    },
+    {
+      title: "Plates",
+      category: "Kitchen",
+      imageURL:
+        "https://m.media-amazon.com/images/I/81UnZ6uFHhL._AC_UF894%2C1000_QL80_.jpg",
+    },
+    {
+      title: "Table Settings",
+      category: "Dining",
+      imageURL:
+        "https://m.media-amazon.com/images/I/81UnZ6uFHhL._AC_UF894%2C1000_QL80_.jpg",
+    },
+    {
+      title: "Bedroom",
+      category: "Furniture",
+      imageURL:
+        "https://m.media-amazon.com/images/I/81UnZ6uFHhL._AC_UF894%2C1000_QL80_.jpg",
+    },
+    {
+      title: "Holiday",
+      category: "Seasonal",
+      imageURL:
+        "https://m.media-amazon.com/images/I/81UnZ6uFHhL._AC_UF894%2C1000_QL80_.jpg",
+    },
   ];
 
   const menuItems = [
@@ -99,193 +125,196 @@ export default function Homepage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Top Banner */}
-      <div className="bg-teal-700 text-white text-center py-2 text-sm">
-        <span className="font-semibold">20% OFF Holiday Decor</span>
-        <span className="mx-2">|</span>
-        <span className="underline cursor-pointer">exclusions apply</span>
-      </div>
-
-      {/* Header */}
-      <header className="sticky top-0 bg-white z-50 shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <button onClick={() => setMenuOpen(true)} className="p-2">
-            <Menu className="w-6 h-6" />
-          </button>
-
-          <div className="text-center">
-            <h1 className="text-xl font-serif tracking-wider">Sakigai</h1>
-            <p className="text-xs text-gray-600">home</p>
-          </div>
-
-          <div className="flex gap-3">
-            <Search className="w-5 h-5" />
-            <ShoppingBag className="w-5 h-5" />
-          </div>
+    <div>
+      <Header></Header>
+      <div className="min-h-screen bg-white">
+        {/* Top Banner */}
+        <div className="bg-teal-700 text-white text-center py-2 text-sm">
+          <span className="font-semibold">20% OFF Holiday Decor</span>
+          <span className="mx-2">|</span>
+          <span className="underline cursor-pointer">exclusions apply</span>
         </div>
 
-        {/* Search Bar */}
-        <div className="px-4 py-3 border-b">
-          <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-2">
-            <Search className="w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="What are you looking for?"
-              className="bg-transparent flex-1 outline-none text-sm"
-            />
-            <Heart className="w-5 h-5 text-gray-400" />
-            <User className="w-5 h-5 text-gray-400" />
-          </div>
-        </div>
-      </header>
-
-      {/* Sale Banner */}
-      <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white text-center py-8 px-4">
-        <h2 className="text-2xl font-serif mb-2">EXTRA 30% OFF SALE</h2>
-        <p className="text-sm mb-3">online only</p>
-        <button className="bg-white text-teal-700 px-6 py-2 rounded text-sm font-semibold">
-          SHOP NOW
-        </button>
-      </div>
-
-      {/* Product Grid */}
-      <div className="grid grid-cols-2 gap-0.5 bg-gray-200 mt-0.5">
-        {productImages.map((product, idx) => (
-          <div key={idx} className="relative aspect-square overflow-hidden">
-            {/* Product Image */}
-            <img
-              src={product.imageURL}
-              alt={product.title}
-              className="w-full h-full object-cover"
-            />
-
-            {/* Dark overlay for text */}
-            <div className="absolute inset-0 bg-black/30"></div>
-
-            {/* Text */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-white text-sm font-semibold">
-                {product.title}
-              </p>
-              <p className="text-white text-xs">{product.category}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* More to Explore */}
-      <div className="px-4 py-8">
-        <h3 className="text-lg font-serif mb-4">More to Explore</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="aspect-video bg-gray-100 rounded-lg"></div>
-          <div className="aspect-video bg-gray-100 rounded-lg"></div>
-        </div>
-        <p className="text-xs text-gray-600 text-center mt-4">
-          *All sales final. Excludes sale furniture. Other exclusions may apply.{" "}
-          <span className="underline">See details</span>
-        </p>
-      </div>
-
-      {/* Email Signup */}
-      <div className="bg-gray-50 px-4 py-8">
-        <h3 className="text-lg font-serif mb-2">Sign Up for Email</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Stay in the know with new arrivals, sales, exclusive coupons, events
-          and more!
-        </p>
-        <input
-          type="email"
-          placeholder="Email Address"
-          className="w-full px-4 py-3 border border-gray-300 rounded mb-3 text-sm"
-        />
-        <button className="w-full bg-gray-700 text-white py-3 rounded font-semibold">
-          SUBMIT
-        </button>
-        <p className="text-xs text-gray-500 mt-4">
-          By signing up, you will receive Anthropologie offers, promotions and
-          other commercial messages...
-        </p>
-      </div>
-
-      {/* Footer Links */}
-      <div className="border-t">
-        <div className="px-4 py-4 flex items-center justify-between border-b">
-          <div className="flex items-center gap-3">
-            <MapPin className="w-5 h-5 text-gray-600" />
-            <span className="text-sm">Store Locator</span>
-          </div>
-        </div>
-        <div className="px-4 py-4 flex items-center justify-between border-b">
-          <div className="flex items-center gap-3">
-            <Phone className="w-5 h-5 text-gray-600" />
-            <span className="text-sm">AnthroPerks</span>
-          </div>
-        </div>
-        <div className="px-4 py-4 flex items-center justify-between border-b">
-          <div className="flex items-center gap-3">
-            <ShoppingBag className="w-5 h-5 text-gray-600" />
-            <span className="text-sm">Sign Up For Texts</span>
-          </div>
-        </div>
-        <div className="px-4 py-4 flex items-center justify-between border-b">
-          <div className="flex items-center gap-3">
-            <MessageCircle className="w-5 h-5 text-gray-600" />
-            <span className="text-sm">Chat With Us</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Side Menu */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity ${
-          menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setMenuOpen(false)}
-      >
-        <div
-          className={`absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl transform transition-transform ${
-            menuOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Menu Header */}
-          <div className="bg-gray-700 text-white p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Home className="w-5 h-5" />
-              <span className="font-semibold">anthropologie.com/an</span>
-            </div>
-            <button onClick={() => setMenuOpen(false)} className="p-1">
-              <X className="w-6 h-6" />
+        {/* Header */}
+        <header className="sticky top-0 bg-white z-50 shadow-sm">
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <button onClick={() => setMenuOpen(true)} className="p-2">
+              <Menu className="w-6 h-6" />
             </button>
-          </div>
 
-          {/* Menu Content */}
-          <div className="overflow-y-auto h-full pb-20">
-            {/* Sign In */}
-            <div className="px-6 py-4 border-b flex items-center gap-3">
-              <User className="w-6 h-6 text-teal-600" />
-              <span className="text-teal-600 font-medium">
-                Sign In / Sign Up
-              </span>
+            <div className="text-center">
+              <h1 className="text-xl font-serif tracking-wider">Sakigai</h1>
+              <p className="text-xs text-gray-600">home</p>
             </div>
 
-            {/* Menu Items */}
-            {menuItems.map((item, idx) => (
-              <div
-                key={idx}
-                className={`px-6 py-4 border-b flex items-center justify-between hover:bg-gray-50 cursor-pointer ${
-                  ["Gifts", "Holiday", "Sale"].includes(item)
-                    ? "text-red-600"
-                    : ""
-                }`}
-              >
-                <span className={item === "Sale" ? "text-red-600" : ""}>
-                  {item}
-                </span>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+            <div className="flex gap-3">
+              <Search className="w-5 h-5" />
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="px-4 py-3 border-b">
+            <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-2">
+              <Search className="w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="What are you looking for?"
+                className="bg-transparent flex-1 outline-none text-sm"
+              />
+              <Heart className="w-5 h-5 text-gray-400" />
+              <User className="w-5 h-5 text-gray-400" />
+            </div>
+          </div>
+        </header>
+
+        {/* Sale Banner */}
+        <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white text-center py-8 px-4">
+          <h2 className="text-2xl font-serif mb-2">EXTRA 30% OFF SALE</h2>
+          <p className="text-sm mb-3">online only</p>
+          <button className="bg-white text-teal-700 px-6 py-2 rounded text-sm font-semibold">
+            SHOP NOW
+          </button>
+        </div>
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 gap-0.5 bg-gray-200 mt-0.5">
+          {productImages.map((product, idx) => (
+            <div key={idx} className="relative aspect-square overflow-hidden">
+              {/* Product Image */}
+              <img
+                src={product.imageURL}
+                alt={product.title}
+                className="w-full h-full object-cover"
+              />
+
+              {/* Dark overlay for text */}
+              <div className="absolute inset-0 bg-black/30"></div>
+
+              {/* Text */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <p className="text-white text-sm font-semibold">
+                  {product.title}
+                </p>
+                <p className="text-white text-xs">{product.category}</p>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+
+        {/* More to Explore */}
+        <div className="px-4 py-8">
+          <h3 className="text-lg font-serif mb-4">More to Explore</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="aspect-video bg-gray-100 rounded-lg"></div>
+            <div className="aspect-video bg-gray-100 rounded-lg"></div>
+          </div>
+          <p className="text-xs text-gray-600 text-center mt-4">
+            *All sales final. Excludes sale furniture. Other exclusions may
+            apply. <span className="underline">See details</span>
+          </p>
+        </div>
+
+        {/* Email Signup */}
+        <div className="bg-gray-50 px-4 py-8">
+          <h3 className="text-lg font-serif mb-2">Sign Up for Email</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Stay in the know with new arrivals, sales, exclusive coupons, events
+            and more!
+          </p>
+          <input
+            type="email"
+            placeholder="Email Address"
+            className="w-full px-4 py-3 border border-gray-300 rounded mb-3 text-sm"
+          />
+          <button className="w-full bg-gray-700 text-white py-3 rounded font-semibold">
+            SUBMIT
+          </button>
+          <p className="text-xs text-gray-500 mt-4">
+            By signing up, you will receive Anthropologie offers, promotions and
+            other commercial messages...
+          </p>
+        </div>
+
+        {/* Footer Links */}
+        <div className="border-t">
+          <div className="px-4 py-4 flex items-center justify-between border-b">
+            <div className="flex items-center gap-3">
+              <MapPin className="w-5 h-5 text-gray-600" />
+              <span className="text-sm">Store Locator</span>
+            </div>
+          </div>
+          <div className="px-4 py-4 flex items-center justify-between border-b">
+            <div className="flex items-center gap-3">
+              <Phone className="w-5 h-5 text-gray-600" />
+              <span className="text-sm">AnthroPerks</span>
+            </div>
+          </div>
+          <div className="px-4 py-4 flex items-center justify-between border-b">
+            <div className="flex items-center gap-3">
+              <ShoppingBag className="w-5 h-5 text-gray-600" />
+              <span className="text-sm">Sign Up For Texts</span>
+            </div>
+          </div>
+          <div className="px-4 py-4 flex items-center justify-between border-b">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="w-5 h-5 text-gray-600" />
+              <span className="text-sm">Chat With Us</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Side Menu */}
+        <div
+          className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity ${
+            menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+          onClick={() => setMenuOpen(false)}
+        >
+          <div
+            className={`absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl transform transition-transform ${
+              menuOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Menu Header */}
+            <div className="bg-gray-700 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Home className="w-5 h-5" />
+                <span className="font-semibold">anthropologie.com/an</span>
+              </div>
+              <button onClick={() => setMenuOpen(false)} className="p-1">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Menu Content */}
+            <div className="overflow-y-auto h-full pb-20">
+              {/* Sign In */}
+              <div className="px-6 py-4 border-b flex items-center gap-3">
+                <User className="w-6 h-6 text-teal-600" />
+                <span className="text-teal-600 font-medium">
+                  Sign In / Sign Up
+                </span>
+              </div>
+
+              {/* Menu Items */}
+              {menuItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`px-6 py-4 border-b flex items-center justify-between hover:bg-gray-50 cursor-pointer ${
+                    ["Gifts", "Holiday", "Sale"].includes(item)
+                      ? "text-red-600"
+                      : ""
+                  }`}
+                >
+                  <span className={item === "Sale" ? "text-red-600" : ""}>
+                    {item}
+                  </span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

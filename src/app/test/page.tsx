@@ -1,10 +1,11 @@
+import BannerManager from "@/component/admin/BannerManager";
+import Header from "@/component/Headers/HeaderDS";
 import React from "react";
 
 const test = () => {
   return (
     <div>
-      <h1 className=" text-4xl">Holiday Party Collection</h1>
-      <h1 className=" text-4xl">Holiday Party Collection</h1>
+      <BannerManager initialBanners={[]} token={""}></BannerManager>
     </div>
   );
 };
