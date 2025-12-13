@@ -6,7 +6,8 @@ import React from "react";
 const test = () => {
   return (
     <div>
-      <PromoBannerContainer />
+      {/* <PromoBannerContainer /> */}
+      <Header></Header>
       <BannerManager initialBanners={[]} token={""}></BannerManager>
     </div>
   );

@@ -1,18 +1,13 @@
-'use client';
+"use client";
 
-import { Swiper, SwiperSlide } from 'swiper/react';
-import {
-  Autoplay,
-  Navigation,
-  Pagination,
-  A11y,
-} from 'swiper/modules';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { PromoBanner } from '@/types/promo-banner';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation, Pagination, A11y } from "swiper/modules";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { PromoBanner } from "@/types/promo-banner";
 
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 interface PromoBannerCarouselProps {
   banners: PromoBanner[];
@@ -27,7 +22,7 @@ export default function PromoBannerCarousel({
     <div className="relative w-full overflow-hidden">
       <Swiper
         modules={[Autoplay, Navigation, Pagination, A11y]}
-        speed={600}                 // smooth but not slow
+        speed={600} // smooth but not slow
         loop={banners.length > 1}
         autoplay={{
           delay: 5000,
@@ -35,12 +30,12 @@ export default function PromoBannerCarousel({
           pauseOnMouseEnter: true,
         }}
         navigation={{
-          nextEl: '.promo-next',
-          prevEl: '.promo-prev',
+          nextEl: ".promo-next",
+          prevEl: ".promo-prev",
         }}
         pagination={{
           clickable: true,
-          el: '.promo-pagination',
+          el: ".promo-pagination",
         }}
         slidesPerView={1}
         spaceBetween={0}
