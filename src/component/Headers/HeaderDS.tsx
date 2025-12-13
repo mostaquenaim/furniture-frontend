@@ -111,21 +111,30 @@ const megaMenuData = {
     },
   ],
 };
-// -----------------------
 
 // Desktop MegaMenu Component (Unchanged)
 const MegaMenu: React.FC<MegaMenuProps> = ({ data }) => {
   if (!data) return null;
-  // ... (MegaMenu implementation remains the same)
+
   return (
     <div className="absolute left-0 right-0 top-full z-40 bg-white border-t border-gray-200 shadow-lg pt-8 pb-12">
       <div className="max-w-7xl mx-auto px-4 flex gap-12">
         {data.map((column, colIndex) => (
-          <div key={colIndex} className="w-1/4">
-            <h3 className="font-semibold text-gray-900 mb-3 text-sm">
+          <div
+            key={colIndex}
+            className={`
+      w-1/4 px-8 
+      ${colIndex !== data.length - 1 ? "border-r border-gray-200" : ""}
+    `}
+          >
+            
+            {/* Added border-b and extra pb-3 to create the separator line */}
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm border-b border-gray-200 pb-3">
               {column.title}
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2 pt-3">
+              {" "}
+              {/* Added pt-3 for spacing after the line */}
               {column.links.map((link, linkIndex) => (
                 <li key={linkIndex}>
                   <a
@@ -153,11 +162,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ data }) => {
 };
 
 // --- MOBILE MENU DRILLDOWN COMPONENTS ---
-
 const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   navItems,
   mobileMenuContent,
-  isMenuOpen,
+  isMenuOpen, // <-- Use this state to control the entire drawer's entry/exit
   setIsMenuOpen,
 }) => {
   const [mobileActiveCategory, setMobileActiveCategory] = useState<
@@ -181,16 +189,23 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
     mobileMenuContent.hasOwnProperty(item);
 
   return (
+    // FIX 1: Apply slide-in/out transition for the entire drawer based on isMenuOpen
     <div
-      className={`lg:hidden fixed inset-0 z-50 bg-white transition-transform duration-300 ease-in-out ${
-        isMenuOpen ? "translate-x-0" : "translate-x-full"
+      className={`lg:hidden fixed inset-0 z-50 bg-white shadow-2xl transition-transform duration-300 ease-in-out transform ${
+        isMenuOpen ? "translate-x-0" : "translate-x-full" // Slides from right to left
       }`}
     >
-      <div className="h-full flex">
-        {/* Main Menu Panel */}
-        <div className="flex-shrink-0 w-full h-full p-6">
+      {/* FIX 2: Create a single sliding container for the two-panel drilldown effect */}
+      <div
+        className={`h-full flex w-[200%] transition-transform duration-300 ease-in-out ${
+          mobileActiveCategory ? "-translate-x-1/2" : "translate-x-0" // Handles the slide between main and sub-menu
+        }`}
+      >
+        {/* Panel 1: Main Menu List (Takes up 1/2 of 200% width = 100% viewport width) */}
+        <div className="w-1/2 h-full flex-shrink-0 p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-xl font-serif font-bold">Menu</h2>
+            {/* The 'X' button closes the entire drawer */}
             <button onClick={() => setIsMenuOpen(false)}>
               <X size={24} />
             </button>
@@ -228,88 +243,82 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           </div>
         </div>
 
-        {/* Drilldown Sub-Category Panel */}
+        {/* Panel 2: Drilldown Sub-Category Panel (Takes up 1/2 of 200% width = 100% viewport width) */}
         <div
-          className={`absolute inset-y-0 right-0 w-full bg-white shadow-xl transition-transform duration-300 ease-in-out ${
-            mobileActiveCategory ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`w-1/2 h-full flex-shrink-0 bg-white p-6 overflow-y-auto`}
         >
-          {mobileActiveCategory && (
-            <div className="p-6">
-              {/* Back Button */}
-              <div className="flex items-center mb-6">
-                <button
-                  onClick={() => setMobileActiveCategory(null)}
-                  className="mr-4 text-gray-700 flex items-center"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                <h2 className="text-xl font-medium text-gray-900">
-                  {mobileActiveCategory}
-                </h2>
-              </div>
+          {/* Header: Back Button and Category Title */}
+          <div className="flex items-center mb-6">
+            <button
+              onClick={() => setMobileActiveCategory(null)}
+              className="mr-4 text-gray-700 flex items-center"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <h2 className="text-xl font-medium text-gray-900">
+              {mobileActiveCategory}
+            </h2>
+          </div>
 
-              {/* Subcategory Links */}
-              <div className="space-y-1">
-                {activeCategoryData?.map((item, index) => {
-                  if (item.type === "link") {
-                    return (
-                      <a
-                        key={index}
-                        href={`/shop/${mobileActiveCategory.toLowerCase()}/${item.label
-                          .toLowerCase()
-                          .replace(/\s/g, "-")}`}
-                        className="block py-3 text-gray-700 border-b border-gray-100 font-medium"
-                      >
+          {/* Subcategory Links */}
+          <div className="space-y-1">
+            {activeCategoryData?.map((item, index) => {
+              if (item.type === "link") {
+                return (
+                  <a
+                    key={index}
+                    href={`/shop/${mobileActiveCategory?.toLowerCase()}/${item.label
+                      .toLowerCase()
+                      .replace(/\s/g, "-")}`}
+                    className="block py-3 text-gray-700 border-b border-gray-100 font-medium"
+                  >
+                    {item.label}
+                  </a>
+                );
+              } else if (item.type === "collapsible") {
+                const isExpanded =
+                  collapsibleStates[item.label] ?? item.expanded;
+                return (
+                  <div key={index} className="border-b border-gray-100">
+                    <button
+                      onClick={() => toggleCollapsible(item.label)}
+                      className="w-full py-3 text-gray-700 font-medium flex justify-between items-center"
+                    >
+                      {item.label}
+                      <span className="text-xl font-bold text-gray-400">
+                        {isExpanded ? "-" : "+"}
+                      </span>
+                    </button>
+                    {isExpanded && (
+                      <ul className="pl-4 pb-2 space-y-1">
+                        {item.links.map((link, linkIndex) => (
+                          <li key={linkIndex}>
+                            <a
+                              href="#"
+                              className="block py-1 text-gray-600 text-sm"
+                            >
+                              {link}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              } else if (item.type === "banner") {
+                return (
+                  <div key={index} className="mt-6">
+                    <div className="bg-gray-100 p-8 rounded text-center">
+                      <p className="font-serif text-xl font-bold">
                         {item.label}
-                      </a>
-                    );
-                  } else if (item.type === "collapsible") {
-                    const isExpanded =
-                      collapsibleStates[item.label] ?? item.expanded;
-                    return (
-                      <div key={index} className="border-b border-gray-100">
-                        <button
-                          onClick={() => toggleCollapsible(item.label)}
-                          className="w-full py-3 text-gray-700 font-medium flex justify-between items-center"
-                        >
-                          {item.label}
-                          <span className="text-xl font-bold text-gray-400">
-                            {isExpanded ? "-" : "+"}
-                          </span>
-                        </button>
-                        {isExpanded && (
-                          <ul className="pl-4 pb-2 space-y-1">
-                            {item.links.map((link, linkIndex) => (
-                              <li key={linkIndex}>
-                                <a
-                                  href="#"
-                                  className="block py-1 text-gray-600 text-sm"
-                                >
-                                  {link}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  } else if (item.type === "banner") {
-                    return (
-                      <div key={index} className="mt-6">
-                        <div className="bg-gray-100 p-8 rounded text-center">
-                          <p className="font-serif text-xl font-bold">
-                            {item.label}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            </div>
-          )}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -394,20 +403,6 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Mobile Search Bar (unchanged for brevity) */}
-          {/* <div className="hidden mb-4">
-            <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-              <Search size={18} className="text-gray-500" />
-              <input
-                type="text"
-                placeholder="What are you looking for?"
-                className="bg-transparent border-none outline-none px-3 text-sm w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div> */}
-
           {/* Desktop Full Navigation (unchanged for brevity) */}
           <nav className="hidden lg:flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
             {navItems.map((item) => (
@@ -432,11 +427,11 @@ const Header = () => {
           {/* Mega Menu Dropdown */}
           {megaMenuContent && <MegaMenu data={megaMenuContent} />}
 
-          {/* --- MOBILE NAVIGATION DRAWER (NEW COMPONENT) --- */}
+          {/* --- MOBILE NAVIGATION DRAWER (UPDATED PROPS) --- */}
           <MobileMenuDrawer
             navItems={navItems}
             mobileMenuContent={mobileMenuContent}
-            isMenuOpen={isMenuOpen}
+            isMenuOpen={isMenuOpen} // <--- Passed the state
             setIsMenuOpen={setIsMenuOpen}
           />
         </div>
