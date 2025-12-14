@@ -3,7 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { Eye, X } from "lucide-react";
 
 type ModalView =
   | "signin"
@@ -40,6 +40,8 @@ export default function AuthModal({
   >("email");
 
   const [useMobileForSignin, setUseMobileForSignin] = useState<boolean>(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  // const [isShowPass, setIsShowPass] = useState(false)
 
   // if (!isOpen) return null;
 
@@ -193,6 +195,7 @@ export default function AuthModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             code: otp,
+            keepSignedIn,
             emailOrPhone:
               verificationTarget === "email"
                 ? email
@@ -216,6 +219,7 @@ export default function AuthModal({
     }
   };
 
+  // password reset / forgot password
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -227,9 +231,15 @@ export default function AuthModal({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify(
+            useMobileForSignin
+              ? { emailOrPhone: mobileNumber, type: "phone" }
+              : { emailOrPhone: email, type: "email" }
+          ),
         }
       );
+
+      console.log(res,'dfdff');
 
       if (!res.ok) throw new Error("Failed to send reset email");
 
@@ -248,6 +258,70 @@ export default function AuthModal({
     setEmail("");
     setMobileNumber("");
     setView(option);
+  };
+
+  const passWordField = () => {
+    return (
+      <div className="mb-4">
+        <label className="block text-sm mb-2">Password*</label>
+        <input
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+          required
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="text-sm blue-link hover:underline mt-2 cursor-pointer
+          "
+        >
+          👁 {showPassword ? "Hide" : "Show"} Password
+        </button>
+        {/* {view === "signin" && (
+          <button
+            type="button"
+            onClick={() => handleView("password-reset")}
+            className="text-sm blue-link hover:underline mt-2 cursor-pointer inline-flex items-end
+          "
+          >
+            Forgot Your Password?
+          </button>
+        )} */}
+      </div>
+    );
+  };
+
+  const keepMeSignedInInfo = () => {
+    return (
+      <div className="relative inline-block ml-1">
+        <span
+          onClick={() => setShowTooltip(!showTooltip)}
+          className="text-gray-400 cursor-pointer select-none"
+        >
+          ⓘ
+        </span>
+
+        {showTooltip && (
+          <div className="absolute z-50 top-7 left-1/2 -translate-x-1/2 w-64">
+            {/* Tooltip box */}
+            <div className="relative bg-gray-700 text-white text-xs p-3 rounded shadow-lg font-extralight">
+              Selecting “keep me signed in” reduces the number of times you will
+              be asked to sign in on this device. To keep your account secure,
+              use this option only on your personal device.
+              {/* Arrow */}
+              <div
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 
+                        border-l-8 border-r-8 border-b-8
+                        border-l-transparent border-r-transparent
+                        border-b-gray-700"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -269,7 +343,7 @@ export default function AuthModal({
           <X size={24} />
         </button>
 
-        <div className="p-8">
+        <div className="px-8 py-20">
           {view === "password-reset" && (
             <>
               <h2 className="text-2xl font-light text-center mb-6">
@@ -282,11 +356,17 @@ export default function AuthModal({
 
               <form onSubmit={handlePasswordReset}>
                 <div className="mb-6">
-                  <label className="block text-sm mb-2">Email*</label>
+                  <label className="block text-sm mb-2">
+                    {useMobileForSignin ? "Phone*" : "Email*"}
+                  </label>
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type={useMobileForSignin ? "text" : "email"}
+                    value={useMobileForSignin ? mobileNumber : email}
+                    onChange={(e) => {
+                      useMobileForSignin
+                        ? setMobileNumber(e.target.value)
+                        : setEmail(e.target.value);
+                    }}
                     className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
                     required
                   />
@@ -294,20 +374,32 @@ export default function AuthModal({
 
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50"
-                >
-                  {loading ? "SENDING..." : "RESET PASSWORD"}
-                </button>
+                {/* buttons */}
+                <div className="space-y-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50"
+                  >
+                    {loading ? "SENDING..." : "RESET PASSWORD"}
+                  </button>
+                  {/* use mobile / email instead  */}
+                  <button
+                    type="button"
+                    onClick={handleMobileSignIn}
+                    className="w-full border border-gray-300 py-3 rounded hover:bg-gray-50 mb-4"
+                  >
+                    USE {!useMobileForSignin ? "MOBILE NUMBER" : "EMAIL"}{" "}
+                    INSTEAD
+                  </button>
+                </div>
               </form>
             </>
           )}
 
           {view === "enter-password" && (
             <>
-              <h2 className="text-2xl font-light text-center mb-6 heading">
+              <h2 className="text-2xl font-light text-center mb-6 border-b-2 heading">
                 Sign In
               </h2>
               <p className="text-sm text-gray-600 text-center mb-4">
@@ -324,24 +416,6 @@ export default function AuthModal({
               </p>
 
               <form onSubmit={handlePasswordSubmit}>
-                <div className="mb-4">
-                  <label className="block text-sm mb-2">Password*</label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-sm text-blue-600 hover:underline mt-2"
-                  >
-                    👁 {showPassword ? "Hide" : "Show"} Password
-                  </button>
-                </div>
-
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
                 <button
@@ -380,7 +454,7 @@ export default function AuthModal({
 
           {view === "signin" && (
             <>
-              <h2 className="text-2xl font-light text-center mb-6 heading">
+              <h2 className="text-2xl font-light text-center mb-6 border-b border-gray-200 heading">
                 Sign In
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
@@ -426,17 +500,9 @@ export default function AuthModal({
                     />
                   )}
                 </div>
+
                 {/* password  */}
-                <div className="mb-4">
-                  <label className="block text-sm mb-2">Password*</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                    required
-                  />
-                </div>
+                {passWordField()}
 
                 <div className="flex items-center mb-4">
                   <input
@@ -449,12 +515,7 @@ export default function AuthModal({
                   <label htmlFor="keepSignedIn" className="text-sm">
                     Keep me signed in
                   </label>
-                  <span
-                    className="ml-1 text-gray-400 cursor-help"
-                    title="Stay signed in on this device"
-                  >
-                    ⓘ
-                  </span>
+                  {keepMeSignedInInfo()}
                 </div>
 
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -462,10 +523,21 @@ export default function AuthModal({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50 mb-4 heading"
+                  className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50 heading"
                 >
                   {loading ? "LOADING..." : "NEXT"}
                 </button>
+
+                <p className="flex justify-center items-center w-full pb-4">
+                  <button
+                    type="button"
+                    onClick={() => handleView("password-reset")}
+                    className="text-sm blue-link hover:underline mt-2 cursor-pointer
+          "
+                  >
+                    Forgot Your Password?
+                  </button>
+                </p>
 
                 <button
                   type="button"
@@ -476,7 +548,7 @@ export default function AuthModal({
                 </button>
               </form>
 
-              <div className="mt-8 pt-8 border-t">
+              <div className="mt-8 pt-8 border-t border-gray-200">
                 <h3 className="text-xl font-light text-center mb-4 heading">
                   Sign Up
                 </h3>
@@ -552,16 +624,25 @@ export default function AuthModal({
                   </div>
                 </div>
                 {/* set password  */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   <label className="block text-sm mb-2">Password*</label>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
                     required
                   />
-                </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-sm text-blue-600 hover:underline mt-2 cursor-pointer"
+                  >
+                    👁 {showPassword ? "Hide" : "Show"} Password
+                  </button>
+                </div> */}
+                {passWordField()}
                 {/* keep me signed in  */}
                 <div className="flex items-center mb-4">
                   <input
@@ -574,12 +655,7 @@ export default function AuthModal({
                   <label htmlFor="keepSignedInSignup" className="text-sm">
                     Keep me signed in
                   </label>
-                  <span
-                    className="ml-1 text-gray-400 cursor-help"
-                    title="Stay signed in on this device"
-                  >
-                    ⓘ
-                  </span>
+                  {keepMeSignedInInfo()}
                 </div>
                 {/* error  */}
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -593,7 +669,7 @@ export default function AuthModal({
                 </button>
 
                 {/* offer text  */}
-                <div className="text-xs text-gray-600 mb-4">
+                {/* <div className="text-xs text-gray-600 mb-4">
                   <label className="flex items-start">
                     <input type="checkbox" className="mr-2 mt-1" />
                     <span>
@@ -602,7 +678,7 @@ export default function AuthModal({
                       Sakigai's Terms of Service and Privacy Policy.
                     </span>
                   </label>
-                </div>
+                </div> */}
                 {/* condition  */}
                 <div className="text-xs text-gray-600">
                   By creating an account, you agree to Sakigai&apos;s{" "}

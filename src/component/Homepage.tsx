@@ -129,44 +129,10 @@ export default function Homepage() {
       <Header></Header>
       <div className="min-h-screen bg-white">
         {/* Top Banner */}
-        <div className="bg-teal-700 text-white text-center py-2 text-sm">
-          <span className="font-semibold">20% OFF Holiday Decor</span>
-          <span className="mx-2">|</span>
-          <span className="underline cursor-pointer">exclusions apply</span>
-        </div>
+      
 
         {/* Header */}
-        <header className="sticky top-0 bg-white z-50 shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3 border-b">
-            <button onClick={() => setMenuOpen(true)} className="p-2">
-              <Menu className="w-6 h-6" />
-            </button>
-
-            <div className="text-center">
-              <h1 className="text-xl font-serif tracking-wider">Sakigai</h1>
-              <p className="text-xs text-gray-600">home</p>
-            </div>
-
-            <div className="flex gap-3">
-              <Search className="w-5 h-5" />
-              <ShoppingBag className="w-5 h-5" />
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="px-4 py-3 border-b">
-            <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-2">
-              <Search className="w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="What are you looking for?"
-                className="bg-transparent flex-1 outline-none text-sm"
-              />
-              <Heart className="w-5 h-5 text-gray-400" />
-              <User className="w-5 h-5 text-gray-400" />
-            </div>
-          </div>
-        </header>
+       
 
         {/* Sale Banner */}
         <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white text-center py-8 px-4">
