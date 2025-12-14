@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useAuth } from "@/store/auth";
+import { useAuth } from "@/context/AuthContext";
 
 const axiosSecure = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -7,7 +7,7 @@ const axiosSecure = axios.create({
 });
 
 const useAxiosSecure = () => {
-  const accessToken = useAuth((s) => s.accessToken);
+  const accessToken = useAuth();
 
   axiosSecure.interceptors.request.use((config) => {
     if (accessToken) {
