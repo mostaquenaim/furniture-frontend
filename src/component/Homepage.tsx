@@ -231,7 +231,7 @@ export default function Homepage() {
             SUBMIT
           </button>
           <p className="text-xs text-gray-500 mt-4">
-            By signing up, you will receive Anthropologie offers, promotions and
+            By signing up, you will receive Sakigai offers, promotions and
             other commercial messages...
           </p>
         </div>
@@ -281,7 +281,7 @@ export default function Homepage() {
             <div className="bg-gray-700 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Home className="w-5 h-5" />
-                <span className="font-semibold">anthropologie.com/an</span>
+                <span className="font-semibold">sakigai.com/an</span>
               </div>
               <button onClick={() => setMenuOpen(false)} className="p-1">
                 <X className="w-6 h-6" />
@@ -293,7 +293,7 @@ export default function Homepage() {
               {/* Sign In */}
               <div className="px-6 py-4 border-b flex items-center gap-3">
                 <User className="w-6 h-6 text-teal-600" />
-                <span className="text-teal-600 font-medium">
+                <span className="blue-link font-medium">
                   Sign In / Sign Up
                 </span>
               </div>

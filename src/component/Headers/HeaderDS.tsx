@@ -18,6 +18,7 @@ import type {
   MegaMenuProps,
   MobileMenuDrawerProps,
 } from "@/types/menu";
+import AuthModal from "../Auth/AuthModal";
 
 // --- MOBILE MENU DATA ---
 // Structure: Category Name -> Array of Menu Items
@@ -105,7 +106,7 @@ const megaMenuData = {
         "Gallery Wall Decor",
         "Peel & Stick Wallpaper",
         "Dopamine Decor",
-        "Anthropologie x YoungArts",
+        "Sakigai x YoungArts",
         "GREAT FOR GIFTING: Wall Charms",
       ],
     },
@@ -127,7 +128,6 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ data }) => {
       ${colIndex !== data.length - 1 ? "border-r border-gray-200" : ""}
     `}
           >
-            
             {/* Added border-b and extra pb-3 to create the separator line */}
             <h3 className="font-semibold text-gray-900 mb-3 text-sm border-b border-gray-200 pb-3">
               {column.title}
@@ -350,6 +350,12 @@ const Header = () => {
     ? megaMenuData[activeNavItem as keyof typeof megaMenuData]
     : null;
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleAuthModal = () => {
+    setIsModalOpen(true);
+  };
+
   return (
     <header className="">
       <PromoBannerContainer />
@@ -383,7 +389,10 @@ const Header = () => {
                   href="#"
                   className="text-gray-700 hover:text-amber-700 transition-colors"
                 >
-                  <span className="hidden sm:inline text-sm">
+                  <span
+                    onClick={handleAuthModal}
+                    className="hidden sm:inline text-sm blue-link"
+                  >
                     Sign in / Sign up
                   </span>
                   <User size={20} className="sm:hidden" />
@@ -436,6 +445,11 @@ const Header = () => {
           />
         </div>
       </div>
+      {
+        // isModalOpen && (
+          <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        // )
+      }
     </header>
   );
 };

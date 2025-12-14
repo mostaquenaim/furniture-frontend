@@ -166,9 +166,9 @@ const EmailSignUp: React.FC = () => {
         </div>
 
         <p className="text-xs text-gray-500">
-          By signing up, you will receive Anthropologie offers, promotions, and
+          By signing up, you will receive Sakigai offers, promotions, and
           other commercial messages. You are also agreeing to
-          Anthropologie&apos;s{" "}
+          Sakigai&apos;s{" "}
           <a href="#" className="underline hover:text-gray-700">
             Privacy Policy
           </a>
