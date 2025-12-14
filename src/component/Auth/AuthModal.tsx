@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // components/AuthModal.tsx
 "use client";
 
@@ -27,7 +28,7 @@ export default function AuthModal({
   const [email, setEmail] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [password, setPassword] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("+880");
   const [countryCode, setCountryCode] = useState("BD");
   const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +38,8 @@ export default function AuthModal({
   const [verificationTarget, setVerificationTarget] = useState<
     "email" | "phone"
   >("email");
+
+  const [useMobileForSignin, setUseMobileForSignin] = useState<boolean>(false);
 
   // if (!isOpen) return null;
 
@@ -49,19 +52,20 @@ export default function AuthModal({
     const errorMessages = [];
 
     if (!minLength.test(password))
-      errorMessages.push( "Password must be at least 8 characters")
+      errorMessages.push("Password must be at least 8 characters");
     if (!uppercase.test(password))
-       errorMessages.push( "Password must contain at least 1 uppercase letter")
-     if (!lowercase.test(password))
-       errorMessages.push( "Password must contain at least 1 lowercase letter");  
+      errorMessages.push("Password must contain at least 1 uppercase letter");
+    if (!lowercase.test(password))
+      errorMessages.push("Password must contain at least 1 lowercase letter");
     if (!number.test(password))
-      errorMessages.push("Password must contain at least 1 number")
+      errorMessages.push("Password must contain at least 1 number");
 
     return errorMessages.length > 0 ? errorMessages.join(", ") : null; // valid
   };
 
-  const handleGoogleSignIn = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  const handleMobileSignIn = () => {
+    setUseMobileForSignin(!useMobileForSignin);
+    // window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -97,7 +101,7 @@ export default function AuthModal({
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin/password`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -109,9 +113,18 @@ export default function AuthModal({
       if (!res.ok) throw new Error("Invalid password");
 
       const data = await res.json();
-      localStorage.setItem("token", data.access_token);
-      onClose();
-      window.location.reload();
+
+      if (data.otpSentTo) {
+        setVerificationTarget(data.otpSentTo);
+        handleView("otp-verification");
+      } else {
+        localStorage.setItem("token", data.access_token);
+        onClose();
+        window.location.reload();
+      }
+      // localStorage.setItem("token", data.access_token);
+      // onClose();
+      // window.location.reload();
     } catch (err) {
       setError("Invalid password. Please try again.");
     } finally {
@@ -138,7 +151,7 @@ export default function AuthModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email,
+            email: email || "",
             phone: `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
             password,
             name: customerName,
@@ -179,9 +192,12 @@ export default function AuthModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            otp,
-            email,
-            phone: verificationTarget === "phone" ? mobileNumber : undefined,
+            code: otp,
+            emailOrPhone:
+              verificationTarget === "email"
+                ? email
+                : `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
+            type: verificationTarget,
           }),
           credentials: "include",
         }
@@ -224,6 +240,14 @@ export default function AuthModal({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleView = (option: ModalView) => {
+    setPassword("");
+    setCustomerName("");
+    setEmail("");
+    setMobileNumber("");
+    setView(option);
   };
 
   return (
@@ -292,7 +316,7 @@ export default function AuthModal({
               <p className="text-sm text-center mb-6">
                 {email}{" "}
                 <button
-                  onClick={() => setView("signin")}
+                  onClick={() => handleView("signin")}
                   className="text-blue-600 hover:underline"
                 >
                   Edit
@@ -330,7 +354,7 @@ export default function AuthModal({
 
                 <button
                   type="button"
-                  onClick={() => setView("password-reset")}
+                  onClick={() => handleView("password-reset")}
                   className="w-full text-blue-600 hover:underline text-center"
                 >
                   Forgot Your Password?
@@ -345,7 +369,7 @@ export default function AuthModal({
                   Welcome! It's quick and easy to set up an account
                 </p>
                 <button
-                  onClick={() => setView("create-account")}
+                  onClick={() => handleView("create-account")}
                   className="w-full border border-gray-700 text-gray-700 py-3 rounded hover:bg-gray-50 heading"
                 >
                   CREATE AN ACCOUNT
@@ -364,13 +388,51 @@ export default function AuthModal({
                 orders, and check out faster!
               </p>
 
-              <form onSubmit={handleEmailSignIn}>
+              <form onSubmit={handlePasswordSubmit}>
                 <div className="mb-4">
-                  <label className="block text-sm mb-2">Email*</label>
+                  <label className="block text-sm mb-2">
+                    {useMobileForSignin ? "Phone*" : "Email*"}
+                  </label>
+                  {useMobileForSignin ? (
+                    <input
+                      type="tel"
+                      value={mobileNumber}
+                      onChange={(e) => {
+                        let value = e.target.value;
+
+                        // Always enforce +880
+                        if (!value.startsWith("+880")) {
+                          value = "+880";
+                        }
+
+                        // Allow only numbers after +880
+                        const rest = value.slice(4).replace(/\D/g, "");
+                        setMobileNumber("+880" + rest);
+                      }}
+                      className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+                      required
+                      placeholder="+880"
+                    />
+                  ) : (
+                    <input
+                      type={"email"}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                      }}
+                      className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+                      required
+                      placeholder={"example@gmail.com"}
+                    />
+                  )}
+                </div>
+                {/* password  */}
+                <div className="mb-4">
+                  <label className="block text-sm mb-2">Password*</label>
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
                     required
                   />
@@ -407,10 +469,10 @@ export default function AuthModal({
 
                 <button
                   type="button"
-                  onClick={handleGoogleSignIn}
+                  onClick={handleMobileSignIn}
                   className="w-full border border-gray-300 py-3 rounded hover:bg-gray-50 mb-4"
                 >
-                  USE MOBILE NUMBER INSTEAD
+                  USE {!useMobileForSignin ? "MOBILE NUMBER" : "EMAIL"} INSTEAD
                 </button>
               </form>
 
@@ -422,7 +484,7 @@ export default function AuthModal({
                   Welcome! It's quick and easy to set up an account
                 </p>
                 <button
-                  onClick={() => setView("create-account")}
+                  onClick={() => handleView("create-account")}
                   className="w-full border border-gray-700 text-gray-700 py-3 rounded hover:bg-gray-50 heading"
                 >
                   CREATE AN ACCOUNT
@@ -557,7 +619,7 @@ export default function AuthModal({
                   Already Have an Account?
                 </h3>
                 <button
-                  onClick={() => setView("signin")}
+                  onClick={() => handleView("signin")}
                   className="w-full border border-gray-700 text-gray-700 py-3 rounded hover:bg-gray-50 heading"
                 >
                   SIGN IN
