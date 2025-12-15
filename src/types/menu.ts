@@ -1,3 +1,5 @@
+import { JSX } from "react";
+
 // Mobile Menu Item Types
 export type MobileMenuItem =
   | { type: "link"; label: string }
@@ -26,5 +28,7 @@ export interface MobileMenuDrawerProps {
   setIsMenuOpen: (open: boolean) => void;
   isModalOpen: boolean;
   setIsModalOpen: (isModalOpen: boolean) => void;
-  token: string;
+  token: string | null;
+  logoutIcon: () => JSX.Element;
+  loading: boolean; 
 }

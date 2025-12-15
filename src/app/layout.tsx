@@ -4,6 +4,8 @@ import { Providers } from "./providers";
 import localFont from "next/font/local";
 
 import { Bodoni_Moda, Cinzel, Poppins } from "next/font/google";
+import Header from "@/component/Headers/HeaderDS";
+import Footer from "@/component/Footer/Footer";
 
 const avenir = localFont({
   src: "../../public/fonts/avenir/AvenirNext-Regular.woff",
@@ -36,7 +38,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${bodoni.variable} ${cinzel.variable} `}>
       <Providers>
-        <body>{children}</body>
+        <body>
+          <Header></Header>
+          {children}
+          <Footer></Footer>
+        </body>
       </Providers>
     </html>
   );

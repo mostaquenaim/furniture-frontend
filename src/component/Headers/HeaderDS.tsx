@@ -10,6 +10,7 @@ import {
   X,
   ChevronRight,
   ChevronLeft,
+  LogOut,
 } from "lucide-react";
 import PromoBannerContainer from "./PromoBannerContainer";
 import type {
@@ -20,6 +21,9 @@ import type {
 } from "@/types/menu";
 import AuthModal from "../Auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
+import useAxiosPublic from "@/hooks/useAxiosPublic";
+import useAxiosSecure from "@/hooks/useAxiosSecure";
+import LoadingDots from "../Loading/LoadingDS";
 
 // Structure: Category Name -> Array of Menu Items
 const mobileMenuContent: MobileMenuContent = {
@@ -170,6 +174,8 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   isModalOpen,
   setIsModalOpen,
   token,
+  logoutIcon,
+  loading,
   // handleAuthModal
 }) => {
   const [mobileActiveCategory, setMobileActiveCategory] = useState<
@@ -216,13 +222,27 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           </div>
 
           <div className="space-y-1">
-            <span
-              onClick={() => setIsModalOpen(true)}
-              className="py-3 text-sm border-b border-gray-100 text-gray-900 font-semibold flex items-center gap-2 blue-link"
-            >
-              <User size={20} />
-              {token ? "Account" : "Sign In / Sign Up"}
-            </span>
+            <div className="py-3 text-sm border-b border-gray-100 text-gray-900 font-semibold flex items-center gap-2 blue-link">
+              {loading ? (
+                <LoadingDots size="xs"></LoadingDots>
+              ) : (
+                <>
+                  <span
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline lg:hidden text-sm blue-link cursor-pointer"
+                  >
+                    {" "}
+                    {token ? <User size={20} /> : "Sign In / Sign Up"}
+                  </span>
+                  {token && (
+                    <>
+                      <span className="blue-link">|</span>
+                      <span>{logoutIcon()}</span>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
 
             {navItems.map((item) => (
               <a
@@ -351,7 +371,8 @@ const Header = () => {
     "Sale",
   ];
 
-  const { token } = useAuth();
+  const { token, logout, loading } = useAuth();
+  // console.log(token,'tokennn');
   const megaMenuContent = activeNavItem
     ? megaMenuData[activeNavItem as keyof typeof megaMenuData]
     : null;
@@ -360,6 +381,29 @@ const Header = () => {
 
   const handleAuthModal = () => {
     setIsModalOpen(true);
+  };
+
+  // const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
+  // const { logout } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      const res = await axiosSecure.post("/auth/logout");
+      logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const logoutIcon = () => {
+    return (
+      <LogOut
+        onClick={handleLogout}
+        className="text-red-500 cursor-pointer"
+        size={20}
+      />
+    );
   };
 
   return (
@@ -391,18 +435,26 @@ const Header = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                <a
-                  href="#"
-                  className="text-gray-700 hover:text-amber-700 transition-colors"
-                >
-                  <span
-                    onClick={handleAuthModal}
-                    className="hidden sm:inline text-sm blue-link"
-                  >
-                    Sign in / Sign up
-                  </span>
-                  <User size={20} className="sm:hidden" />
-                </a>
+                <div className="hidden lg:flex text-gray-700 hover:text-amber-700 transition-colors gap-2">
+                  {loading ? (
+                    <LoadingDots size="xs"></LoadingDots>
+                  ) : (
+                    <>
+                      <span
+                        onClick={handleAuthModal}
+                        className="hidden sm:inline text-sm blue-link cursor-pointer"
+                      >
+                        {token ? <User size={20} /> : "Sign In / Sign Up"}
+                      </span>
+                      {token && (
+                        <>
+                          <span className="blue-link">|</span>
+                          <span>{logoutIcon()}</span>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
                 <button className="text-gray-700 hover:text-amber-700 transition-colors">
                   <ShoppingBag size={20} />
                 </button>
@@ -451,6 +503,8 @@ const Header = () => {
             isModalOpen={isModalOpen}
             setIsModalOpen={setIsModalOpen}
             token={token}
+            logoutIcon={logoutIcon}
+            loading={loading}
             // handleAuthModal={handleAuthModal}
           />
         </div>

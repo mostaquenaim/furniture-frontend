@@ -9,7 +9,7 @@ export default function AdminGuard({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function AdminGuard({
     if (user.role !== 'ADMIN') {
       router.replace('/');
     }
-  }, [user, router]);
+  }, [user, router, loading]);
 
   if (!user || user.role !== 'ADMIN') return null;
 

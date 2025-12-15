@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { Eye, X } from "lucide-react";
 import useAxiosPublic from "@/hooks/useAxiosPublic";
+import { useRouter } from "next/navigation";
 
 type ModalView =
   | "signin"
@@ -12,6 +13,7 @@ type ModalView =
   | "create-account"
   | "password-reset"
   | "enter-password"
+  | "change-password"
   | "otp-verification";
 
 interface AuthModalProps {
@@ -43,7 +45,12 @@ export default function AuthModal({
   const [useMobileForSignin, setUseMobileForSignin] = useState<boolean>(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const axiosPublic = useAxiosPublic();
+  const router = useRouter();
 
   const validatePassword = (password: string) => {
     const minLength = /.{8,}/;
@@ -68,6 +75,43 @@ export default function AuthModal({
   const handleMobileSignIn = () => {
     setUseMobileForSignin(!useMobileForSignin);
     // window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    if (newPassword !== confirmPassword) {
+      setError("New password and confirm password do not match.");
+      setLoading(false);
+      return;
+    }
+
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      setError(passwordError);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await axiosPublic.post(
+        "/auth/change-password",
+        {
+          oldPassword,
+          newPassword,
+        },
+        { withCredentials: true }
+      );
+
+      alert("Password changed successfully!");
+      handleView("signin"); // redirect to signin after change
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to change password.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -108,6 +152,8 @@ export default function AuthModal({
         }
       );
 
+      console.log(res, "resubhsdfnpp");
+
       const data = res.data;
 
       if (data.otpSentTo) {
@@ -115,6 +161,7 @@ export default function AuthModal({
         handleView("otp-verification");
       } else {
         localStorage.setItem("token", data.token);
+        setView("signin");
         onClose();
         window.location.reload();
       }
@@ -142,7 +189,7 @@ export default function AuthModal({
         "/auth/register",
         {
           email: email || "",
-          phone: `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
+          phone: mobileNumber,
           password,
           name: customerName,
           keepSignedIn,
@@ -159,6 +206,7 @@ export default function AuthModal({
         setView("otp-verification");
       } else {
         localStorage.setItem("token", data.token);
+        setView("signin");
         onClose();
         window.location.reload();
       }
@@ -172,6 +220,7 @@ export default function AuthModal({
     }
   };
 
+  // handle otp submit
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -195,9 +244,12 @@ export default function AuthModal({
       );
 
       const data = res.data;
+      // console.log(data,'otpdone');
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setView("signin");
       onClose();
-      window.location.reload();
+      router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Invalid OTP. Please try again.");
     } finally {
@@ -212,15 +264,17 @@ export default function AuthModal({
     setError("");
 
     try {
-      await axiosPublic.post(
+      const otpSent = await axiosPublic.post(
         "/auth/reset-password",
         useMobileForSignin
           ? { emailOrPhone: mobileNumber, type: "phone" }
           : { emailOrPhone: email, type: "email" }
       );
 
-      alert("Password reset instructions sent!");
-      setView("signin");
+      // console.log(otpSent,'otpSent');
+      handleView("otp-verification");
+      // alert("Password reset instructions sent!");
+      // setView("signin");
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -234,9 +288,37 @@ export default function AuthModal({
   const handleView = (option: ModalView) => {
     setPassword("");
     setCustomerName("");
-    setEmail("");
-    setMobileNumber("");
+    setOtp("");
+    setError("");
+    // setEmail("");
+    // setMobileNumber("");
     setView(option);
+  };
+
+  const mobileNumberField = () => {
+    return (
+      <input
+        type="tel"
+        value={mobileNumber}
+        onChange={(e) => {
+          let value = e.target.value;
+
+          // Always enforce +880
+          if (!value.startsWith("+880")) {
+            value = "+880";
+          }
+
+          console.log(value, "valueeeee");
+
+          // Allow only numbers after +880
+          // const rest = value.slice(4).replace(/\D/g, "");
+          setMobileNumber(value);
+        }}
+        className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+        required
+        placeholder="+880"
+      />
+    );
   };
 
   const passWordField = () => {
@@ -316,7 +398,10 @@ export default function AuthModal({
     `}
       >
         <button
-          onClick={onClose}
+          onClick={() => {
+            setView("signin");
+            onClose();
+          }}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
         >
           <X size={24} />
@@ -325,8 +410,8 @@ export default function AuthModal({
         <div className="px-8 py-20">
           {view === "password-reset" && (
             <>
-              <h2 className="text-2xl font-light text-center mb-6">
-                Password Reset
+              <h2 className="text-2xl font-light text-center mb-6 pb-3 border-b border-gray-200">
+                Forgot Password?
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
                 Please enter your email address and we'll send you instructions
@@ -338,17 +423,22 @@ export default function AuthModal({
                   <label className="block text-sm mb-2">
                     {useMobileForSignin ? "Phone*" : "Email*"}
                   </label>
-                  <input
-                    type={useMobileForSignin ? "text" : "email"}
-                    value={useMobileForSignin ? mobileNumber : email}
-                    onChange={(e) => {
-                      useMobileForSignin
-                        ? setMobileNumber(e.target.value)
-                        : setEmail(e.target.value);
-                    }}
-                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                    required
-                  />
+
+                  {useMobileForSignin ? (
+                    mobileNumberField()
+                  ) : (
+                    <input
+                      type={useMobileForSignin ? "text" : "email"}
+                      value={useMobileForSignin ? mobileNumber : email}
+                      onChange={(e) => {
+                        useMobileForSignin
+                          ? setMobileNumber(e.target.value)
+                          : setEmail(e.target.value);
+                      }}
+                      className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+                      required
+                    />
+                  )}
                 </div>
 
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -447,25 +537,7 @@ export default function AuthModal({
                     {useMobileForSignin ? "Phone*" : "Email*"}
                   </label>
                   {useMobileForSignin ? (
-                    <input
-                      type="tel"
-                      value={mobileNumber}
-                      onChange={(e) => {
-                        let value = e.target.value;
-
-                        // Always enforce +880
-                        if (!value.startsWith("+880")) {
-                          value = "+880";
-                        }
-
-                        // Allow only numbers after +880
-                        const rest = value.slice(4).replace(/\D/g, "");
-                        setMobileNumber("+880" + rest);
-                      }}
-                      className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                      required
-                      placeholder="+880"
-                    />
+                    mobileNumberField()
                   ) : (
                     <input
                       type={"email"}
@@ -547,7 +619,7 @@ export default function AuthModal({
           {/* create account / sign up  */}
           {view === "create-account" && (
             <>
-              <h2 className="text-2xl font-light text-center mb-6 heading">
+              <h2 className="text-2xl font-light text-center heading mb-6 border-b border-gray-200">
                 Create An Account
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
@@ -589,14 +661,7 @@ export default function AuthModal({
                       <option value="BD">🇧🇩 BD</option>
                       <option value="US">🇺🇸 US</option>
                     </select> */}
-                    <input
-                      type="tel"
-                      placeholder="+ 880"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                      className="flex-1 border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                      required
-                    />
+                    {mobileNumberField()}
                     {/* <span className="text-gray-400 cursor-help flex items-center">
                       ⓘ
                     </span> */}
@@ -669,8 +734,8 @@ export default function AuthModal({
                 </div>
               </form>
               {/* already account  */}
-              <div className="mt-8 pt-8 border-t">
-                <h3 className="text-xl font-light text-center mb-4">
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h3 className="text-xl font-light text-center mb-4 heading">
                   Already Have an Account?
                 </h3>
                 <button
@@ -686,7 +751,7 @@ export default function AuthModal({
           {/* otp verification */}
           {view === "otp-verification" && (
             <>
-              <h2 className="text-2xl font-light text-center mb-6">
+              <h2 className="text-2xl font-light text-center mb-6 pb-3 border-b border-gray-200">
                 OTP Verification
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
@@ -710,6 +775,72 @@ export default function AuthModal({
                   className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50 mb-4"
                 >
                   {loading ? "VERIFYING..." : "VERIFY OTP"}
+                </button>
+              </form>
+            </>
+          )}
+
+          {view === "change-password" && (
+            <>
+              <h2 className="text-2xl font-light text-center mb-6">
+                Change Password
+              </h2>
+              <form onSubmit={handleChangePassword}>
+                {/* Old password */}
+                <div className="mb-4">
+                  <label className="block text-sm mb-2">Old Password*</label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+                    required
+                  />
+                </div>
+
+                {/* New password */}
+                <div className="mb-4">
+                  <label className="block text-sm mb-2">New Password*</label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+                    required
+                  />
+                </div>
+
+                {/* Confirm password */}
+                <div className="mb-4">
+                  <label className="block text-sm mb-2">
+                    Confirm Password*
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
+                    required
+                  />
+                </div>
+
+                {/* Show password toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-sm blue-link hover:underline mt-2 cursor-pointer mb-4"
+                >
+                  👁 {showPassword ? "Hide" : "Show"} Passwords
+                </button>
+
+                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50 mb-4"
+                >
+                  {loading ? "CHANGING..." : "CHANGE PASSWORD"}
                 </button>
               </form>
             </>
