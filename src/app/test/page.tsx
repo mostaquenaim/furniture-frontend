@@ -12,7 +12,6 @@ const test = () => {
       <Header></Header>
       <BannerManager initialBanners={[]} token={""}></BannerManager>
       {/* <p className="blue-link flex gap-2">
-        <User></User> Sign in / Sign up
       </p> */}
       <Footer></Footer>
     </div>

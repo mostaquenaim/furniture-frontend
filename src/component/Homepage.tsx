@@ -258,7 +258,7 @@ export default function Homepage() {
             <div className="overflow-y-auto h-full pb-20">
               {/* Sign In */}
               <div className="px-6 py-4 border-b flex items-center gap-3">
-                <User className="w-6 h-6 text-teal-600" />
+                <User className="w-6 h-6 blue-link" />
                 <span className="blue-link font-medium">
                   Sign In / Sign Up
                 </span>

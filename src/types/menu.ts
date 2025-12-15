@@ -24,4 +24,7 @@ export interface MobileMenuDrawerProps {
   mobileMenuContent: MobileMenuContent;
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
+  isModalOpen: boolean;
+  setIsModalOpen: (isModalOpen: boolean) => void;
+  token: string;
 }

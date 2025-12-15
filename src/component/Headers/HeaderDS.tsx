@@ -19,8 +19,8 @@ import type {
   MobileMenuDrawerProps,
 } from "@/types/menu";
 import AuthModal from "../Auth/AuthModal";
+import { useAuth } from "@/context/AuthContext";
 
-// --- MOBILE MENU DATA ---
 // Structure: Category Name -> Array of Menu Items
 const mobileMenuContent: MobileMenuContent = {
   "Décor & Pillows": [
@@ -167,6 +167,10 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   mobileMenuContent,
   isMenuOpen, // <-- Use this state to control the entire drawer's entry/exit
   setIsMenuOpen,
+  isModalOpen,
+  setIsModalOpen,
+  token,
+  // handleAuthModal
 }) => {
   const [mobileActiveCategory, setMobileActiveCategory] = useState<
     string | null
@@ -175,7 +179,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   const [collapsibleStates, setCollapsibleStates] = useState<
     Record<string, boolean>
   >({});
-  const isLoggedIn = false;
+  // const isLoggedIn = false;
 
   const activeCategoryData = mobileActiveCategory
     ? mobileMenuContent[mobileActiveCategory]
@@ -202,7 +206,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
         }`}
       >
         {/* Panel 1: Main Menu List (Takes up 1/2 of 200% width = 100% viewport width) */}
-        <div className="w-1/2 h-full flex-shrink-0 p-6 overflow-y-auto">
+        <div className="w-1/2 h-full shrink-0 p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-xl font-serif font-bold">Menu</h2>
             {/* The 'X' button closes the entire drawer */}
@@ -212,19 +216,19 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           </div>
 
           <div className="space-y-1">
-            <a
-              href="#"
-              className="block py-3 text-sm border-b border-gray-100 text-gray-900 font-semibold flex items-center gap-2"
+            <span
+              onClick={() => setIsModalOpen(true)}
+              className="py-3 text-sm border-b border-gray-100 text-gray-900 font-semibold flex items-center gap-2 blue-link"
             >
               <User size={20} />
-              {isLoggedIn ? "Account" : "Sign In / Sign Up"}
-            </a>
+              {token ? "Account" : "Sign In / Sign Up"}
+            </span>
 
             {navItems.map((item) => (
               <a
                 key={item}
                 href={hasDrilldown(item) ? "#" : `/shop/${item.toLowerCase()}`}
-                className={`block py-3 text-gray-700 hover:text-amber-700 border-b border-gray-100 text-lg font-medium flex justify-between items-center`}
+                className={`py-3 text-gray-700 hover:text-amber-700 border-b border-gray-100 text-lg font-medium flex justify-between items-center`}
                 onClick={(e) => {
                   if (hasDrilldown(item)) {
                     e.preventDefault();
@@ -346,6 +350,8 @@ const Header = () => {
     "Outdoor",
     "Sale",
   ];
+
+  const { token } = useAuth();
   const megaMenuContent = activeNavItem
     ? megaMenuData[activeNavItem as keyof typeof megaMenuData]
     : null;
@@ -418,7 +424,7 @@ const Header = () => {
               <a
                 key={item}
                 href="#"
-                className={`font-heading heading text-xs
+                className={` heading text-xs
                   text-gray-700 transition-colors font-medium relative border-b-2 pb-4
                   ${
                     activeNavItem === item
@@ -442,12 +448,16 @@ const Header = () => {
             mobileMenuContent={mobileMenuContent}
             isMenuOpen={isMenuOpen} // <--- Passed the state
             setIsMenuOpen={setIsMenuOpen}
+            isModalOpen={isModalOpen}
+            setIsModalOpen={setIsModalOpen}
+            token={token}
+            // handleAuthModal={handleAuthModal}
           />
         </div>
       </div>
       {
         // isModalOpen && (
-          <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         // )
       }
     </header>

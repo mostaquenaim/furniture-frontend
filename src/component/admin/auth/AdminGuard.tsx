@@ -14,7 +14,7 @@ export default function AdminGuard({
 
   useEffect(() => {
     if (!user) {
-      router.replace('/login');
+      router.replace('/admin/login');
       return;
     }
 

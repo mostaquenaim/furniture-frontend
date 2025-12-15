@@ -7,11 +7,11 @@ const axiosSecure = axios.create({
 });
 
 const useAxiosSecure = () => {
-  const accessToken = useAuth();
+  const { token } = useAuth();
 
   axiosSecure.interceptors.request.use((config) => {
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   });

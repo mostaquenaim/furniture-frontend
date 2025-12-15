@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { Eye, X } from "lucide-react";
+import useAxiosPublic from "@/hooks/useAxiosPublic";
 
 type ModalView =
   | "signin"
@@ -41,9 +42,8 @@ export default function AuthModal({
 
   const [useMobileForSignin, setUseMobileForSignin] = useState<boolean>(false);
   const [showTooltip, setShowTooltip] = useState(false);
-  // const [isShowPass, setIsShowPass] = useState(false)
 
-  // if (!isOpen) return null;
+  const axiosPublic = useAxiosPublic();
 
   const validatePassword = (password: string) => {
     const minLength = /.{8,}/;
@@ -76,57 +76,48 @@ export default function AuthModal({
     setError("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
+      await axiosPublic.post(
+        "/auth/signin",
+        { email },
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-          credentials: "include",
+          withCredentials: true,
         }
       );
 
-      if (!res.ok) throw new Error("Failed to sign in");
-
       setView("enter-password");
-    } catch (err) {
-      setError("Failed to sign in. Please try again.");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || "Failed to sign in. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
+      const res = await axiosPublic.post(
+        "/auth/signin",
+        { email, password, keepSignedIn },
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, keepSignedIn }),
-          credentials: "include",
+          withCredentials: true, // credentials: "include"
         }
       );
 
-      if (!res.ok) throw new Error("Invalid password");
-
-      const data = await res.json();
+      const data = res.data;
 
       if (data.otpSentTo) {
         setVerificationTarget(data.otpSentTo);
         handleView("otp-verification");
       } else {
-        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("token", data.token);
         onClose();
         window.location.reload();
       }
-      // localStorage.setItem("token", data.access_token);
-      // onClose();
-      // window.location.reload();
     } catch (err) {
       setError("Invalid password. Please try again.");
     } finally {
@@ -147,36 +138,35 @@ export default function AuthModal({
     setLoading(true);
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+      const res = await axiosPublic.post(
+        "/auth/register",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email || "",
-            phone: `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
-            password,
-            name: customerName,
-            keepSignedIn,
-          }),
-          credentials: "include",
+          email: email || "",
+          phone: `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
+          password,
+          name: customerName,
+          keepSignedIn,
+        },
+        {
+          withCredentials: true,
         }
       );
 
-      if (!res.ok) throw new Error("Failed to create account");
-
-      const data = await res.json();
+      const data = res.data;
 
       if (data.otpSentTo) {
         setVerificationTarget(data.otpSentTo);
         setView("otp-verification");
       } else {
-        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("token", data.token);
         onClose();
         window.location.reload();
       }
-    } catch (err) {
-      setError("Failed to create account. Please try again.");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to create account. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -188,32 +178,28 @@ export default function AuthModal({
     setError("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/verify-otp`,
+      const res = await axiosPublic.post(
+        "/auth/verify-otp",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code: otp,
-            keepSignedIn,
-            emailOrPhone:
-              verificationTarget === "email"
-                ? email
-                : `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
-            type: verificationTarget,
-          }),
-          credentials: "include",
+          code: otp,
+          keepSignedIn,
+          emailOrPhone:
+            verificationTarget === "email"
+              ? email
+              : `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
+          type: verificationTarget,
+        },
+        {
+          withCredentials: true,
         }
       );
 
-      if (!res.ok) throw new Error("Invalid OTP");
-
-      const data = await res.json();
-      localStorage.setItem("token", data.access_token);
+      const data = res.data;
+      localStorage.setItem("token", data.token);
       onClose();
       window.location.reload();
-    } catch (err) {
-      setError("Invalid OTP. Please try again.");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Invalid OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -226,27 +212,20 @@ export default function AuthModal({
     setError("");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(
-            useMobileForSignin
-              ? { emailOrPhone: mobileNumber, type: "phone" }
-              : { emailOrPhone: email, type: "email" }
-          ),
-        }
+      await axiosPublic.post(
+        "/auth/reset-password",
+        useMobileForSignin
+          ? { emailOrPhone: mobileNumber, type: "phone" }
+          : { emailOrPhone: email, type: "email" }
       );
 
-      console.log(res,'dfdff');
-
-      if (!res.ok) throw new Error("Failed to send reset email");
-
-      alert("Password reset instructions sent to your email!");
+      alert("Password reset instructions sent!");
       setView("signin");
-    } catch (err) {
-      setError("Failed to send reset email. Please try again.");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to send reset email. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -415,7 +394,7 @@ export default function AuthModal({
                 </button>
               </p>
 
-              <form onSubmit={handlePasswordSubmit}>
+              <form onSubmit={handleSignIn}>
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
                 <button
@@ -462,7 +441,7 @@ export default function AuthModal({
                 orders, and check out faster!
               </p>
 
-              <form onSubmit={handlePasswordSubmit}>
+              <form onSubmit={handleSignIn}>
                 <div className="mb-4">
                   <label className="block text-sm mb-2">
                     {useMobileForSignin ? "Phone*" : "Email*"}
@@ -602,14 +581,14 @@ export default function AuthModal({
                 <div className="mb-4">
                   <label className="block text-sm mb-2">Mobile Number*</label>
                   <div className="flex gap-2">
-                    <select
+                    {/* <select
                       value={countryCode}
                       onChange={(e) => setCountryCode(e.target.value)}
                       className="border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
                     >
                       <option value="BD">🇧🇩 BD</option>
                       <option value="US">🇺🇸 US</option>
-                    </select>
+                    </select> */}
                     <input
                       type="tel"
                       placeholder="+ 880"
@@ -618,9 +597,9 @@ export default function AuthModal({
                       className="flex-1 border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
                       required
                     />
-                    <span className="text-gray-400 cursor-help flex items-center">
+                    {/* <span className="text-gray-400 cursor-help flex items-center">
                       ⓘ
-                    </span>
+                    </span> */}
                   </div>
                 </div>
                 {/* set password  */}
