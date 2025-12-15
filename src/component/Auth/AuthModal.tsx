@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Eye, X } from "lucide-react";
 import useAxiosPublic from "@/hooks/useAxiosPublic";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 type ModalView =
   | "signin"
@@ -51,6 +53,7 @@ export default function AuthModal({
 
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
+  const { setUser, setToken } = useAuth();
 
   const validatePassword = (password: string) => {
     const minLength = /.{8,}/;
@@ -72,7 +75,20 @@ export default function AuthModal({
     return errorMessages.length > 0 ? errorMessages.join(", ") : null; // valid
   };
 
+  const validatePhoneNumber = (mobileNumber: string) => {
+    // +8801XXXXXXXXX (13 chars total)
+    const bdPhoneRegex = /^\+8801[3-9]\d{8}$/;
+
+    if (!bdPhoneRegex.test(mobileNumber)) {
+      return "Enter a valid Bangladeshi mobile number (e.g. +8801712345678)";
+    }
+
+    return null; // valid
+  };
+
   const handleMobileSignIn = () => {
+    useMobileForSignin ? setMobileNumber("") : setEmail("");
+
     setUseMobileForSignin(!useMobileForSignin);
     // window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
@@ -114,30 +130,6 @@ export default function AuthModal({
     }
   };
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      await axiosPublic.post(
-        "/auth/signin",
-        { email },
-        {
-          withCredentials: true,
-        }
-      );
-
-      setView("enter-password");
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Failed to sign in. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -158,10 +150,13 @@ export default function AuthModal({
 
       if (data.otpSentTo) {
         setVerificationTarget(data.otpSentTo);
+        toast.success(
+          `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`
+        );
         handleView("otp-verification");
       } else {
         localStorage.setItem("token", data.token);
-        setView("signin");
+        handleView("signin");
         onClose();
         window.location.reload();
       }
@@ -175,38 +170,54 @@ export default function AuthModal({
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     const passwordError = validatePassword(password);
     if (passwordError) {
       setError(passwordError);
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
+    const phoneError = validatePhoneNumber(mobileNumber);
+    if (phoneError) {
+      setError(phoneError);
+      setLoading(false);
+      return;
+    }
 
     try {
-      const res = await axiosPublic.post(
-        "/auth/register",
-        {
-          email: email || "",
-          phone: mobileNumber,
-          password,
-          name: customerName,
-          keepSignedIn,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      interface payloadType {
+        phone: string | null;
+        email?: string | null;
+        password: string;
+        name: string;
+        keepSignedIn: boolean;
+      }
+      const payload: payloadType = {
+        phone: mobileNumber,
+        password,
+        name: customerName,
+        keepSignedIn,
+      };
+
+      if (email.trim()) {
+        payload.email = email.trim();
+      }
+
+      const res = await axiosPublic.post("/auth/register", payload, {
+        withCredentials: true,
+      });
 
       const data = res.data;
 
       if (data.otpSentTo) {
         setVerificationTarget(data.otpSentTo);
-        setView("otp-verification");
+        toast.success(`OTP sent to your ${mobileNumber ? "phone" : "email"}`);
+        handleView("otp-verification");
       } else {
         localStorage.setItem("token", data.token);
-        setView("signin");
+        handleView("signin");
         onClose();
         window.location.reload();
       }
@@ -233,9 +244,7 @@ export default function AuthModal({
           code: otp,
           keepSignedIn,
           emailOrPhone:
-            verificationTarget === "email"
-              ? email
-              : `+${countryCode === "BD" ? "880" : "1"}${mobileNumber}`,
+            verificationTarget === "email" ? email : `${mobileNumber}`,
           type: verificationTarget,
         },
         {
@@ -247,7 +256,11 @@ export default function AuthModal({
       // console.log(data,'otpdone');
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      setView("signin");
+      setToken(data.token);
+      setUser(data.user);
+
+      toast.success(`Welcome to Sakigai`);
+      handleView("signin");
       onClose();
       router.push("/dashboard");
     } catch (err: any) {
@@ -272,6 +285,10 @@ export default function AuthModal({
       );
 
       // console.log(otpSent,'otpSent');
+      toast.success(
+        `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`
+      );
+
       handleView("otp-verification");
       // alert("Password reset instructions sent!");
       // setView("signin");
@@ -290,8 +307,7 @@ export default function AuthModal({
     setCustomerName("");
     setOtp("");
     setError("");
-    // setEmail("");
-    // setMobileNumber("");
+    // useMobileForSignin ? setEmail("") : setMobileNumber("");
     setView(option);
   };
 
@@ -301,17 +317,14 @@ export default function AuthModal({
         type="tel"
         value={mobileNumber}
         onChange={(e) => {
-          let value = e.target.value;
+          let value = e.target.value.replace(/[^\d+]/g, "");
 
-          // Always enforce +880
           if (!value.startsWith("+880")) {
             value = "+880";
           }
 
-          console.log(value, "valueeeee");
+          if (value.length > 14) return; // prevent overflow
 
-          // Allow only numbers after +880
-          // const rest = value.slice(4).replace(/\D/g, "");
           setMobileNumber(value);
         }}
         className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
@@ -399,7 +412,7 @@ export default function AuthModal({
       >
         <button
           onClick={() => {
-            setView("signin");
+            handleView("signin");
             onClose();
           }}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -646,7 +659,6 @@ export default function AuthModal({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                    // required
                   />
                 </div>
                 {/* mobile number  */}
@@ -667,25 +679,6 @@ export default function AuthModal({
                     </span> */}
                   </div>
                 </div>
-                {/* set password  */}
-                {/* <div className="mb-4">
-                  <label className="block text-sm mb-2">Password*</label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                    required
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-sm text-blue-600 hover:underline mt-2 cursor-pointer"
-                  >
-                    👁 {showPassword ? "Hide" : "Show"} Password
-                  </button>
-                </div> */}
                 {passWordField()}
                 {/* keep me signed in  */}
                 <div className="flex items-center mb-4">

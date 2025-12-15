@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 type User = {
@@ -15,6 +15,8 @@ type AuthContextType = {
   login: (data: { token: string; user: User }) => void;
   logout: () => void;
   loading: boolean;
+  setUser: Dispatch<SetStateAction<User | null>>;
+  setToken: Dispatch<SetStateAction<string | null>>
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -53,7 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading, setUser, setToken }}>
       {children}
     </AuthContext.Provider>
   );
