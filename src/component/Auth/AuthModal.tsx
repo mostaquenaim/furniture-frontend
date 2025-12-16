@@ -136,13 +136,27 @@ export default function AuthModal({
     setError("");
 
     try {
-      const res = await axiosPublic.post(
-        "/auth/signin",
-        { email, password, keepSignedIn },
-        {
-          withCredentials: true, // credentials: "include"
-        }
-      );
+      interface Payload {
+        password: string;
+        keepSignedIn: boolean;
+        phone?: string | null;
+        email?: string | null;
+      }
+
+      const payload: Payload = {
+        password,
+        keepSignedIn,
+      };
+
+      if (useMobileForSignin) {
+        payload.phone = mobileNumber;
+      } else {
+        payload.email = email;
+      }
+
+      const res = await axiosPublic.post("/auth/signin", payload, {
+        withCredentials: true,
+      });
 
       console.log(res, "resubhsdfnpp");
 
@@ -748,7 +762,9 @@ export default function AuthModal({
                 OTP Verification
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Enter the OTP sent to your {verificationTarget}.
+                Enter the OTP sent to your <span className="font-semibold italic">
+                  {verificationTarget}
+                </span>
               </p>
               <form onSubmit={handleOtpSubmit}>
                 <div className="mb-4">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
 import { useState } from "react";
@@ -21,9 +22,9 @@ import type {
 } from "@/types/menu";
 import AuthModal from "../Auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
-import useAxiosPublic from "@/hooks/useAxiosPublic";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
+import { useRouter } from "next/navigation";
 
 // Structure: Category Name -> Array of Menu Items
 const mobileMenuContent: MobileMenuContent = {
@@ -176,6 +177,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   token,
   logoutIcon,
   loading,
+  handleAuthModal,
   // handleAuthModal
 }) => {
   const [mobileActiveCategory, setMobileActiveCategory] = useState<
@@ -228,7 +230,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               ) : (
                 <>
                   <span
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={handleAuthModal}
                     className="inline lg:hidden text-sm blue-link cursor-pointer"
                   >
                     {" "}
@@ -371,28 +373,31 @@ const Header = () => {
     "Sale",
   ];
 
-  const { token, logout, loading } = useAuth();
+  const { token, logout, loading, setLoading } = useAuth();
   // console.log(token,'tokennn');
   const megaMenuContent = activeNavItem
     ? megaMenuData[activeNavItem as keyof typeof megaMenuData]
     : null;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const handleAuthModal = () => {
-    setIsModalOpen(true);
+    token ? router.push("/dashboard") : setIsModalOpen(true);
   };
 
   // const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
-  // const { logout } = useAuth()
 
   const handleLogout = async () => {
     try {
+      setLoading(true);
       const res = await axiosSecure.post("/auth/logout");
       logout();
+      setLoading(false);
     } catch (error) {
       console.error("Logout failed:", error);
+      setLoading(false);
     }
   };
 
@@ -476,8 +481,8 @@ const Header = () => {
               <a
                 key={item}
                 href="#"
-                className={` heading text-xs
-                  text-gray-700 transition-colors font-medium relative border-b-2 pb-4
+                className={`font-semibold heading text-xs
+                  text-gray-700 transition-colors relative border-b-2 pb-4
                   ${
                     activeNavItem === item
                       ? "text-amber-700 font-semibold  border-amber-700 "
@@ -505,7 +510,7 @@ const Header = () => {
             token={token}
             logoutIcon={logoutIcon}
             loading={loading}
-            // handleAuthModal={handleAuthModal}
+            handleAuthModal={handleAuthModal}
           />
         </div>
       </div>

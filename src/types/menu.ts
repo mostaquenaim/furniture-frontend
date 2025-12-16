@@ -30,5 +30,6 @@ export interface MobileMenuDrawerProps {
   setIsModalOpen: (isModalOpen: boolean) => void;
   token: string | null;
   logoutIcon: () => JSX.Element;
-  loading: boolean; 
+  loading: boolean;
+  handleAuthModal: () => void;
 }
