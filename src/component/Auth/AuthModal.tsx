@@ -136,16 +136,23 @@ export default function AuthModal({
     setError("");
 
     try {
+      // Get client IP
+      // const ipResponse = await fetch("/api/get-ip");
+      // const ipData = await ipResponse.json();
+      // const clientIp = ipData.ip;
+
       interface Payload {
         password: string;
         keepSignedIn: boolean;
         phone?: string | null;
         email?: string | null;
+        // clientIp?: string; // Add client IP to payload
       }
 
       const payload: Payload = {
         password,
         keepSignedIn,
+        // clientIp,
       };
 
       if (useMobileForSignin) {
@@ -158,7 +165,7 @@ export default function AuthModal({
         withCredentials: true,
       });
 
-      console.log(res, "resubhsdfnpp");
+      // console.log(res, "resubhsdfnpp");
 
       const data = res.data;
 
@@ -174,8 +181,20 @@ export default function AuthModal({
         onClose();
         window.location.reload();
       }
-    } catch (err) {
-      setError("Invalid password. Please try again.");
+    } catch (err: any) {
+      // Check if it's a brute force error
+      const errorMessage = err.response?.data?.message || err.message || "";
+
+      if (errorMessage.includes("Too many attempts")) {
+        // Extract time from error message
+        // const timeMatch = errorMessage.match(/after (\d+) minutes/);
+        // const minutes = timeMatch ? timeMatch[1] : BLOCK_TIME_MINUTES;
+        setError(
+          `Account temporarily locked. Please try again after a few minutes.`
+        );
+      } else {
+        setError("Invalid password. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -762,7 +781,8 @@ export default function AuthModal({
                 OTP Verification
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Enter the OTP sent to your <span className="font-semibold italic">
+                Enter the OTP sent to your{" "}
+                <span className="font-semibold italic">
                   {verificationTarget}
                 </span>
               </p>
