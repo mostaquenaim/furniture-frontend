@@ -3,11 +3,12 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, X } from "lucide-react";
+import { X } from "lucide-react";
 import useAxiosPublic from "@/hooks/useAxiosPublic";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
 
 type ModalView =
   | "signin"
@@ -123,8 +124,17 @@ export default function AuthModal({
 
       alert("Password changed successfully!");
       handleView("signin"); // redirect to signin after change
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to change password.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(
+          (err.response?.data as { message?: string })?.message ||
+            "Failed to change password."
+        );
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to change password.");
+      }
     } finally {
       setLoading(false);
     }
@@ -181,16 +191,21 @@ export default function AuthModal({
         onClose();
         window.location.reload();
       }
-    } catch (err: any) {
-      // Check if it's a brute force error
-      const errorMessage = err.response?.data?.message || err.message || "";
+    } catch (err: unknown) {
+      let errorMessage = "";
+
+      if (axios.isAxiosError(err)) {
+        errorMessage =
+          (err.response?.data as { message?: string })?.message ||
+          err.message ||
+          "";
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
 
       if (errorMessage.includes("Too many attempts")) {
-        // Extract time from error message
-        // const timeMatch = errorMessage.match(/after (\d+) minutes/);
-        // const minutes = timeMatch ? timeMatch[1] : BLOCK_TIME_MINUTES;
         setError(
-          `Account temporarily locked. Please try again after a few minutes.`
+          "Account temporarily locked. Please try again after a few minutes."
         );
       } else {
         setError("Invalid password. Please try again.");
@@ -254,11 +269,17 @@ export default function AuthModal({
         onClose();
         window.location.reload();
       }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to create account. Please try again."
-      );
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(
+          (err.response?.data as { message?: string })?.message ||
+            "Failed to create account."
+        );
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to create account.");
+      }
     } finally {
       setLoading(false);
     }
@@ -296,8 +317,17 @@ export default function AuthModal({
       handleView("signin");
       onClose();
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid OTP. Please try again.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(
+          (err.response?.data as { message?: string })?.message ||
+            "Failed to create account."
+        );
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to create account.");
+      }
     } finally {
       setLoading(false);
     }
@@ -325,11 +355,17 @@ export default function AuthModal({
       handleView("otp-verification");
       // alert("Password reset instructions sent!");
       // setView("signin");
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to send reset email. Please try again."
-      );
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(
+          (err.response?.data as { message?: string })?.message ||
+            "Failed to send reset email. Please try again."
+        );
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to send reset email. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -650,7 +686,7 @@ export default function AuthModal({
                   Sign Up
                 </h3>
                 <p className="text-sm text-gray-600 text-center mb-4">
-                  Welcome! It's quick and easy to set up an account
+                  Welcome! It&apos;s quick and easy to set up an account
                 </p>
                 <button
                   onClick={() => handleView("create-account")}
@@ -669,7 +705,7 @@ export default function AuthModal({
                 Create An Account
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Welcome to Sakigai! It's quick and easy to set up an account.
+                Welcome to Sakigai! It&apos;s quick and easy to set up an account.
               </p>
 
               <form onSubmit={handleSignUp}>
