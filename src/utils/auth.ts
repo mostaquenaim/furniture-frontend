@@ -22,6 +22,7 @@ export const getUserRole = (): string | null => {
 
 export const hasRequiredRole = (requiredRoles: string[]): boolean => {
   const userRole = getUserRole();
+  console.log(userRole,'userRole');
   if (!userRole) return false;
   return requiredRoles.includes(userRole);
 };
@@ -39,9 +40,9 @@ export const getToken = (): string | null => {
   return localStorage.getItem("token");
 };
 
-export const setAuthData = (token: string, user: any): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("token", token);
-  // localStorage.setItem('userRole', role);
-  localStorage.setItem("user", JSON.stringify(user));
-};
+// export const setAuthData = (token: string, user: any): void => {
+//   if (typeof window === "undefined") return;
+//   localStorage.setItem("token", token);
+//   // localStorage.setItem('userRole', role);
+//   localStorage.setItem("user", JSON.stringify(user));
+// };

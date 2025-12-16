@@ -9,7 +9,7 @@ export default function NotFound() {
       <div className="text-center space-y-8">
         <div className="space-y-4">
           <div className="text-9xl font-bold text-gray-200">404</div>
-          <h1 className="text-4xl font-bold text-gray-900">Page Not Found</h1>
+          <h1 className="text-4xl font-bold text-gray-900 heading">Page Not Found</h1>
           <p className="text-gray-600 max-w-lg">
             Sorry, we couldn&apos;t find the page you&apos;re looking for. It
             might have been moved or doesn&apos;t exist.
