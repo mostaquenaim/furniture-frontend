@@ -10,11 +10,13 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
   redirectTo?: string;
+  pathname?:string;
 }
 
 export default function ProtectedRoute({
   children,
   allowedRoles = [],
+  pathname,
   redirectTo = '/unauthorized'
 }: ProtectedRouteProps) {
   const router = useRouter();
