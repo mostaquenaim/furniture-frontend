@@ -3,7 +3,7 @@ import React from "react";
 
 const Dashboard = () => {
   return (
-    <ProtectedRoute route="">
+    // <ProtectedRoute route="">
       <div>
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Saepe dolorum unde temporibus facilis provident! Ipsum obcaecati delectus iste earum. Obcaecati sapiente iusto ipsum quidem nesciunt iste facere eaque odit ex!
         Libero dolores enim vero officiis, delectus dolore eligendi ipsum eum laboriosam deserunt. Fugiat natus quis enim officia sed explicabo distinctio? Quia accusamus porro nam quis temporibus iusto necessitatibus earum aspernatur?
@@ -1006,7 +1006,7 @@ const Dashboard = () => {
         Natus repellendus eum dolorem autem suscipit in quas nostrum magni delectus amet doloremque pariatur, maxime numquam magnam debitis? At, tempora non? Rem doloribus facere consectetur. Impedit, quia omnis. Officia, minima!
         Non saepe eveniet accusantium quia minus, at minima debitis consequuntur possimus voluptatibus maxime tempora earum impedit, dicta magni veniam sint porro nisi excepturi velit! Nostrum, qui molestiae. Quasi, a molestias.
       </div>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );
 };
 

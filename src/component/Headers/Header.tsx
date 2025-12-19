@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Search,
   Menu,
@@ -25,6 +25,7 @@ import { useAuth } from "@/context/AuthContext";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
 import { useRouter } from "next/navigation";
+import sampleData from "@/data/sampleData";
 
 // Structure: Category Name -> Array of Menu Items
 const mobileMenuContent: MobileMenuContent = {
@@ -359,32 +360,47 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
 };
 
 // --- MAIN HEADER COMPONENT ---
-const HeaderDS = () => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
-  const navItems = [
-    "New!",
-    "Gifts",
-    "Holiday",
-    "Furniture",
-    "Décor & Pillows",
-    "Lighting",
-    "Rugs",
-    "Art & Mirrors",
-    "Kitchen & Dining",
-    "Candles",
-    "Bedding",
-    "Bath",
-    "Outdoor",
-    "Sale",
-  ];
+  // 1. Generate dynamic Navigation Items (Series names)
+  const navItems = useMemo(() => sampleData.series.map((s) => s.name), []);
 
   const { token, logout, loading, setLoading } = useAuth();
   // console.log(token,'tokennn');
-  const megaMenuContent = activeNavItem
-    ? megaMenuData[activeNavItem as keyof typeof megaMenuData]
-    : null;
+  //   Generate dynamic Mobile Content
+  const mobileMenuContent = useMemo(() => {
+    const content: MobileMenuContent = {};
+    sampleData.series.forEach((series) => {
+      content[series.name] = series.categories.map((cat) => ({
+        type: "collapsible",
+        label: cat.slug
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" "),
+        links: cat.subCategories.map((sub) => sub.name),
+        expanded: false,
+      }));
+    });
+    return content;
+  }, []);
+
+  //   Generate dynamic Mega Menu Content (Desktop)
+  const megaMenuContent = useMemo(() => {
+    const activeSeries = sampleData.series.find(
+      (s) => s.name === activeNavItem
+    );
+    if (!activeSeries) return null;
+
+    return activeSeries.categories.map((cat) => ({
+      title: cat.slug
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+      links: cat.subCategories.map((sub) => sub.name),
+    }));
+  }, [activeNavItem]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -536,4 +552,4 @@ const HeaderDS = () => {
   );
 };
 
-export default HeaderDS;
+export default Header;

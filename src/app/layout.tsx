@@ -3,9 +3,10 @@ import "./globals.css";
 import { Providers } from "./providers";
 import localFont from "next/font/local";
 import { Bodoni_Moda, Cinzel, Poppins } from "next/font/google";
-import Header from "@/component/Headers/HeaderDS";
+import HeaderDS from "@/component/Headers/HeaderDS";
 import Footer from "@/component/Footer/Footer";
 import { Toaster } from "react-hot-toast";
+import Header from "@/component/Headers/Header";
 
 const avenir = localFont({
   src: "../../public/fonts/avenir/AvenirNext-Regular.woff",
@@ -39,6 +40,7 @@ export default function RootLayout({
     <html lang="en" className={`${bodoni.variable} ${cinzel.variable} `}>
       <Providers>
         <body>
+          {/* <HeaderDS></HeaderDS> */}
           <Header></Header>
           {children}
           <Footer></Footer>

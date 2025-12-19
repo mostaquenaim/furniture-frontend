@@ -15,7 +15,7 @@ import {
   ChevronRight,
   Home,
 } from "lucide-react";
-import Header from "./Headers/HeaderDS";
+import HeaderDS from "./Headers/HeaderDS";
 
 export default function Homepage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -126,7 +126,7 @@ export default function Homepage() {
 
   return (
     <div>
-      <Header></Header>
+      {/* <Header></Header> */}
       <div className="min-h-screen bg-white">
         {/* Top Banner */}
       
