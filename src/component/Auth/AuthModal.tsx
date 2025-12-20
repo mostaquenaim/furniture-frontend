@@ -187,9 +187,16 @@ export default function AuthModal({
         handleView("otp-verification");
       } else {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setToken(data.token);
+        setUser(data.user);
+
+        toast.success(`Welcome to Sakigai`);
         handleView("signin");
         onClose();
-        window.location.reload();
+        data.user.role === "CUSTOMER"
+          ? router.push("/")
+          : router.push("/admin/dashboard");
       }
     } catch (err: unknown) {
       let errorMessage = "";
@@ -316,7 +323,7 @@ export default function AuthModal({
       toast.success(`Welcome to Sakigai`);
       handleView("signin");
       onClose();
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
@@ -705,7 +712,8 @@ export default function AuthModal({
                 Create An Account
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Welcome to Sakigai! It&apos;s quick and easy to set up an account.
+                Welcome to Sakigai! It&apos;s quick and easy to set up an
+                account.
               </p>
 
               <form onSubmit={handleSignUp}>

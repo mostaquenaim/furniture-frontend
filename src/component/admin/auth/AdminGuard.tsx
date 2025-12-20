@@ -18,12 +18,12 @@ export default function AdminGuard({
       return;
     }
 
-    if (user.role !== 'ADMIN') {
+    if (user.role !== 'ORDERMANAGER' && user.role !== 'SUPERADMIN' && user.role !== 'PRODUCTMANAGER' && user.role !== 'SUPPORT') {
       router.replace('/');
     }
   }, [user, router, loading]);
 
-  if (!user || user.role !== 'ADMIN') return null;
+  if (!user || user.role !== 'ORDERMANAGER' && user.role !== 'SUPERADMIN' && user.role !== 'PRODUCTMANAGER' && user.role !== 'SUPPORT') return null;
 
   return <>{children}</>;
 }

@@ -1,12 +1,11 @@
-import AuthModal from '@/component/Auth/AuthModal';
-import React from 'react';
+import LoginPageComp from "@/component/Auth/LoginPageComp";
 
-const Login = () => {
-    return (
-        <div>
-            {/* <AuthModal isOpen={true}></AuthModal> */}
-        </div>
-    );
+const LoginPage = () => {
+  return (
+    <div className="">
+      <LoginPageComp></LoginPageComp>
+    </div>
+  );
 };
 
-export default Login;
+export default LoginPage;

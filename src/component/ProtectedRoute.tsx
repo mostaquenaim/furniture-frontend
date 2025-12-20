@@ -33,7 +33,6 @@ export default function ProtectedRoute({
   useEffect(() => {
     const getPathName = async () => {
       try {
-        setIsLoading(true)
         const res = await axiosSecure.get(
           `/permission/roles-against-url?path=${encodeURIComponent(pathname)}`
         );
@@ -42,9 +41,9 @@ export default function ProtectedRoute({
       } catch (err) {
         console.error(err);
       }
-      finally{
-        setIsLoading(false)
-      }
+      // finally{
+      //   setIsLoading(false)
+      // }
     };
 
     if (pathname) getPathName();
@@ -70,12 +69,12 @@ export default function ProtectedRoute({
 
       // Check if user has required role
       if (!hasRequiredRole(allAllowedRoles)) {
-        console.log("reject");
+        // console.log("reject");
         router.push(redirectTo);
         return;
       }
 
-      console.log("yee");
+      // console.log("yee");
       setIsAuthorized(true);
       setIsLoading(false);
     };

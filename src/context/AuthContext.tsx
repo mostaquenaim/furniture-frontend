@@ -15,7 +15,7 @@ import { getCustomerInfo } from "@/utils/guestCustomer";
 
 type User = {
   id: string;
-  role: "USER" | "ADMIN";
+  role: "CUSTOMER" | "SUPPORT" | "ORDERMANAGER" | "PRODUCTMANAGER" | "SUPERADMIN";
 };
 
 type AuthContextType = {

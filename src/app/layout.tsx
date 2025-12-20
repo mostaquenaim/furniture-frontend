@@ -7,6 +7,7 @@ import HeaderDS from "@/component/Headers/HeaderDS";
 import Footer from "@/component/Footer/Footer";
 import { Toaster } from "react-hot-toast";
 import Header from "@/component/Headers/Header";
+import RoleBasedHeader from "@/component/Headers/RoleBasedHeader";
 
 const avenir = localFont({
   src: "../../public/fonts/avenir/AvenirNext-Regular.woff",
@@ -41,7 +42,7 @@ export default function RootLayout({
       <Providers>
         <body>
           {/* <HeaderDS></HeaderDS> */}
-          <Header></Header>
+          <RoleBasedHeader></RoleBasedHeader>
           {children}
           <Footer></Footer>
           <Toaster position="top-right" toastOptions={{ duration: 3000 }} />

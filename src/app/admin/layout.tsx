@@ -5,6 +5,7 @@ import { Bodoni_Moda, Cinzel, Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { Providers } from "../providers";
 import ProtectedRoute from "@/component/ProtectedRoute";
+import AdminGuard from "@/component/admin/auth/AdminGuard";
 
 export const bodoni = Bodoni_Moda({
   subsets: ["latin"],

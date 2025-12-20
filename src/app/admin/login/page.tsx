@@ -1,10 +1,9 @@
-import AdminLoginComp from "@/component/admin/auth/AdminLoginComp";
-import React from "react";
+import LoginPageComp from "@/component/Auth/LoginPageComp";
 
 const AdminLogin = () => {
   return (
-    <div>
-        <AdminLoginComp></AdminLoginComp>
+    <div className="">
+      <LoginPageComp></LoginPageComp>
     </div>
   );
 };
