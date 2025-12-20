@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import LoadingDots from "@/component/Loading/LoadingDS";
+import { getCustomerInfo } from "@/utils/guestCustomer";
 
 type User = {
   id: string;
@@ -37,7 +38,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const router = useRouter();
 
+  const customerInfo = async () => {
+    return await getCustomerInfo();
+  };
+
   useEffect(() => {
+    const userInfo = customerInfo();
+    // console.log(userInfo, "userInfo");
+    
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 

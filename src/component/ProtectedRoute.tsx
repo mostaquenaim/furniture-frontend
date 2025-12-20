@@ -29,6 +29,7 @@ export default function ProtectedRoute({
   const axiosSecure = useAxiosSecure();
   const [allAllowedRoles, setAllAllowedRoles] = useState([...allowedRoles]);
 
+  // permission check 
   useEffect(() => {
     const getPathName = async () => {
       try {

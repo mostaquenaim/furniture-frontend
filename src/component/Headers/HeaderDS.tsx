@@ -410,9 +410,9 @@ const HeaderDS = () => {
 
   const logoutIcon = () => {
     return (
-      <span className="flex gap-2 item-center justify-center text-red-500">
+      <span onClick={handleLogout} className="flex gap-2 item-center justify-center text-red-500 cursor-pointer">
         Logout
-        <LogOut onClick={handleLogout} className=" cursor-pointer" size={20} />
+        <LogOut className="" size={20} />
       </span>
     );
   };

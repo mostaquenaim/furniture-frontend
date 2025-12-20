@@ -1,11 +1,12 @@
-import React from 'react';
+import AdminLoginComp from "@/component/admin/auth/AdminLoginComp";
+import React from "react";
 
-const page = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+const AdminLogin = () => {
+  return (
+    <div>
+        <AdminLoginComp></AdminLoginComp>
+    </div>
+  );
 };
 
-export default page;
+export default AdminLogin;
