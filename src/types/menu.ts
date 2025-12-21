@@ -22,7 +22,7 @@ export interface MegaMenuProps {
 
 // Props for MobileMenuDrawer
 export interface MobileMenuDrawerProps {
-  navItems: string[];
+  navItems: Series[];
   mobileMenuContent: MobileMenuContent;
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
@@ -32,4 +32,41 @@ export interface MobileMenuDrawerProps {
   logoutIcon: () => JSX.Element;
   loading: boolean;
   handleAuthModal: () => void;
+}
+
+export interface SubCategory {
+  id: number;
+  name: string;
+  slug: string;
+  image: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  categoryId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Category {
+  id: number;
+  slug: string;
+  image: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  seriesId: number;
+  createdAt: string;
+  updatedAt: string;
+  subCategories: SubCategory[];
+}
+
+export interface Series {
+  id: number;
+  name: string;
+  slug: string;
+  image: string | null;
+  notice: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  categories: Category[];
 }

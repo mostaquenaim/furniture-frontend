@@ -6,7 +6,7 @@ const DashboardPageComp = () => {
 
   const handleTestRoleAuth = async () => {
     try {
-      const response = await axiosSecure.get("/category/all");
+      const response = await axiosSecure.get("/admin/all");
       console.log("Data fetched successfully:", response.data);
     } catch (error) {
       console.error("Error fetching data:", error);

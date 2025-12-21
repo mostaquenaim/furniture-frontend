@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/preserve-manual-memoization */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
@@ -26,6 +27,8 @@ import useAxiosSecure from "@/hooks/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
 import { useRouter } from "next/navigation";
 import sampleData from "@/data/sampleData";
+import useFetchNavitems from "@/hooks/useFetchNavitems";
+import Link from "next/link";
 
 // Structure: Category Name -> Array of Menu Items
 const mobileMenuContent: MobileMenuContent = {
@@ -255,24 +258,28 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             </div>
 
             {navItems.map((item) => (
-              <a
-                key={item}
-                href={hasDrilldown(item) ? "#" : `/shop/${item.toLowerCase()}`}
+              <Link
+                key={item.id}
+                href={
+                  hasDrilldown(item.name)
+                    ? "#"
+                    : `/shop/${item.name.toLowerCase()}`
+                }
                 className={`py-3 text-gray-700 hover:text-amber-700 border-b border-gray-100 text-lg font-medium flex justify-between items-center`}
                 onClick={(e) => {
-                  if (hasDrilldown(item)) {
+                  if (hasDrilldown(item.name)) {
                     e.preventDefault();
-                    setMobileActiveCategory(item);
+                    setMobileActiveCategory(item.name);
                   } else {
                     setIsMenuOpen(false);
                   }
                 }}
               >
-                {item}
-                {hasDrilldown(item) && (
+                {item.name}
+                {hasDrilldown(item.name) && (
                   <ChevronRight size={20} className="text-gray-400" />
                 )}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -364,15 +371,18 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
-  // 1. Generate dynamic Navigation Items (Series names)
-  const navItems = useMemo(() => sampleData.series.map((s) => s.name), []);
+  // Generate dynamic Navigation Items (Series names)
+
+  const { navItems, isLoading } = useFetchNavitems();
+  // const navItems = useMemo(() => navbarDetails.map((s) => s?.name), [navbarDetails]);
 
   const { token, logout, loading, setLoading } = useAuth();
   // console.log(token,'tokennn');
+
   //   Generate dynamic Mobile Content
   const mobileMenuContent = useMemo(() => {
     const content: MobileMenuContent = {};
-    sampleData.series.forEach((series) => {
+    navItems.forEach((series) => {
       content[series.name] = series.categories.map((cat) => ({
         type: "collapsible",
         label: cat.slug
@@ -384,13 +394,11 @@ const Header = () => {
       }));
     });
     return content;
-  }, []);
+  }, [navItems]);
 
   //   Generate dynamic Mega Menu Content (Desktop)
   const megaMenuContent = useMemo(() => {
-    const activeSeries = sampleData.series.find(
-      (s) => s.name === activeNavItem
-    );
+    const activeSeries = navItems.find((s) => s.name === activeNavItem);
     if (!activeSeries) return null;
 
     return activeSeries.categories.map((cat) => ({
@@ -400,7 +408,7 @@ const Header = () => {
         .join(" "),
       links: cat.subCategories.map((sub) => sub.name),
     }));
-  }, [activeNavItem]);
+  }, [activeNavItem, navItems]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -426,7 +434,10 @@ const Header = () => {
 
   const logoutIcon = () => {
     return (
-      <span onClick={handleLogout} className="flex gap-2 item-center justify-center text-red-500 cursor-pointer">
+      <span
+        onClick={handleLogout}
+        className="flex gap-2 item-center justify-center text-red-500 cursor-pointer"
+      >
         Logout
         <LogOut className="" size={20} />
       </span>
@@ -506,23 +517,25 @@ const Header = () => {
 
           {/* Desktop Full Navigation (unchanged for brevity) */}
           <nav className="hidden lg:flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
-            {navItems.map((item) => (
-              <a
-                key={item}
-                href="#"
-                className={`font-semibold heading text-xs
+            {!isLoading &&
+              navItems.length > 0 &&
+              navItems.map((item) => (
+                <Link
+                  key={item.id}
+                  href="#"
+                  className={`font-semibold heading text-xs
                   text-gray-700 transition-colors relative border-b-2 pb-4
                   ${
-                    activeNavItem === item
+                    activeNavItem === item.name
                       ? "text-amber-700 font-semibold  border-amber-700 "
                       : "hover:text-amber-700 border-transparent"
                   }
                 `}
-                onMouseEnter={() => setActiveNavItem(item)}
-              >
-                {item}
-              </a>
-            ))}
+                  onMouseEnter={() => setActiveNavItem(item.name)}
+                >
+                  {item.name}
+                </Link>
+              ))}
           </nav>
 
           {/* Mega Menu Dropdown */}
