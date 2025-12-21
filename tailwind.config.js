@@ -5,7 +5,7 @@ module.exports = {
       fontFamily: {
         avenir: ["var(--font-poppins)", "sans-serif"],
         times: ['"Times New Roman"', "serif"],
-        body: ["var(--font-bodoni)"],
+        // body: ["var(--font-bodoni)"],
         heading: ["var(--font-cinzel)"],
       },
     },

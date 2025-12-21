@@ -1,10 +1,10 @@
 "use client";
 import { usePathname } from "next/navigation";
-import Header from "./Header";
 import AdminDrawerTS from "./AdminDrawerTS";
 import { useAuth } from "@/context/AuthContext";
+import Footer from "../Footer/Footer";
 
-const RoleBasedHeader = () => {
+const RoleBasedFooter = () => {
   const { user } = useAuth();
   const pathname = usePathname();
 
@@ -13,12 +13,12 @@ const RoleBasedHeader = () => {
   return (
     <>
       {user && user.role != "CUSTOMER" && isAdmin ? (
-        <AdminDrawerTS />
+        null
       ) : (
-        <Header />
+        <Footer />
       )}
     </>
   );
 };
 
-export default RoleBasedHeader;
+export default RoleBasedFooter;
