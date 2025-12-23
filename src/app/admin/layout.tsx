@@ -53,7 +53,6 @@ export default function RootLayout({
           {/* <AdminDrawerProvider> */}
             <body>
               {children}
-              <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
             </body>
           {/* </AdminDrawerProvider> */}
         </ProtectedRoute>

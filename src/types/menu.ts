@@ -12,12 +12,14 @@ export type MobileMenuContent = Record<string, MobileMenuItem[]>;
 // MegaMenu Column Type
 export interface MegaMenuColumn {
   title: string;
+  // image?: string;
   links: string[];
 }
 
 // Props for MegaMenu
 export interface MegaMenuProps {
   data: MegaMenuColumn[];
+  image: string | null | undefined;
 }
 
 // Props for MobileMenuDrawer
@@ -49,6 +51,7 @@ export interface SubCategory {
 export interface Category {
   id: number;
   slug: string;
+  name: string;
   image: string | null;
   sortOrder: number;
   isActive: boolean;

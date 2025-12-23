@@ -36,7 +36,7 @@ const useFetchNavitems = () => {
               })),
           }));
 
-          console.log(sortedData);
+          // console.log(sortedData);
         setNavItems(sortedData);
       } catch (err) {
         if (axios.isAxiosError(err)) {

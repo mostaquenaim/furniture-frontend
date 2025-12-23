@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   Menu,
@@ -29,102 +29,24 @@ import { useRouter } from "next/navigation";
 import sampleData from "@/data/sampleData";
 import useFetchNavitems from "@/hooks/useFetchNavitems";
 import Link from "next/link";
-
-// Structure: Category Name -> Array of Menu Items
-const mobileMenuContent: MobileMenuContent = {
-  "Décor & Pillows": [
-    { type: "link", label: "Candle Holders & Lanterns" },
-    { type: "link", label: "Books" },
-    { type: "link", label: "Botanicals" },
-    { type: "link", label: "Paint" },
-    {
-      type: "collapsible",
-      label: "Now Trending",
-      links: ["Vases", "Picture Frames", "Home Scents"],
-      expanded: false,
-    },
-    {
-      type: "collapsible",
-      label: "Seasonal Décor",
-      links: [
-        "Pillows & Throws",
-        "Holiday Tree Trimming Shop",
-        "Holiday Mantel Décor",
-      ],
-      expanded: true,
-    },
-    { type: "link", label: "Pillows & Throws" },
-    { type: "banner", label: "GIFTS FOR THE DAYDREAMER" },
-  ],
-};
-
-// --- DESKTOP MEGA MENU DATA (for reference/completeness, unchanged) ---
-const megaMenuData = {
-  Candles: [
-    {
-      title: "Shop by Category",
-      links: [
-        "Shop All Sale",
-        "Limited-Time Sale",
-        "New Sale Styles",
-        "Furniture",
-        "Art & Mirrors",
-        "Kitchen & Dining",
-      ],
-    },
-    {
-      title: "Shop by Price",
-      links: ["Under $25", "Under $50", "Under $75", "Under $100"],
-    },
-  ],
-  "Art & Mirrors": [
-    {
-      title: "Shop by Category",
-      links: [
-        "Shop All Art & Mirrors",
-        "Top-Rated Art & Mirrors",
-        "New Art & Mirrors",
-        "Back-In-Stock Bestsellers",
-        "Wall Art",
-      ],
-    },
-    {
-      title: "Shop Art by Subject",
-      links: [
-        "Flowers, Plants, & Landscapes",
-        "Animals & Portraits",
-        "Food & Drink",
-        "Text, Objects, & Abstract Art",
-        "Architecture & Travel",
-        "Black & White Photography",
-      ],
-    },
-    {
-      title: "Shop Mirrors by Shape",
-      links: [
-        "Rectangular Wall Mirrors",
-        "Round Wall Mirrors",
-        "Floor Mirrors",
-        "Mental Mirrors",
-        "Petite Mirrors",
-      ],
-    },
-    {
-      title: "Now Trending",
-      links: [
-        "Gallery Wall Decor",
-        "Peel & Stick Wallpaper",
-        "Dopamine Decor",
-        "Sakigai x YoungArts",
-        "GREAT FOR GIFTING: Wall Charms",
-      ],
-    },
-  ],
-};
+import Image from "next/image";
 
 // Desktop MegaMenu Component (Unchanged)
-const MegaMenu: React.FC<MegaMenuProps> = ({ data }) => {
+const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
+  const [seriesImage, setSeriesImage] = useState<string | null | undefined>(
+    null
+  );
+
+  useEffect(() => {
+    setSeriesImage(image);
+  }, [image]);
+
   if (!data) return null;
+
+  // console.log(data, "ddaaa", image);
+  //
+  const FALLBACK_IMAGE =
+    "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZnVybml0dXJlfGVufDB8fDB8fHww";
 
   return (
     <div className="absolute left-0 right-0 top-full z-40 bg-white border-t border-gray-200 shadow-lg pt-8 pb-12">
@@ -159,11 +81,31 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ data }) => {
         ))}
         {/* Placeholder for the side banner/image */}
         <div className="w-1/4">
-          <div className="bg-teal-700 p-6 flex flex-col items-center justify-center h-full text-white text-center rounded">
+          {seriesImage && (
+            <Image
+              src={`${seriesImage}`}
+              alt="Mega Menu Banner"
+              width={300}
+              height={400}
+              className="rounded-lg object-cover"
+              onError={() => setSeriesImage(FALLBACK_IMAGE)}
+            />
+          )}
+          {/* <div className="bg-teal-700 p-6 flex flex-col items-center justify-center h-full text-white text-center rounded">
             <p className="text-xl font-bold mb-2">EXTRA</p>
             <p className="text-4xl font-extrabold mb-4">50% OFF</p>
             <p className="text-xl font-bold">SALE</p>
-          </div>
+          </div> */}
+
+          {/* {data.image && (
+              <Image
+                src={`${data.image}`}
+                alt="Mega Menu Banner"
+                width={300}
+                height={400}
+                className="rounded-lg object-cover"
+              />
+            )} */}
         </div>
       </div>
     </div>
@@ -205,13 +147,13 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
     mobileMenuContent.hasOwnProperty(item);
 
   return (
-    // FIX 1: Apply slide-in/out transition for the entire drawer based on isMenuOpen
+    // Apply slide-in/out transition for the entire drawer based on isMenuOpen
     <div
       className={`lg:hidden fixed inset-0 z-50 bg-white shadow-2xl transition-transform duration-300 ease-in-out transform ${
         isMenuOpen ? "translate-x-0" : "translate-x-full" // Slides from right to left
       }`}
     >
-      {/* FIX 2: Create a single sliding container for the two-panel drilldown effect */}
+      {/* Create a single sliding container for the two-panel drilldown effect */}
       <div
         className={`h-full flex w-[200%] transition-transform duration-300 ease-in-out ${
           mobileActiveCategory ? "-translate-x-1/2" : "translate-x-0" // Handles the slide between main and sub-menu
@@ -260,23 +202,19 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             {navItems.map((item) => (
               <Link
                 key={item.id}
-                href={
-                  hasDrilldown(item.name)
-                    ? "#"
-                    : `/shop/${item.name.toLowerCase()}`
-                }
+                href={hasDrilldown(item.slug) ? "#" : `/shop/${item.slug}`}
                 className={`py-3 text-gray-700 hover:text-amber-700 border-b border-gray-100 text-lg font-medium flex justify-between items-center`}
                 onClick={(e) => {
-                  if (hasDrilldown(item.name)) {
+                  if (hasDrilldown(item.slug)) {
                     e.preventDefault();
-                    setMobileActiveCategory(item.name);
+                    setMobileActiveCategory(item.slug);
                   } else {
                     setIsMenuOpen(false);
                   }
                 }}
               >
                 {item.name}
-                {hasDrilldown(item.name) && (
+                {hasDrilldown(item.slug) && (
                   <ChevronRight size={20} className="text-gray-400" />
                 )}
               </Link>
@@ -374,6 +312,7 @@ const Header = () => {
   // Generate dynamic Navigation Items (Series names)
 
   const { navItems, isLoading } = useFetchNavitems();
+  // console.log(navItems);
   // const navItems = useMemo(() => navbarDetails.map((s) => s?.name), [navbarDetails]);
 
   const { token, logout, loading, setLoading } = useAuth();
@@ -383,12 +322,13 @@ const Header = () => {
   const mobileMenuContent = useMemo(() => {
     const content: MobileMenuContent = {};
     navItems.forEach((series) => {
-      content[series.name] = series.categories.map((cat) => ({
+      content[series.slug] = series.categories.map((cat) => ({
         type: "collapsible",
-        label: cat.slug
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" "),
+        label: cat.name,
+        // cat.slug
+        //   .split("-")
+        //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        //   .join(" ")
         links: cat.subCategories.map((sub) => sub.name),
         expanded: false,
       }));
@@ -398,15 +338,17 @@ const Header = () => {
 
   //   Generate dynamic Mega Menu Content (Desktop)
   const megaMenuContent = useMemo(() => {
-    const activeSeries = navItems.find((s) => s.name === activeNavItem);
+    const activeSeries = navItems.find((s) => s.slug === activeNavItem);
     if (!activeSeries) return null;
 
     return activeSeries.categories.map((cat) => ({
-      title: cat.slug
-        .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" "),
+      title: cat?.name,
+      // cat.slug
+      //   .split("-")
+      //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      //   .join(" ")
       links: cat.subCategories.map((sub) => sub.name),
+      // image: cat?.image,
     }));
   }, [activeNavItem, navItems]);
 
@@ -526,12 +468,12 @@ const Header = () => {
                   className={`font-semibold heading text-xs
                   text-gray-700 transition-colors relative border-b-2 pb-4
                   ${
-                    activeNavItem === item.name
+                    activeNavItem === item.slug
                       ? "text-amber-700 font-semibold  border-amber-700 "
                       : "hover:text-amber-700 border-transparent"
                   }
                 `}
-                  onMouseEnter={() => setActiveNavItem(item.name)}
+                  onMouseEnter={() => setActiveNavItem(item.slug)}
                 >
                   {item.name}
                 </Link>
@@ -539,7 +481,12 @@ const Header = () => {
           </nav>
 
           {/* Mega Menu Dropdown */}
-          {megaMenuContent && <MegaMenu data={megaMenuContent} />}
+          {megaMenuContent && (
+            <MegaMenu
+              data={megaMenuContent}
+              image={navItems.find((s) => s.slug === activeNavItem)?.image}
+            />
+          )}
 
           {/* --- MOBILE NAVIGATION DRAWER (UPDATED PROPS) --- */}
           <MobileMenuDrawer

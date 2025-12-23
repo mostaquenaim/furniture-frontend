@@ -1,18 +1,18 @@
 /* eslint-disable @next/next/no-img-element */
-// app/admin/series/add/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FiUpload, FiX, FiEye, FiSave } from "react-icons/fi";
+import { FiUpload, FiX, FiSave } from "react-icons/fi";
 import { toast, Toaster } from "react-hot-toast";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import axios from "axios";
+import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 
 interface SeriesFormData {
   name: string;
   slug: string;
-  image: string;
+  image: File | null;
   notice: string;
   isActive: boolean;
   sortOrder: number;
@@ -26,7 +26,7 @@ const AddSeries = () => {
   const [formData, setFormData] = useState<SeriesFormData>({
     name: "",
     slug: "",
-    image: "",
+    image: null, // Initialized as null
     notice: "",
     isActive: true,
     sortOrder: 0,
@@ -42,7 +42,8 @@ const AddSeries = () => {
       .trim();
   };
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Name change
+  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     setFormData((prev) => ({
       ...prev,
@@ -51,82 +52,86 @@ const AddSeries = () => {
     }));
   };
 
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Slug change
+  const handleSlugChange = (e: ChangeEvent<HTMLInputElement>) => {
     const slug = generateSlug(e.target.value);
     setFormData((prev) => ({ ...prev, slug }));
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // handle image upload / change / update
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
 
-    // Check file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image size should be less than 2MB");
-      return;
-    }
+    // Update formData with the actual FILE object
+    setFormData((prev) => ({ ...prev, image: file }));
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setImagePreview(result);
-      setFormData((prev) => ({ ...prev, image: result }));
-    };
-    reader.readAsDataURL(file);
+    // Create local preview URL (Better than Base64 for performance)
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
 
+  // remove image
   const removeImage = () => {
     setImagePreview(null);
-    setFormData((prev) => ({ ...prev, image: "" }));
+    setFormData((prev) => ({ ...prev, image: null }));
   };
 
   const axiosSecure = useAxiosSecure();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // handle submit form
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Validate form
-      if (!formData.name.trim()) {
+      let imageUrl = "";
+
+      //  Upload to Cloudinary first if a file exists
+      if (formData.image) {
+        // Assuming handleUploadWithCloudinary is an async function that returns the URL string
+        imageUrl = await handleUploadWithCloudinary(formData.image);
+      }
+
+      //  Prepare the data for your API
+      const finalData = {
+        name: formData.name,
+        slug: formData.slug,
+        image: imageUrl, // Now this is the string URL from Cloudinary
+        notice: formData.notice,
+        isActive: formData.isActive,
+        sortOrder: formData.sortOrder,
+      };
+
+      //  Validation
+      if (!finalData.name.trim()) {
         toast.error("Series name is required");
         setIsLoading(false);
         return;
       }
 
-      if (!formData.slug.trim()) {
-        toast.error("Slug is required");
-        setIsLoading(false);
-        return;
-      }
-
-      // Submit form data
-      const response = await axiosSecure.post("/series", formData);
-
-      const result = response.data;
-      console.log(result);
-
+      //  Submit to your backend
+      const response = await axiosSecure.post("/series", finalData);
       toast.success("Series created successfully!");
 
-      // Redirect after success
       setTimeout(() => {
         router.push("/admin/series");
       }, 1500);
-    } catch (error: unknown) {
-      console.error("Error creating series:", error);
-
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.message || "Failed to create series");
-        toast.error(error.response?.data?.message || "Failed to create series");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(
+          (err.response?.data as { message?: string })?.message ||
+            "Failed to add series."
+        );
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
-        setError("Failed to create series");
+        setError("Failed to add series.");
       }
     } finally {
       setIsLoading(false);
@@ -137,7 +142,7 @@ const AddSeries = () => {
     setFormData({
       name: "",
       slug: "",
-      image: "",
+      image: null,
       notice: "",
       isActive: true,
       sortOrder: 0,
@@ -148,8 +153,6 @@ const AddSeries = () => {
 
   return (
     <div>
-      <Toaster position="top-right" />
-
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -171,6 +174,7 @@ const AddSeries = () => {
           </div>
         </div>
 
+        {/* form of adding series  */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
@@ -248,9 +252,10 @@ const AddSeries = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Series Thumbnail *
+                  Series Thumbnail
                 </label>
 
+                {/* image preview and upload */}
                 {imagePreview ? (
                   <div className="relative">
                     <div className="w-64 h-48 rounded-lg overflow-hidden border border-gray-300">
@@ -285,25 +290,6 @@ const AddSeries = () => {
                     </div>
                   </div>
                 )}
-
-                <div className="mt-3">
-                  <input
-                    type="text"
-                    value={formData.image}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        image: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    placeholder="Or enter image URL directly"
-                  />
-                  <p className="mt-1 text-sm text-gray-500">
-                    Upload an image or provide a direct URL to the series
-                    thumbnail
-                  </p>
-                </div>
               </div>
             </div>
 
@@ -378,16 +364,12 @@ const AddSeries = () => {
                 Preview
               </h3>
               <div className="bg-white rounded-lg border border-gray-300 overflow-hidden max-w-md">
-                {formData.image && (
+                {imagePreview && (
                   <div className="h-48 bg-gray-200 overflow-hidden">
                     <img
-                      src={formData.image}
+                      src={imagePreview}
                       alt="Series preview"
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/api/placeholder/400/300";
-                      }}
                     />
                   </div>
                 )}
