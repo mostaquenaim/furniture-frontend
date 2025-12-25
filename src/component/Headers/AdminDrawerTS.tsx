@@ -11,7 +11,11 @@ import {
 } from "react-icons/ai";
 import { FiPackage, FiLayers, FiUsers, FiSettings } from "react-icons/fi";
 import { TbCategory, TbCategory2 } from "react-icons/tb";
-import { MdInventory, MdOutlineDiscount } from "react-icons/md";
+import {
+  MdEditAttributes,
+  MdInventory,
+  MdOutlineDiscount,
+} from "react-icons/md";
 import { BsGraphUp, BsCashCoin } from "react-icons/bs";
 import {
   RiGalleryLine,
@@ -150,6 +154,16 @@ const AdminDrawerTS = () => {
         { href: "/admin/content/banners", label: "Banners & Sliders" },
         { href: "/admin/content/pages", label: "Pages" },
         { href: "/admin/content/blogs", label: "Blog Posts" },
+      ],
+    },
+    {
+      name: "Attributes",
+      icon: <MdEditAttributes className="text-xl" />,
+      tasks: [
+        { href: "/admin/attribute/add-color", label: "Add Color" },
+        { href: "/admin/attribute/add-variant", label: "Add Variant" },
+        { href: "/admin/attribute/add-size", label: "Add Size" },
+        { href: "/admin/attribute/manage", label: "Manage Attributes" },
       ],
     },
     {

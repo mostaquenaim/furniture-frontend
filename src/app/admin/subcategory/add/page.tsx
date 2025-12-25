@@ -98,7 +98,7 @@ const AddSubcategory = () => {
     };
 
     fetchCategories();
-  }, [formData.seriesId, axiosSecure]);
+  }, [formData.seriesId, axiosPublic]);
 
   // -------------------------
   // Handlers
@@ -251,7 +251,7 @@ const AddSubcategory = () => {
         {/* Name */}
         <div>
           <label className="block text-sm font-medium mb-2">
-            Subcategory Name
+            Subcategory Name *
           </label>
           <input
             type="text"

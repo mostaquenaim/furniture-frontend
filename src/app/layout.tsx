@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import localFont from "next/font/local";
-import { Bodoni_Moda, Cinzel, Poppins } from "next/font/google";
-import HeaderDS from "@/component/Headers/HeaderDS";
-import Footer from "@/component/Footer/Footer";
+import { Bodoni_Moda, Cinzel } from "next/font/google";
 import { Toaster } from "react-hot-toast";
-import Header from "@/component/Headers/Header";
 import RoleBasedHeader from "@/component/Headers/RoleBasedHeader";
 import RoleBasedFooter from "@/component/Headers/RoleBasedFooter";
 

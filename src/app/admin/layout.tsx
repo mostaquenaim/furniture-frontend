@@ -47,13 +47,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} admin lg:ml-0 md:ml-20 flex justify-center items-center bg-gray-200`}>
+    <html
+      lang="en"
+      className={`${inter.variable} admin lg:ml-0 md:ml-20 flex justify-center items-center bg-gray-200`}
+    >
       <Providers>
         <ProtectedRoute>
           {/* <AdminDrawerProvider> */}
-            <body>
-              {children}
-            </body>
+          <body className="flex justify-center items-center">{children}</body>
           {/* </AdminDrawerProvider> */}
         </ProtectedRoute>
       </Providers>
