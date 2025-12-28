@@ -217,6 +217,8 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
           const optimizedFile = await optimizeImage(file);
           const optimizedSize = optimizedFile.size;
 
+          // console.log(colorId);
+
           return {
             id: `${colorId}-${Date.now()}-${index}`,
             file: optimizedFile,

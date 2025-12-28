@@ -20,6 +20,7 @@ const useFetchVariants = () => {
     const fetchVariants = async () => {
       try {
         const res = await axiosSecure.get("/variant");
+        console.log("variant", res.data);
         setVariants(res.data);
       } catch {
         toast.error("Failed to load variants");

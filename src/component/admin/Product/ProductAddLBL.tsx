@@ -15,21 +15,31 @@ import useFetchVariants from "@/hooks/useFetchVariants";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchCategoriesBySeriesIds from "@/hooks/useFetchCategoriesBySeriesIds";
 import useFetchSubCategoriesByCategoryIds from "@/hooks/useFetchSubCategoriesByCategoryIds";
+import GotoArrows from "@/component/Arrow/GotoArrows";
+import useAxiosSecure from "@/hooks/useAxiosSecure";
+import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 
 interface ProductFormData {
-  name: string;
+  title: string;
   slug: string;
-  price: number;
-  stock: number;
+  sku?: string;
+  basePrice: number;
+  description?: string;
+  hasColorVariants: boolean;
+  showColor: boolean;
+  discountType?: "percentage" | "fixed";
   discount: number;
   discountStart: string;
   discountEnd: string;
+
   selectedSeriesIds: number[];
   selectedCategoryIds: number[];
   selectedSubCategoryIds: number[];
+
   selectedColors: number[];
   variantId: number | null;
   selectedSizes: number[];
+
   note: string;
   deliveryEstimate: string;
   productDetails: string;
@@ -37,6 +47,49 @@ interface ProductFormData {
   shippingReturn: string;
   isActive: boolean;
 }
+
+interface ColorVariantDetail {
+  colorId: number;
+  sizes: {
+    sizeId: number;
+    sku?: string;
+    price?: number;
+    stock: number;
+  }[];
+  customImages: ProductImageItem[];
+  useDefaultImages: boolean;
+}
+
+type UploadedImage =
+  | {
+      url: string;
+      serialNo: number;
+      colorId?: never;
+    }
+  | {
+      url: string;
+      colorId: number;
+      serialNo?: never;
+    };
+
+type ColorImageMap = Record<number, string[]>;
+
+type ProductColorCreateInput = {
+  colorId: number;
+  // sizes: {
+  //   create: {
+  //     size: { connect: { id: number } };
+  //     sku?: string;
+  //     price?: number;
+  //     stock: {
+  //       create: { quantity: number };
+  //     };
+  //   }[];
+  // };
+  useDefaultImages?: boolean;
+  images?: string[];
+  // };
+};
 
 const defaultShippingReturn = `Shipping:
 • Standard shipping: 5-7 business days
@@ -55,20 +108,28 @@ const ProductAddLBL = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Form state
+
   const [formData, setFormData] = useState<ProductFormData>({
-    name: "",
+    title: "",
     slug: "",
-    price: 0,
-    stock: 0,
+    sku: "",
+    basePrice: 0,
+    description: "",
+    hasColorVariants: true,
+    showColor: true,
+    discountType: "percentage",
     discount: 0,
     discountStart: new Date().toISOString().split("T")[0],
     discountEnd: new Date().toISOString().split("T")[0],
+
     selectedSeriesIds: [],
     selectedCategoryIds: [],
     selectedSubCategoryIds: [],
+
     selectedColors: [],
     variantId: null,
     selectedSizes: [],
+
     note: "",
     deliveryEstimate: "3-5 business days",
     productDetails: "",
@@ -86,25 +147,15 @@ const ProductAddLBL = () => {
     useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
 
   useEffect(() => {
-    console.log(formData.selectedSeriesIds, "formData.seriesids");
+    console.log(formData.selectedSeriesIds, "seriesids");
   }, [formData.selectedSeriesIds]);
-
-  // useEffect(() => {
-  //   // Cleanup: If a category's seriesId is no longer in the selected seriesIds, remove it
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     categoryIds: prev.categoryIds.filter((catId) =>
-  //       categoryList.some((validCat) => validCat.id === catId)
-  //     ),
-  //   }));
-  // }, [categoryList]);
 
   const { subCategoryList, isLoading: subCategoriesLoading } =
     useFetchSubCategoriesByCategoryIds(formData.selectedCategoryIds);
-
   // Get sizes for selected variant
   const selectedVariant = variants.find((v) => v.id === formData.variantId);
   const availableSizes = selectedVariant?.sizes || [];
+  const [colorVariants, setColorVariants] = useState<ColorVariantDetail[]>([]);
 
   // Images state
   const [defaultImages, setDefaultImages] = useState<ProductImageItem[]>([]);
@@ -125,11 +176,11 @@ const ProductAddLBL = () => {
       .trim();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
+    const title = e.target.value;
     setFormData((prev) => ({
       ...prev,
-      name,
-      slug: generateSlug(name),
+      title,
+      slug: generateSlug(title),
     }));
   };
 
@@ -239,15 +290,20 @@ const ProductAddLBL = () => {
   const getSubCategoryName = (id: number) =>
     subCategoryList.find((sc) => sc.id === id)?.name || "";
 
+  const axiosSecure = useAxiosSecure();
+
+  ///////////////////////////////////////////////
+  // FORM SUBMIT //
+  ///////////////////////////////////////////////
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name.trim()) {
-      toast.error("Product name is required");
+    if (!formData.title.trim()) {
+      toast.error("Product title is required");
       return;
     }
 
-    if (formData.price <= 0) {
+    if (formData.basePrice <= 0) {
       toast.error("Price must be greater than 0");
       return;
     }
@@ -257,15 +313,13 @@ const ProductAddLBL = () => {
       return;
     }
 
-    if (formData.selectedColors.length === 0) {
-      toast.error("Please select at least one color");
-      return;
-    }
-
     // Check if at least default images or color-specific images exist
     const hasImages =
       defaultImages.length > 0 ||
       Object.values(colorImages).some((imgs) => imgs.length > 0);
+
+    console.log(defaultImages);
+
     if (!hasImages) {
       toast.error("Please upload at least one product image");
       return;
@@ -273,34 +327,164 @@ const ProductAddLBL = () => {
 
     setIsLoading(true);
 
+    console.log(
+      formData.selectedColors,
+      "formData.selectedColors",
+      colorImages
+    );
+
     try {
-      // Prepare images data - for each color, use either custom or default images
-      const productImages = formData.selectedColors.flatMap((colorId) => {
-        const useDefault = colorUseDefault[colorId] ?? true;
-        const images = useDefault ? defaultImages : colorImages[colorId] || [];
-        const color = colors.find((c) => c.id === colorId);
+      // Upload images first and get URLs
+      const uploadPromises = [
+        // Upload default images
+        ...defaultImages.map(async (img) => {
+          if (img.file) {
+            const url = await uploadImage(img.file);
+            return { url, serialNo: img.serialNo };
+          }
+          return null;
+        }),
+        // Upload color-specific images
+        ...formData.selectedColors.flatMap((colorId) =>
+          !colorUseDefault[colorId]
+            ? (colorImages[colorId] || []).map(async (img) => {
+                if (img.file) {
+                  const url = await uploadImage(img.file);
+                  return { url, colorId };
+                }
+                return null;
+              })
+            : []
+        ),
+      ];
 
-        return images.map((img, idx) => ({
-          image: img.file,
-          colorName: color?.name,
-          hexCode: color?.hexCode,
-          serialNo: idx + 1,
+      const uploadedImages = (await Promise.all(uploadPromises)).filter(
+        Boolean
+      ) as UploadedImage[];
+
+      // Separate default and color images
+      const defaultImageUrls = uploadedImages
+        .filter(
+          (img): img is Extract<UploadedImage, { serialNo: number }> =>
+            "serialNo" in img
+        )
+        .map((img) => ({
+          image: img.url,
+          serialNo: img.serialNo,
         }));
-      });
 
-      console.log("Form Data:", formData);
-      console.log("Product Images:", productImages);
+      const colorImageMap = uploadedImages
+        .filter(
+          (img): img is Extract<UploadedImage, { colorId: number }> =>
+            "colorId" in img
+        )
+        .reduce<ColorImageMap>((acc, img) => {
+          if (!acc[img.colorId]) acc[img.colorId] = [];
+          acc[img.colorId].push(img.url);
+          return acc;
+        }, {});
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      console.log(
+        // defaultImageUrls,
+        // "defaultImageUrls",
+        colorImageMap,
+        "colorImageMap",
+        uploadedImages,
+        "uploadedImages"
+        // uploadPromises,
+        // "uploadPromises"
+      );
+
+      console.log(formData.selectedColors, "formData.selectedColors");
+      // Prepare submit data
+      const submitData = {
+        title: formData.title,
+        slug: formData.slug,
+        sku: formData.sku || undefined,
+        basePrice: formData.basePrice,
+        description: formData.description || undefined,
+        hasColorVariants: formData.hasColorVariants,
+        showColor: formData.showColor,
+        discountType:
+          formData.discountType === "percentage"
+            ? "percentage"
+            : formData.discountType === "fixed"
+            ? "fixed"
+            : undefined,
+        discount: formData.discount,
+        discountStart: formData.discountStart
+          ? new Date(formData.discountStart)
+          : undefined,
+
+        discountEnd: formData.discountEnd
+          ? new Date(formData.discountEnd)
+          : undefined,
+
+        note: formData.note || undefined,
+        deliveryEstimate: formData.deliveryEstimate || undefined,
+        productDetails: formData.productDetails || undefined,
+        dimension: formData.dimension || undefined,
+        shippingReturn: formData.shippingReturn || undefined,
+        isActive: formData.isActive,
+
+        // Subcategories connection
+        subCategories: [...formData.selectedSubCategoryIds],
+
+        // Colors with nested sizes and images
+        colors:
+          // {
+          // create:
+          formData.selectedColors.map((colorId) => {
+            const colorData: ProductColorCreateInput = {
+              // color: { connect: { id:
+              colorId,
+              // } }
+            };
+
+            // colorData.images = !colorUseDefault[colorId]
+            //   ? [...colorImageMap[colorId]]
+            //   : [];
+
+            if (!colorUseDefault[colorId] && colorImageMap[colorId]) {
+              colorData.images = [...colorImageMap[colorId]];
+            } else if (colorUseDefault[colorId]) {
+              colorData.useDefaultImages = true;
+            }
+
+            return colorData;
+          }),
+        // },
+
+        // Default product images
+        images: [...defaultImageUrls],
+      };
+
+      console.log("Submit Data:", submitData);
+
+      // Make API call
+      const response = await axiosSecure.post("/products", submitData);
+      console.log(response.data);
 
       toast.success("Product created successfully!");
-      setTimeout(() => router.push("/"), 1000);
+      // setTimeout(() => router.push("/admin/products"), 1000);
     } catch (error) {
+      console.error("Error:", error);
       toast.error("Failed to create product");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Add this image upload function
+  const uploadImage = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await handleUploadWithCloudinary(file);
+
+    console.log(response, "image response");
+
+    return response;
   };
 
   return (
@@ -325,7 +509,7 @@ const ProductAddLBL = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
+                  value={formData.title}
                   onChange={handleNameChange}
                   placeholder="Enter product name"
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
@@ -359,11 +543,11 @@ const ProductAddLBL = () => {
                 </label>
                 <input
                   type="number"
-                  value={formData.price || ""}
+                  value={formData.basePrice || ""}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      price: parseFloat(e.target.value) || 0,
+                      basePrice: parseFloat(e.target.value) || 0,
                     }))
                   }
                   placeholder="0.00"
@@ -372,26 +556,6 @@ const ProductAddLBL = () => {
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stock
-                </label>
-                <input
-                  type="number"
-                  value={formData.stock || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      stock: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  placeholder="0"
-                  min="0"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -671,7 +835,7 @@ const ProductAddLBL = () => {
           </FormSection>
 
           {/* Variants & Sizes */}
-          <FormSection
+          {/* <FormSection
             title="Variant & Sizes"
             description="Select variant type and available sizes"
           >
@@ -732,7 +896,7 @@ const ProductAddLBL = () => {
                 </p>
               )}
             </div>
-          </FormSection>
+          </FormSection> */}
 
           {/* Additional Details */}
           <FormSection
@@ -882,6 +1046,7 @@ const ProductAddLBL = () => {
             </button>
           </div>
         </form>
+        <GotoArrows></GotoArrows>
       </div>
     </div>
   );

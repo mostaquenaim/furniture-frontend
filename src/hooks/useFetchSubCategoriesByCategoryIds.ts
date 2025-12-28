@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import useAxiosSecure from "./useAxiosSecure";
 import { toast } from "react-hot-toast";
 
@@ -8,34 +8,39 @@ interface SubCategory {
   categoryId: number;
 }
 
-const useFetchSubCategoriesByCategoryIds = (categoryIds: number[] | []) => {
-  console.log("object");
+const useFetchSubCategoriesByCategoryIds = (categoryIds: number[]) => {
   const axiosSecure = useAxiosSecure();
-  const [subCategoryList, setSubCategoryList] = useState<SubCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allSubCategories, setAllSubCategories] = useState<SubCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchSubCategories = async () => {
-      if (!categoryIds) {
-        setSubCategoryList([]);
-        setIsLoading(false);
-        return;
-      }
+    const fetchAllActive = async () => {
+      setIsLoading(true);
       try {
+        // Calling your existing logic: getAllActiveCategories(true)
         const res = await axiosSecure.get(`subcategories/with-relations`);
-        console.log(res.data);
-        setSubCategoryList(res.data);
-      } catch {
-        toast.error("Failed to load categories");
+        setAllSubCategories(res.data);
+      } catch (err) {
+        toast.error("Failed to load subcategory database");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchSubCategories();
-  }, [axiosSecure, categoryIds]);
+    fetchAllActive();
+  }, [axiosSecure]);
 
-  return { subCategoryList, isLoading };
+  // Use useMemo to filter the list whenever seriesIds change 
+  // without re-fetching from the server
+  const filteredCategories = useMemo(() => {
+    if (!categoryIds || categoryIds.length === 0) return [];
+    
+    return allSubCategories.filter((cat) => 
+      categoryIds.includes(cat.categoryId)
+    );
+  }, [allSubCategories, categoryIds]);
+
+  return { subCategoryList: filteredCategories, isLoading };
 };
 
 export default useFetchSubCategoriesByCategoryIds;
