@@ -8,6 +8,7 @@ import {
   AiOutlineDashboard,
   AiOutlineHome,
   AiOutlineShopping,
+  AiOutlineProduct,
 } from "react-icons/ai";
 import { FiPackage, FiLayers, FiUsers, FiSettings } from "react-icons/fi";
 import { TbCategory, TbCategory2 } from "react-icons/tb";
@@ -21,8 +22,10 @@ import {
   RiGalleryLine,
   RiArrowDropRightLine,
   RiArrowDropDownLine,
+  RiStockFill,
 } from "react-icons/ri";
 import { useAdminDrawer } from "@/context/AdminContext";
+import { ArrowBigDown, Download } from "lucide-react";
 
 interface NavSection {
   name: string;
@@ -74,6 +77,16 @@ const AdminDrawerTS = () => {
         { href: "/admin/product/add", label: "Add Product" },
         { href: "/admin/product/trash", label: "Trash Products" },
         { href: "/admin/product/reviews", label: "Product Reviews" },
+      ],
+    },
+    {
+      name: "Purchases",
+      icon: <ArrowBigDown className="text-xl" />,
+      tasks: [
+        { href: "/admin/purchases", label: "All Purchases" },
+        { href: "/admin/purchase/add", label: "Add Purchase" },
+        // { href: "/admin/product/trash", label: "Trash Products" },
+        // { href: "/admin/product/reviews", label: "Product Reviews" },
       ],
     },
     {

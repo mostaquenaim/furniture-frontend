@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
-import { Save, X, Plus } from "lucide-react";
+import { Save, X, Plus, Trash2, Edit } from "lucide-react";
 import { PageHeader } from "@/component/PageHeader/PageHeader";
 import { FormSection } from "./FormSection";
 import {
@@ -38,7 +38,6 @@ interface ProductFormData {
 
   selectedColors: number[];
   variantId: number | null;
-  selectedSizes: number[];
 
   note: string;
   deliveryEstimate: string;
@@ -48,14 +47,16 @@ interface ProductFormData {
   isActive: boolean;
 }
 
+interface SizeDetail {
+  sizeId: number;
+  sku?: string;
+  price?: number;
+  quantity: number;
+}
+
 interface ColorVariantDetail {
   colorId: number;
-  sizes: {
-    sizeId: number;
-    sku?: string;
-    price?: number;
-    stock: number;
-  }[];
+  sizes: SizeDetail[];
   customImages: ProductImageItem[];
   useDefaultImages: boolean;
 }
@@ -76,19 +77,14 @@ type ColorImageMap = Record<number, string[]>;
 
 type ProductColorCreateInput = {
   colorId: number;
-  // sizes: {
-  //   create: {
-  //     size: { connect: { id: number } };
-  //     sku?: string;
-  //     price?: number;
-  //     stock: {
-  //       create: { quantity: number };
-  //     };
-  //   }[];
-  // };
+  sizes?: {
+    sizeId: number;
+    sku?: string;
+    price?: number;
+    quantity: number;
+  }[];
   useDefaultImages?: boolean;
   images?: string[];
-  // };
 };
 
 const defaultShippingReturn = `Shipping:
@@ -102,13 +98,10 @@ Returns:
 • Free returns for store credit`;
 
 const ProductAddLBL = () => {
-  //   const navigate = useNavigate();
   const router = useRouter();
-
   const [isLoading, setIsLoading] = useState(false);
 
   // Form state
-
   const [formData, setFormData] = useState<ProductFormData>({
     title: "",
     slug: "",
@@ -128,7 +121,6 @@ const ProductAddLBL = () => {
 
     selectedColors: [],
     variantId: null,
-    selectedSizes: [],
 
     note: "",
     deliveryEstimate: "3-5 business days",
@@ -146,16 +138,17 @@ const ProductAddLBL = () => {
   const { categoryList, isLoading: categoriesLoading } =
     useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
 
-  useEffect(() => {
-    console.log(formData.selectedSeriesIds, "seriesids");
-  }, [formData.selectedSeriesIds]);
-
   const { subCategoryList, isLoading: subCategoriesLoading } =
     useFetchSubCategoriesByCategoryIds(formData.selectedCategoryIds);
+
   // Get sizes for selected variant
   const selectedVariant = variants.find((v) => v.id === formData.variantId);
   const availableSizes = selectedVariant?.sizes || [];
-  const [colorVariants, setColorVariants] = useState<ColorVariantDetail[]>([]);
+
+  // Sizes state
+  const [sizeSelections, setSizeSelections] = useState<{
+    [colorId: number]: SizeDetail[];
+  }>({});
 
   // Images state
   const [defaultImages, setDefaultImages] = useState<ProductImageItem[]>([]);
@@ -165,6 +158,30 @@ const ProductAddLBL = () => {
   const [colorUseDefault, setColorUseDefault] = useState<
     Record<number, boolean>
   >({});
+
+  // Initialize size selections when color is selected
+  useEffect(() => {
+    if (selectedVariant && formData.selectedColors.length > 0) {
+      const newSizeSelections = { ...sizeSelections };
+      let hasChanges = false;
+
+      formData.selectedColors.forEach((colorId) => {
+        if (!newSizeSelections[colorId]) {
+          newSizeSelections[colorId] = availableSizes.map((size) => ({
+            sizeId: size.id,
+            sku: "",
+            price: formData.basePrice || undefined,
+            quantity: 0,
+          }));
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        setSizeSelections(newSizeSelections);
+      }
+    }
+  }, [formData.selectedColors, selectedVariant, formData.basePrice]);
 
   // Slug generation
   const generateSlug = (value: string) =>
@@ -186,7 +203,6 @@ const ProductAddLBL = () => {
 
   // Multi-select handlers
   const handleSeriesToggle = (seriesId: number) => {
-    console.log(seriesId);
     setFormData((prev) => {
       const isSelected = prev.selectedSeriesIds.includes(seriesId);
       const newSeriesIds = isSelected
@@ -248,6 +264,14 @@ const ProductAddLBL = () => {
       const newColors = isSelected
         ? prev.selectedColors.filter((id) => id !== colorId)
         : [...prev.selectedColors, colorId];
+
+      // Clean up size selections when color is removed
+      if (isSelected) {
+        const newSizeSelections = { ...sizeSelections };
+        delete newSizeSelections[colorId];
+        setSizeSelections(newSizeSelections);
+      }
+
       return { ...prev, selectedColors: newColors };
     });
 
@@ -256,16 +280,6 @@ const ProductAddLBL = () => {
       setColorImages((prev) => ({ ...prev, [colorId]: [] }));
       setColorUseDefault((prev) => ({ ...prev, [colorId]: true }));
     }
-  };
-
-  const handleSizeToggle = (sizeId: number) => {
-    setFormData((prev) => {
-      const isSelected = prev.selectedSizes.includes(sizeId);
-      const newSizes = isSelected
-        ? prev.selectedSizes.filter((id) => id !== sizeId)
-        : [...prev.selectedSizes, sizeId];
-      return { ...prev, selectedSizes: newSizes };
-    });
   };
 
   const handleColorImagesChange = (
@@ -282,6 +296,30 @@ const ProductAddLBL = () => {
     setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
   };
 
+  // Size handlers
+  const handleSizeFieldChange = (
+    colorId: number,
+    sizeId: number,
+    field: keyof SizeDetail,
+    value: string | number
+  ) => {
+    setSizeSelections((prev) => {
+      const newSelections = { ...prev };
+      if (newSelections[colorId]) {
+        const sizeIndex = newSelections[colorId].findIndex(
+          (s) => s.sizeId === sizeId
+        );
+        if (sizeIndex !== -1) {
+          newSelections[colorId][sizeIndex] = {
+            ...newSelections[colorId][sizeIndex],
+            [field]: field === "quantity" ? Number(value) : value,
+          };
+        }
+      }
+      return newSelections;
+    });
+  };
+
   // Get category/subcategory info for display
   const getSeriesName = (id: number) =>
     seriesList.find((s) => s.id === id)?.name || "";
@@ -292,46 +330,83 @@ const ProductAddLBL = () => {
 
   const axiosSecure = useAxiosSecure();
 
+  // Image upload function
+  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    try {
+      const response = await handleUploadWithCloudinary(file);
+      return response;
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      throw new Error("Failed to upload image");
+    }
+  };
+
+  // Form validation
+  const validateForm = (): string | null => {
+    if (!formData.title.trim()) {
+      return "Product title is required";
+    }
+
+    if (formData.basePrice <= 0) {
+      return "Price must be greater than 0";
+    }
+
+    if (formData.selectedSubCategoryIds.length === 0) {
+      return "Please select at least one subcategory";
+    }
+
+    const hasImages =
+      defaultImages.length > 0 ||
+      Object.values(colorImages).some((imgs) => imgs.length > 0);
+
+    if (!hasImages) {
+      return "Please upload at least one product image";
+    }
+
+    // Validate that variant is selected if sizes are needed
+    if (formData.hasColorVariants && !formData.variantId) {
+      return "Please select a variant type";
+    }
+
+    // Validate that each color has at least one size with quantity > 0
+    if (formData.hasColorVariants) {
+      for (const colorId of formData.selectedColors) {
+        const colorSizes = sizeSelections[colorId] || [];
+        const hasValidSize = colorSizes.some((size) => size.quantity > 0);
+        if (!hasValidSize) {
+          const color = colors.find((c) => c.id === colorId);
+          return `Color "${color?.name}" must have at least one size with quantity > 0`;
+        }
+      }
+    }
+
+    // Validate discount dates
+    if (formData.discount > 0) {
+      const startDate = new Date(formData.discountStart);
+      const endDate = new Date(formData.discountEnd);
+
+      if (startDate > endDate) {
+        return "Discount end date must be after start date";
+      }
+    }
+
+    return null;
+  };
+
   ///////////////////////////////////////////////
   // FORM SUBMIT //
   ///////////////////////////////////////////////
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title.trim()) {
-      toast.error("Product title is required");
-      return;
-    }
-
-    if (formData.basePrice <= 0) {
-      toast.error("Price must be greater than 0");
-      return;
-    }
-
-    if (formData.selectedSubCategoryIds.length === 0) {
-      toast.error("Please select at least one subcategory");
-      return;
-    }
-
-    // Check if at least default images or color-specific images exist
-    const hasImages =
-      defaultImages.length > 0 ||
-      Object.values(colorImages).some((imgs) => imgs.length > 0);
-
-    console.log(defaultImages);
-
-    if (!hasImages) {
-      toast.error("Please upload at least one product image");
+    // Validate form
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
     setIsLoading(true);
-
-    console.log(
-      formData.selectedColors,
-      "formData.selectedColors",
-      colorImages
-    );
 
     try {
       // Upload images first and get URLs
@@ -339,7 +414,7 @@ const ProductAddLBL = () => {
         // Upload default images
         ...defaultImages.map(async (img) => {
           if (img.file) {
-            const url = await uploadImage(img.file);
+            const url = await uploadImageToCloudinary(img.file);
             return { url, serialNo: img.serialNo };
           }
           return null;
@@ -349,7 +424,7 @@ const ProductAddLBL = () => {
           !colorUseDefault[colorId]
             ? (colorImages[colorId] || []).map(async (img) => {
                 if (img.file) {
-                  const url = await uploadImage(img.file);
+                  const url = await uploadImageToCloudinary(img.file);
                   return { url, colorId };
                 }
                 return null;
@@ -384,18 +459,33 @@ const ProductAddLBL = () => {
           return acc;
         }, {});
 
-      console.log(
-        // defaultImageUrls,
-        // "defaultImageUrls",
-        colorImageMap,
-        "colorImageMap",
-        uploadedImages,
-        "uploadedImages"
-        // uploadPromises,
-        // "uploadPromises"
-      );
+      // Prepare color variants with sizes
+      const colorVariants: ProductColorCreateInput[] =
+        formData.selectedColors.map((colorId) => {
+          const colorData: ProductColorCreateInput = {
+            colorId,
+          };
 
-      console.log(formData.selectedColors, "formData.selectedColors");
+          // Add images
+          if (!colorUseDefault[colorId] && colorImageMap[colorId]) {
+            colorData.images = [...colorImageMap[colorId]];
+          } else if (colorUseDefault[colorId]) {
+            colorData.useDefaultImages = true;
+          }
+
+          // Add sizes
+          const colorSizes = sizeSelections[colorId] || [];
+          if (colorSizes.length > 0) {
+            // Filter out sizes with 0 quantity
+            const validSizes = colorSizes.filter((size) => size.quantity > 0);
+            if (validSizes.length > 0) {
+              colorData.sizes = validSizes;
+            }
+          }
+
+          return colorData;
+        });
+
       // Prepare submit data
       const submitData = {
         title: formData.title,
@@ -415,11 +505,9 @@ const ProductAddLBL = () => {
         discountStart: formData.discountStart
           ? new Date(formData.discountStart)
           : undefined,
-
         discountEnd: formData.discountEnd
           ? new Date(formData.discountEnd)
           : undefined,
-
         note: formData.note || undefined,
         deliveryEstimate: formData.deliveryEstimate || undefined,
         productDetails: formData.productDetails || undefined,
@@ -430,62 +518,39 @@ const ProductAddLBL = () => {
         // Subcategories connection
         subCategories: [...formData.selectedSubCategoryIds],
 
-        // Colors with nested sizes and images
-        colors:
-          // {
-          // create:
-          formData.selectedColors.map((colorId) => {
-            const colorData: ProductColorCreateInput = {
-              // color: { connect: { id:
-              colorId,
-              // } }
-            };
-
-            // colorData.images = !colorUseDefault[colorId]
-            //   ? [...colorImageMap[colorId]]
-            //   : [];
-
-            if (!colorUseDefault[colorId] && colorImageMap[colorId]) {
-              colorData.images = [...colorImageMap[colorId]];
-            } else if (colorUseDefault[colorId]) {
-              colorData.useDefaultImages = true;
-            }
-
-            return colorData;
-          }),
-        // },
+        // Colors with sizes
+        colors: colorVariants,
 
         // Default product images
         images: [...defaultImageUrls],
       };
 
-      console.log("Submit Data:", submitData);
+      console.log(colorVariants, "Submit Data:", submitData);
 
       // Make API call
       const response = await axiosSecure.post("/products", submitData);
       console.log(response.data);
 
       toast.success("Product created successfully!");
-      // setTimeout(() => router.push("/admin/products"), 1000);
-    } catch (error) {
+      // router.push("/admin/products");
+    } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Failed to create product");
+      toast.error(error.response?.data?.message || "Failed to create product");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Add this image upload function
-  const uploadImage = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
+  // Calculate discounted price for display
+  const discountedPrice = useMemo(() => {
+    if (formData.discount <= 0) return formData.basePrice;
 
-    const response = await handleUploadWithCloudinary(file);
-
-    console.log(response, "image response");
-
-    return response;
-  };
+    if (formData.discountType === "percentage") {
+      return formData.basePrice * (1 - formData.discount / 100);
+    } else {
+      return Math.max(0, formData.basePrice - formData.discount);
+    }
+  }, [formData.basePrice, formData.discount, formData.discountType]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -897,6 +962,155 @@ const ProductAddLBL = () => {
               )}
             </div>
           </FormSection> */}
+
+          {/* variant and sizes  */}
+          <FormSection
+            title="Variant & Sizes"
+            description="Select variant type and manage sizes for each color"
+          >
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Variant Type *
+                </label>
+                <select
+                  value={formData.variantId || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      variantId: e.target.value ? Number(e.target.value) : null,
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
+             focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={variantsLoading}
+                  required={formData.hasColorVariants}
+                >
+                  <option value="">-- Select Variant --</option>
+                  {variants.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formData.variantId && formData.selectedColors.length > 0 && (
+                <div className="space-y-6">
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Size Management per Color
+                  </h4>
+                  {formData.selectedColors.map((colorId) => {
+                    const color = colors.find((c) => c.id === colorId);
+                    const colorSizes = sizeSelections[colorId] || [];
+
+                    return (
+                      <div
+                        key={colorId}
+                        className="border rounded-lg p-4 bg-gray-50"
+                      >
+                        <div className="flex items-center gap-2 mb-4">
+                          <div
+                            className="w-4 h-4 rounded-full border border-border shadow-sm"
+                            style={{ backgroundColor: color?.hexCode }}
+                          />
+                          <h5 className="font-medium">{color?.name} Sizes</h5>
+                        </div>
+
+                        {colorSizes.length > 0 ? (
+                          <div className="space-y-3">
+                            {colorSizes.map((sizeDetail, index) => {
+                              const size = availableSizes.find(
+                                (s) => s.id === sizeDetail.sizeId
+                              );
+
+                              return (
+                                <div
+                                  key={sizeDetail.sizeId}
+                                  className="grid grid-cols-1 md:grid-cols-5 gap-3 items-center"
+                                >
+                                  <div className="col-span-1">
+                                    <span className="text-sm font-medium">
+                                      {size?.name}
+                                    </span>
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <input
+                                      type="text"
+                                      placeholder="SKU"
+                                      value={sizeDetail.sku || ""}
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "sku",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <input
+                                      type="number"
+                                      placeholder="Price"
+                                      value={sizeDetail.price || ""}
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "price",
+                                          e.target.value
+                                        )
+                                      }
+                                      min="0"
+                                      step="0.01"
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <input
+                                      type="number"
+                                      placeholder="Quantity"
+                                      value={sizeDetail.quantity || ""}
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "quantity",
+                                          e.target.value
+                                        )
+                                      }
+                                      min="0"
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                                      // required
+                                    />
+                                  </div>
+
+                                  <div className="col-span-1 text-sm text-gray-500">
+                                    {sizeDetail.price
+                                      ? `$${sizeDetail.price}`
+                                      : `$${formData.basePrice.toFixed(2)}`}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic">
+                            No sizes available for this variant
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </FormSection>
 
           {/* Additional Details */}
           <FormSection
