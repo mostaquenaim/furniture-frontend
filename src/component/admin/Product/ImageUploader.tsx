@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useState, useCallback } from "react";
 import {
   Upload,
@@ -199,6 +200,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
   onImagesChange,
   onUseDefaultChange,
 }) => {
+  // console.log(images,'colorimages');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
 

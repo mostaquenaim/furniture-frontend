@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import { Save, X } from "lucide-react";
 import { PageHeader } from "@/component/PageHeader/PageHeader";
-import { FormSection } from "./FormSection";
+import { FormSection } from "@/component/admin/Product/FormSection";
 import {
   DefaultImageUploader,
   ColorImageUploader,
   ProductImageItem,
 } from "@/component/admin/Product/ImageUploader";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import useFetchSeries from "@/hooks/useFetchSeries";
 import useFetchVariants from "@/hooks/useFetchVariants";
@@ -18,6 +20,7 @@ import useFetchSubCategoriesByCategoryIds from "@/hooks/useFetchSubCategoriesByC
 import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
+import useAxiosPublic from "@/hooks/useAxiosPublic";
 
 interface ProductFormData {
   title: string;
@@ -97,9 +100,16 @@ Returns:
 • Items must be unworn with original tags
 • Free returns for store credit`;
 
-const ProductAddLBL = () => {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+const UpdateProductPage = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const productId = slug;
+
+  //   console.log(productId,'productId');
+
+  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
+
+  const [loading, setLoading] = useState(true);
 
   // Form state
   const [formData, setFormData] = useState<ProductFormData>({
@@ -130,6 +140,182 @@ const ProductAddLBL = () => {
     isActive: true,
   });
 
+  //   form hydration / initial values
+  const hydrateForm = (product: any) => {
+    const seriesSet = new Set<number>();
+    const categorySet = new Set<number>();
+    const subCategoryIds: number[] = [];
+
+    product.subCategories.forEach((psc: any) => {
+      const sub = psc.subCategory;
+      subCategoryIds.push(sub.id);
+
+      if (sub.category) {
+        categorySet.add(sub.category.id);
+
+        if (sub.category.series) {
+          seriesSet.add(sub.category.series.id);
+        }
+      }
+    });
+
+    // BASIC DATA
+    setFormData({
+      title: product.title,
+      slug: product.slug,
+      sku: product.sku || "",
+      basePrice: product.basePrice,
+      description: product.description || "",
+      hasColorVariants: product.hasColorVariants,
+      showColor: product.showColor,
+      discountType: product.discountType,
+      discount: product.discount || 0,
+      discountStart: product.discountStart?.split("T")[0] || "",
+      discountEnd: product.discountEnd?.split("T")[0] || "",
+
+      selectedSeriesIds: Array.from(seriesSet),
+      selectedCategoryIds: Array.from(categorySet),
+      selectedSubCategoryIds: subCategoryIds,
+
+      selectedColors: product.colors?.map((c: any) => c.colorId) || [],
+      variantId: product.variantId,
+      note: product.note || "",
+      deliveryEstimate: product.deliveryEstimate || "",
+      productDetails: product.productDetails || "",
+      dimension: product.dimension || "",
+      shippingReturn: product.shippingReturn || "",
+      isActive: product.isActive,
+    });
+
+    // DEFAULT IMAGES
+    setDefaultImages(
+      product.images.map((img: any) => ({
+        id: img.id,
+        preview: img.image,
+        serialNo: img.serialNo,
+        file: null,
+      }))
+    );
+
+    // COLOR IMAGES + SIZES
+    const colorImgs: Record<number, any[]> = {};
+    const colorSizes: Record<number, any[]> = {};
+    const useDefault: Record<number, boolean> = {};
+
+    product.colors.forEach((c: any) => {
+      // Use the value from DB, default to true only if undefined
+      useDefault[c.colorId] = c.useDefaultImages ?? true;
+
+      colorImgs[c.colorId] =
+        c.images?.map((img: any) => ({
+          preview: img.image,
+          file: null,
+        })) || [];
+
+      colorSizes[c.colorId] =
+        c.sizes?.map((s: any) => ({
+          sizeId: s.sizeId,
+          sku: s.sku,
+          price: s.price,
+          quantity: s.quantity,
+        })) || [];
+    });
+
+    setColorUseDefault(useDefault); // Update state once
+
+    setColorImages(colorImgs);
+    setSizeSelections(colorSizes);
+  };
+
+  //   update handling
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate form
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Upload default images
+      const defaultImageUrls = await Promise.all(
+        defaultImages.map(async (img) => ({
+          image: await uploadIfNew(img),
+          serialNo: img.serialNo,
+        }))
+      );
+
+      // Prepare colors
+      const colorVariants = await Promise.all(
+        formData.selectedColors.map(async (colorId) => {
+          const images = colorUseDefault[colorId]
+            ? []
+            : await Promise.all((colorImages[colorId] || []).map(uploadIfNew));
+
+          return {
+            colorId,
+            useDefaultImages: colorUseDefault[colorId],
+            images,
+            sizes: (sizeSelections[colorId] || []).filter(
+              (s) => s.quantity > 0
+            ),
+          };
+        })
+      );
+
+      const payload = {
+        ...formData,
+        discountStart: formData.discountStart
+          ? new Date(formData.discountStart)
+          : null,
+        discountEnd: formData.discountEnd
+          ? new Date(formData.discountEnd)
+          : null,
+        images: defaultImageUrls,
+        colors: colorVariants,
+        subCategories: formData.selectedSubCategoryIds,
+      };
+
+      await axiosSecure.patch(`/product/${productId}`, payload);
+
+      toast.success("Product updated successfully");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Update failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isHydrating = React.useRef(true);
+
+  // fetch product
+  useEffect(() => {
+    if (!productId) return;
+    const fetchProduct = async () => {
+      try {
+        const { data } = await axiosPublic.get(`/product/${productId}`);
+        console.log(data, "hydration");
+        hydrateForm(data);
+        // Wait a tick for state to settle before allowing the "reset" effects to run
+        setTimeout(() => {
+          isHydrating.current = false;
+        }, 500);
+      } catch (err) {
+        toast.error("Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [productId]);
+
   // Hooks
   const { colors, isLoading: colorsLoading } = useFetchColors();
   const { variants, isLoading: variantsLoading } = useFetchVariants();
@@ -145,6 +331,32 @@ const ProductAddLBL = () => {
   const selectedVariant = variants.find((v) => v.id === formData.variantId);
   const availableSizes = selectedVariant?.sizes || [];
 
+  // colorwise size fetch
+  useEffect(() => {
+    // If we are still loading initial data, DON'T wipe the sizes
+    if (loading || isHydrating.current) return;
+
+    if (!selectedVariant) return;
+
+    setSizeSelections((prev) => {
+      const updated: typeof prev = {};
+
+      // Use optional chaining and fallback to empty array
+      const variantSizes = selectedVariant.sizes || [];
+
+      formData.selectedColors.forEach((colorId) => {
+        updated[colorId] = variantSizes.map((size) => ({
+          sizeId: size.id,
+          sku: "",
+          price: formData.basePrice,
+          quantity: 0,
+        }));
+      });
+
+      return updated;
+    });
+  }, [formData.variantId, selectedVariant, formData.basePrice]);
+
   // Sizes state
   const [sizeSelections, setSizeSelections] = useState<{
     [colorId: number]: SizeDetail[];
@@ -158,6 +370,32 @@ const ProductAddLBL = () => {
   const [colorUseDefault, setColorUseDefault] = useState<
     Record<number, boolean>
   >({});
+
+  //   variant re-initialize
+  useEffect(() => {
+    if (!selectedVariant) return;
+
+    setSizeSelections((prev) => {
+      const updated: typeof prev = {};
+
+      formData.selectedColors.forEach((colorId) => {
+        updated[colorId] = selectedVariant?.sizes?.map((size) => ({
+          sizeId: size.id,
+          sku: "",
+          price: formData.basePrice,
+          quantity: 0,
+        }));
+      });
+
+      //   interface SizeDetail {
+      //     sizeId: number;
+      //     sku?: string;
+      //     price?: number;
+      //     quantity: number;
+      //   }
+      return updated;
+    });
+  }, [formData.variantId]);
 
   // Initialize size selections when color is selected
   useEffect(() => {
@@ -181,7 +419,13 @@ const ProductAddLBL = () => {
         setSizeSelections(newSizeSelections);
       }
     }
-  }, [formData.selectedColors, selectedVariant, formData.basePrice]);
+  }, [
+    formData.selectedColors,
+    selectedVariant,
+    formData.basePrice,
+    sizeSelections,
+    availableSizes,
+  ]);
 
   // Slug generation
   const generateSlug = (value: string) =>
@@ -328,8 +572,6 @@ const ProductAddLBL = () => {
   const getSubCategoryName = (id: number) =>
     subCategoryList.find((sc) => sc.id === id)?.name || "";
 
-  const axiosSecure = useAxiosSecure();
-
   // Image upload function
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
     try {
@@ -339,6 +581,11 @@ const ProductAddLBL = () => {
       console.error("Image upload failed:", error);
       throw new Error("Failed to upload image");
     }
+  };
+
+  const uploadIfNew = async (img: any) => {
+    if (!img.file) return img.url;
+    return await handleUploadWithCloudinary(img.file);
   };
 
   // Form validation
@@ -393,156 +640,6 @@ const ProductAddLBL = () => {
     return null;
   };
 
-  ///////////////////////////////////////////////
-  // FORM SUBMIT //
-  ///////////////////////////////////////////////
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate form
-    const validationError = validateForm();
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Upload images first and get URLs
-      const uploadPromises = [
-        // Upload default images
-        ...defaultImages.map(async (img) => {
-          if (img.file) {
-            const url = await uploadImageToCloudinary(img.file);
-            return { url, serialNo: img.serialNo };
-          }
-          return null;
-        }),
-        // Upload color-specific images
-        ...formData.selectedColors.flatMap((colorId) =>
-          !colorUseDefault[colorId]
-            ? (colorImages[colorId] || []).map(async (img) => {
-                if (img.file) {
-                  const url = await uploadImageToCloudinary(img.file);
-                  return { url, colorId };
-                }
-                return null;
-              })
-            : []
-        ),
-      ];
-
-      const uploadedImages = (await Promise.all(uploadPromises)).filter(
-        Boolean
-      ) as UploadedImage[];
-
-      // Separate default and color images
-      const defaultImageUrls = uploadedImages
-        .filter(
-          (img): img is Extract<UploadedImage, { serialNo: number }> =>
-            "serialNo" in img
-        )
-        .map((img) => ({
-          image: img.url,
-          serialNo: img.serialNo,
-        }));
-
-      const colorImageMap = uploadedImages
-        .filter(
-          (img): img is Extract<UploadedImage, { colorId: number }> =>
-            "colorId" in img
-        )
-        .reduce<ColorImageMap>((acc, img) => {
-          if (!acc[img.colorId]) acc[img.colorId] = [];
-          acc[img.colorId].push(img.url);
-          return acc;
-        }, {});
-
-      // Prepare color variants with sizes
-      const colorVariants: ProductColorCreateInput[] =
-        formData.selectedColors.map((colorId) => {
-          const colorData: ProductColorCreateInput = {
-            colorId,
-          };
-
-          // Add images
-          if (!colorUseDefault[colorId] && colorImageMap[colorId]) {
-            colorData.images = [...colorImageMap[colorId]];
-            colorData.useDefaultImages = false;
-          } else if (colorUseDefault[colorId]) {
-            colorData.useDefaultImages = true;
-          }
-
-          // Add sizes
-          const colorSizes = sizeSelections[colorId] || [];
-          if (colorSizes.length > 0) {
-            // Filter out sizes with 0 quantity
-            const validSizes = colorSizes.filter((size) => size.quantity > 0);
-            if (validSizes.length > 0) {
-              colorData.sizes = validSizes;
-            }
-          }
-
-          return colorData;
-        });
-
-      // Prepare submit data
-      const submitData = {
-        title: formData.title,
-        slug: formData.slug,
-        sku: formData.sku || undefined,
-        basePrice: formData.basePrice,
-        description: formData.description || undefined,
-        hasColorVariants: formData.hasColorVariants,
-        showColor: formData.showColor,
-        discountType:
-          formData.discountType === "percentage"
-            ? "percentage"
-            : formData.discountType === "fixed"
-            ? "fixed"
-            : undefined,
-        discount: formData.discount,
-        discountStart: formData.discountStart
-          ? new Date(formData.discountStart)
-          : undefined,
-        discountEnd: formData.discountEnd
-          ? new Date(formData.discountEnd)
-          : undefined,
-        note: formData.note || undefined,
-        deliveryEstimate: formData.deliveryEstimate || undefined,
-        productDetails: formData.productDetails || undefined,
-        dimension: formData.dimension || undefined,
-        shippingReturn: formData.shippingReturn || undefined,
-        isActive: formData.isActive,
-
-        // Subcategories connection
-        subCategories: [...formData.selectedSubCategoryIds],
-
-        // Colors with sizes
-        colors: colorVariants,
-
-        // Default product images
-        images: [...defaultImageUrls],
-      };
-
-      console.log(colorVariants, "Submit Data:", submitData);
-
-      // Make API call
-      const response = await axiosSecure.post("/products", submitData);
-      console.log(response.data);
-
-      toast.success("Product created successfully!");
-      // router.push("/admin/products");
-    } catch (error: any) {
-      console.error("Error:", error);
-      toast.error(error.response?.data?.message || "Failed to create product");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Calculate discounted price for display
   const discountedPrice = useMemo(() => {
     if (formData.discount <= 0) return formData.basePrice;
 
@@ -557,12 +654,12 @@ const ProductAddLBL = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <PageHeader
-          title="Add New Product"
-          subtitle="Create a new product with all details"
-          backLink="/"
+          title="Update Product"
+          subtitle="Edit existing product details"
+          backLink="/admin/products"
         />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleUpdate} className="space-y-6">
           {/* Basic Information */}
           <FormSection
             title="Basic Information"
@@ -1267,4 +1364,4 @@ const ProductAddLBL = () => {
   );
 };
 
-export default ProductAddLBL;
+export default UpdateProductPage;
