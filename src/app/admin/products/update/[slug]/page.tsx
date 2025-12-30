@@ -21,6 +21,7 @@ import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useAxiosPublic from "@/hooks/useAxiosPublic";
+import LoadingDots from "@/component/Loading/LoadingDS";
 
 interface ProductFormData {
   title: string;
@@ -30,7 +31,7 @@ interface ProductFormData {
   description?: string;
   hasColorVariants: boolean;
   showColor: boolean;
-  discountType?: "percentage" | "fixed";
+  discountType?: "PERCENT" | "FIXED";
   discount: number;
   discountStart: string;
   discountEnd: string;
@@ -120,7 +121,7 @@ const UpdateProductPage = () => {
     description: "",
     hasColorVariants: true,
     showColor: true,
-    discountType: "percentage",
+    discountType: "PERCENT",
     discount: 0,
     discountStart: new Date().toISOString().split("T")[0],
     discountEnd: new Date().toISOString().split("T")[0],
@@ -139,6 +140,59 @@ const UpdateProductPage = () => {
     shippingReturn: defaultShippingReturn,
     isActive: true,
   });
+
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isHydrating = React.useRef(true);
+
+  // fetch product
+  useEffect(() => {
+    if (!productId) return;
+    const fetchProduct = async () => {
+      try {
+        const { data } = await axiosPublic.get(`/product/${productId}`);
+        console.log(data, "hydration");
+        hydrateForm(data);
+        // Wait a tick for state to settle before allowing the "reset" effects to run
+        isHydrating.current = false;
+      } catch (err) {
+        toast.error("Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [productId]);
+
+  // Hooks
+  const { colors, isLoading: colorsLoading } = useFetchColors();
+  const { variants, isLoading: variantsLoading } = useFetchVariants();
+  const { seriesList, isLoading: seriesLoading } = useFetchSeries();
+
+  const { categoryList, isLoading: categoriesLoading } =
+    useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
+
+  const { subCategoryList, isLoading: subCategoriesLoading } =
+    useFetchSubCategoriesByCategoryIds(formData.selectedCategoryIds);
+
+  // Get sizes for selected variant
+  const selectedVariant = variants.find((v) => v.id === formData.variantId);
+  const availableSizes = selectedVariant?.sizes || [];
+
+  // Sizes state
+  const [sizeSelections, setSizeSelections] = useState<{
+    [colorId: number]: SizeDetail[];
+  }>({});
+
+  // Images state
+  const [defaultImages, setDefaultImages] = useState<ProductImageItem[]>([]);
+  const [colorImages, setColorImages] = useState<
+    Record<number, ProductImageItem[]>
+  >({});
+  const [colorUseDefault, setColorUseDefault] = useState<
+    Record<number, boolean>
+  >({});
 
   //   form hydration / initial values
   const hydrateForm = (product: any) => {
@@ -159,6 +213,9 @@ const UpdateProductPage = () => {
       }
     });
 
+    // Get variant from first color's first size
+    const variantId = product?.colors[0]?.sizes[0]?.size?.variantId || null;
+
     // BASIC DATA
     setFormData({
       title: product.title,
@@ -178,7 +235,7 @@ const UpdateProductPage = () => {
       selectedSubCategoryIds: subCategoryIds,
 
       selectedColors: product.colors?.map((c: any) => c.colorId) || [],
-      variantId: product.variantId,
+      variantId: variantId, // This was already set above
       note: product.note || "",
       deliveryEstimate: product.deliveryEstimate || "",
       productDetails: product.productDetails || "",
@@ -208,224 +265,73 @@ const UpdateProductPage = () => {
 
       colorImgs[c.colorId] =
         c.images?.map((img: any) => ({
+          id: img.id,
           preview: img.image,
           file: null,
         })) || [];
 
+      // price initialization:
       colorSizes[c.colorId] =
         c.sizes?.map((s: any) => ({
           sizeId: s.sizeId,
-          sku: s.sku,
-          price: s.price,
-          quantity: s.quantity,
+          sku: s.sku || "",
+          price: s.price || product.basePrice,
+          quantity: s.quantity || 0,
         })) || [];
     });
 
-    setColorUseDefault(useDefault); // Update state once
-
+    setColorUseDefault(useDefault);
     setColorImages(colorImgs);
-    setSizeSelections(colorSizes);
+    setSizeSelections(colorSizes); // This sets the actual size data
   };
-
-  //   update handling
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate form
-    const validationError = validateForm();
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      // Upload default images
-      const defaultImageUrls = await Promise.all(
-        defaultImages.map(async (img) => ({
-          image: await uploadIfNew(img),
-          serialNo: img.serialNo,
-        }))
-      );
-
-      // Prepare colors
-      const colorVariants = await Promise.all(
-        formData.selectedColors.map(async (colorId) => {
-          const images = colorUseDefault[colorId]
-            ? []
-            : await Promise.all((colorImages[colorId] || []).map(uploadIfNew));
-
-          return {
-            colorId,
-            useDefaultImages: colorUseDefault[colorId],
-            images,
-            sizes: (sizeSelections[colorId] || []).filter(
-              (s) => s.quantity > 0
-            ),
-          };
-        })
-      );
-
-      const payload = {
-        ...formData,
-        discountStart: formData.discountStart
-          ? new Date(formData.discountStart)
-          : null,
-        discountEnd: formData.discountEnd
-          ? new Date(formData.discountEnd)
-          : null,
-        images: defaultImageUrls,
-        colors: colorVariants,
-        subCategories: formData.selectedSubCategoryIds,
-      };
-
-      await axiosSecure.patch(`/product/${productId}`, payload);
-
-      toast.success("Product updated successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Update failed");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const isHydrating = React.useRef(true);
-
-  // fetch product
-  useEffect(() => {
-    if (!productId) return;
-    const fetchProduct = async () => {
-      try {
-        const { data } = await axiosPublic.get(`/product/${productId}`);
-        console.log(data, "hydration");
-        hydrateForm(data);
-        // Wait a tick for state to settle before allowing the "reset" effects to run
-        setTimeout(() => {
-          isHydrating.current = false;
-        }, 500);
-      } catch (err) {
-        toast.error("Failed to load product");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-  }, [productId]);
-
-  // Hooks
-  const { colors, isLoading: colorsLoading } = useFetchColors();
-  const { variants, isLoading: variantsLoading } = useFetchVariants();
-  const { seriesList, isLoading: seriesLoading } = useFetchSeries();
-
-  const { categoryList, isLoading: categoriesLoading } =
-    useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
-
-  const { subCategoryList, isLoading: subCategoriesLoading } =
-    useFetchSubCategoriesByCategoryIds(formData.selectedCategoryIds);
-
-  // Get sizes for selected variant
-  const selectedVariant = variants.find((v) => v.id === formData.variantId);
-  const availableSizes = selectedVariant?.sizes || [];
 
   // colorwise size fetch
   useEffect(() => {
-    // If we are still loading initial data, DON'T wipe the sizes
+    // Skip during hydration
     if (loading || isHydrating.current) return;
 
-    if (!selectedVariant) return;
-
-    setSizeSelections((prev) => {
-      const updated: typeof prev = {};
-
-      // Use optional chaining and fallback to empty array
-      const variantSizes = selectedVariant.sizes || [];
-
-      formData.selectedColors.forEach((colorId) => {
-        updated[colorId] = variantSizes.map((size) => ({
-          sizeId: size.id,
-          sku: "",
-          price: formData.basePrice,
-          quantity: 0,
-        }));
-      });
-
-      return updated;
-    });
-  }, [formData.variantId, selectedVariant, formData.basePrice]);
-
-  // Sizes state
-  const [sizeSelections, setSizeSelections] = useState<{
-    [colorId: number]: SizeDetail[];
-  }>({});
-
-  // Images state
-  const [defaultImages, setDefaultImages] = useState<ProductImageItem[]>([]);
-  const [colorImages, setColorImages] = useState<
-    Record<number, ProductImageItem[]>
-  >({});
-  const [colorUseDefault, setColorUseDefault] = useState<
-    Record<number, boolean>
-  >({});
-
-  //   variant re-initialize
-  useEffect(() => {
-    if (!selectedVariant) return;
-
-    setSizeSelections((prev) => {
-      const updated: typeof prev = {};
-
-      formData.selectedColors.forEach((colorId) => {
-        updated[colorId] = selectedVariant?.sizes?.map((size) => ({
-          sizeId: size.id,
-          sku: "",
-          price: formData.basePrice,
-          quantity: 0,
-        }));
-      });
-
-      //   interface SizeDetail {
-      //     sizeId: number;
-      //     sku?: string;
-      //     price?: number;
-      //     quantity: number;
-      //   }
-      return updated;
-    });
-  }, [formData.variantId]);
-
-  // Initialize size selections when color is selected
-  useEffect(() => {
     if (selectedVariant && formData.selectedColors.length > 0) {
-      const newSizeSelections = { ...sizeSelections };
-      let hasChanges = false;
+      setSizeSelections((prev) => {
+        const newSizeSelections = { ...prev };
+        let hasChanges = false;
 
-      formData.selectedColors.forEach((colorId) => {
-        if (!newSizeSelections[colorId]) {
-          newSizeSelections[colorId] = availableSizes.map((size) => ({
-            sizeId: size.id,
-            sku: "",
-            price: formData.basePrice || undefined,
-            quantity: 0,
-          }));
-          hasChanges = true;
-        }
+        formData.selectedColors.forEach((colorId) => {
+          const existingSizes = newSizeSelections[colorId] || [];
+          const existingSizeIds = existingSizes.map((s) => s.sizeId);
+
+          //  if variant has new sizes that aren't in existing data
+          const newSizesNeeded = availableSizes.filter(
+            (size) => !existingSizeIds.includes(size.id)
+          );
+
+          if (!newSizeSelections[colorId]) {
+            // First time - initialize all sizes
+            newSizeSelections[colorId] = availableSizes.map((size) => ({
+              sizeId: size.id,
+              sku: "",
+              price: formData.basePrice || undefined,
+              quantity: 0,
+            }));
+            hasChanges = true;
+          } else if (newSizesNeeded.length > 0) {
+            // Variant changed - add only NEW sizes, keep existing ones
+            newSizeSelections[colorId] = [
+              ...existingSizes,
+              ...newSizesNeeded.map((size) => ({
+                sizeId: size.id,
+                sku: "",
+                price: formData.basePrice || undefined,
+                quantity: 0,
+              })),
+            ];
+            hasChanges = true;
+          }
+        });
+
+        return hasChanges ? newSizeSelections : prev;
       });
-
-      if (hasChanges) {
-        setSizeSelections(newSizeSelections);
-      }
     }
-  }, [
-    formData.selectedColors,
-    selectedVariant,
-    formData.basePrice,
-    sizeSelections,
-    availableSizes,
-  ]);
+  }, [formData.selectedColors, selectedVariant, formData.variantId, loading]);
 
   // Slug generation
   const generateSlug = (value: string) =>
@@ -469,6 +375,7 @@ const UpdateProductPage = () => {
     });
   };
 
+  // handle category toggle
   const handleCategoryToggle = (categoryId: number) => {
     setFormData((prev) => {
       const isSelected = prev.selectedCategoryIds.includes(categoryId);
@@ -502,27 +409,41 @@ const UpdateProductPage = () => {
     });
   };
 
+  // handleColorToggle function
   const handleColorToggle = (colorId: number) => {
-    setFormData((prev) => {
-      const isSelected = prev.selectedColors.includes(colorId);
-      const newColors = isSelected
-        ? prev.selectedColors.filter((id) => id !== colorId)
-        : [...prev.selectedColors, colorId];
+    const isCurrentlySelected = formData.selectedColors.includes(colorId);
 
-      // Clean up size selections when color is removed
-      if (isSelected) {
-        const newSizeSelections = { ...sizeSelections };
-        delete newSizeSelections[colorId];
-        setSizeSelections(newSizeSelections);
+    if (isCurrentlySelected) {
+      // Remove color - but DON'T delete size data
+      setFormData((prev) => ({
+        ...prev,
+        selectedColors: prev.selectedColors.filter((id) => id !== colorId),
+      }));
+    } else {
+      // Add color - only initialize sizes if they don't exist
+      setFormData((prev) => ({
+        ...prev,
+        selectedColors: [...prev.selectedColors, colorId],
+      }));
+
+      // Initialize sizes if this color has no size data yet
+      if (!sizeSelections[colorId] && selectedVariant?.sizes) {
+        setSizeSelections((prev) => ({
+          ...prev,
+          [colorId]: (selectedVariant.sizes || []).map((size) => ({
+            sizeId: size.id,
+            sku: "",
+            price: formData.basePrice || undefined,
+            quantity: 0,
+          })),
+        }));
       }
 
-      return { ...prev, selectedColors: newColors };
-    });
-
-    // Initialize with default images when adding a color
-    if (!colorImages[colorId]) {
-      setColorImages((prev) => ({ ...prev, [colorId]: [] }));
-      setColorUseDefault((prev) => ({ ...prev, [colorId]: true }));
+      // Initialize images if needed
+      if (!colorImages[colorId]) {
+        setColorImages((prev) => ({ ...prev, [colorId]: [] }));
+        setColorUseDefault((prev) => ({ ...prev, [colorId]: true }));
+      }
     }
   };
 
@@ -584,7 +505,7 @@ const UpdateProductPage = () => {
   };
 
   const uploadIfNew = async (img: any) => {
-    if (!img.file) return img.url;
+    if (!img.file) return img.preview;
     return await handleUploadWithCloudinary(img.file);
   };
 
@@ -643,12 +564,103 @@ const UpdateProductPage = () => {
   const discountedPrice = useMemo(() => {
     if (formData.discount <= 0) return formData.basePrice;
 
-    if (formData.discountType === "percentage") {
+    if (formData.discountType === "PERCENT") {
       return formData.basePrice * (1 - formData.discount / 100);
     } else {
       return Math.max(0, formData.basePrice - formData.discount);
     }
   }, [formData.basePrice, formData.discount, formData.discountType]);
+
+  // update handling
+  // Update the handleUpdate function:
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate form
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Upload default images
+      const defaultImageUrls = await Promise.all(
+        defaultImages.map(async (img) => ({
+          image: await uploadIfNew(img),
+          serialNo: img.serialNo,
+        }))
+      );
+
+      console.log(sizeSelections, "sizeSelections");
+
+      // Prepare colors with proper size data
+      const colorVariants = await Promise.all(
+        formData.selectedColors.map(async (colorId) => {
+          const images = colorUseDefault[colorId]
+            ? []
+            : await Promise.all((colorImages[colorId] || []).map(uploadIfNew));
+
+          // Get sizes for this color, ensuring all required fields are present
+          const sizes = (sizeSelections[colorId] || [])
+            .filter((s) => s.sku != "")
+            .map((size) => ({
+              sizeId: size.sizeId,
+              sku: size.sku || "",
+              price: size.price || formData.basePrice,
+              quantity: size.quantity,
+            }));
+
+          return {
+            colorId,
+            useDefaultImages: colorUseDefault[colorId],
+            images,
+            sizes,
+          };
+        })
+      );
+
+      const payload = {
+        ...formData,
+        discountStart: formData.discountStart
+          ? new Date(formData.discountStart)
+          : null,
+        discountEnd: formData.discountEnd
+          ? new Date(formData.discountEnd)
+          : null,
+        images: defaultImageUrls,
+        colors: colorVariants,
+        subCategories: formData.selectedSubCategoryIds,
+      };
+
+      console.log("Update payload:", payload);
+
+      await axiosSecure.patch(`/product/${productId}`, payload);
+
+      toast.success("Product updated successfully");
+      // router.push("/admin/products");
+    } catch (err: any) {
+      console.error("Update error:", err);
+      toast.error(err.response?.data?.message || "Update failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">
+            <LoadingDots></LoadingDots>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -727,9 +739,33 @@ const UpdateProductPage = () => {
           {/* Discount */}
           <FormSection title="Discount" description="Set up product discount">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Discount Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Discount (%)
+                  Discount Type
+                </label>
+                <select
+                  value={formData.discountType}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      discountType: e.target.value as "PERCENT" | "FIXED",
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="PERCENT">Percentage (%)</option>
+                  <option value="FIXED">Fixed Amount</option>
+                </select>
+              </div>
+
+              {/* Discount Value */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {formData.discountType === "PERCENT"
+                    ? "Discount (%)"
+                    : "Discount Amount"}
                 </label>
                 <input
                   type="number"
@@ -740,11 +776,27 @@ const UpdateProductPage = () => {
                       discount: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  placeholder="0"
+                  placeholder={
+                    formData.discountType === "PERCENT" ? "0 - 100" : "0.00"
+                  }
                   min="0"
-                  max="100"
+                  max={formData.discountType === "PERCENT" ? 100 : undefined}
+                  step="0.01"
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Final Price Preview */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Final Price
+                </label>
+                <input
+                  type="text"
+                  value={`$${discountedPrice.toFixed(2)}`}
+                  disabled
+                  className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-700"
                 />
               </div>
 
@@ -997,90 +1049,70 @@ const UpdateProductPage = () => {
             </div>
           </FormSection>
 
-          {/* Variants & Sizes */}
-          {/* <FormSection
-            title="Variant & Sizes"
-            description="Select variant type and available sizes"
-          >
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Variant Type
-                </label>
-                <select
-                  value={formData.variantId || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      variantId: e.target.value ? Number(e.target.value) : null,
-                      selectedSizes: [],
-                    }))
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={variantsLoading}
-                >
-                  <option value="">-- Select Variant --</option>
-                  {variants.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {formData.variantId && availableSizes.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Available Sizes
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {availableSizes.map((size) => (
-                      <button
-                        key={size.id}
-                        type="button"
-                        onClick={() => handleSizeToggle(size.id)}
-                        className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                          formData.selectedSizes.includes(size.id)
-                            ? "border-blue-200 bg-blue-200 text-blue-200-foreground"
-                            : "border-border hover:border-muted-foreground"
-                        }`}
-                      >
-                        {size.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {formData.variantId && availableSizes.length === 0 && (
-                <p className="text-sm text-muted-foreground italic">
-                  No sizes available for this variant type
-                </p>
-              )}
-            </div>
-          </FormSection> */}
-
           {/* variant and sizes  */}
           <FormSection
             title="Variant & Sizes"
             description="Select variant type and manage sizes for each color"
           >
             <div className="space-y-5">
+              {/* variant  */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Variant Type *
                 </label>
+                {/* In the variant dropdown onChange handler: */}
                 <select
                   value={formData.variantId || ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const newVariantId = e.target.value
+                      ? Number(e.target.value)
+                      : null;
+                    const newVariant = variants.find(
+                      (v) => v.id === newVariantId
+                    );
+
                     setFormData((prev) => ({
                       ...prev,
-                      variantId: e.target.value ? Number(e.target.value) : null,
-                    }))
-                  }
+                      variantId: newVariantId,
+                    }));
+
+                    // Update sizes for all selected colors to include new sizes from variant
+                    if (newVariant?.sizes) {
+                      setSizeSelections((prev) => {
+                        const updated = { ...prev };
+                        let hasChanges = false;
+
+                        formData.selectedColors.forEach((colorId) => {
+                          const existingSizes = updated[colorId] || [];
+                          const existingSizeIds = new Set(
+                            existingSizes.map((s) => s.sizeId)
+                          );
+
+                          // Add new sizes that don't exist yet
+                          const newSizes = newVariant.sizes.filter(
+                            (size) => !existingSizeIds.has(size.id)
+                          );
+
+                          if (newSizes.length > 0) {
+                            updated[colorId] = [
+                              ...existingSizes,
+                              ...newSizes.map((size) => ({
+                                sizeId: size.id,
+                                sku: "",
+                                price: formData.basePrice || undefined,
+                                quantity: 0,
+                              })),
+                            ];
+                            hasChanges = true;
+                          }
+                        });
+
+                        return hasChanges ? updated : prev;
+                      });
+                    }
+                  }}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500"
+     focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={variantsLoading}
                   required={formData.hasColorVariants}
                 >
@@ -1092,7 +1124,7 @@ const UpdateProductPage = () => {
                   ))}
                 </select>
               </div>
-
+              {/* Variant & Sizes section JSX */}
               {formData.variantId && formData.selectedColors.length > 0 && (
                 <div className="space-y-6">
                   <h4 className="text-sm font-medium text-gray-700">
@@ -1129,7 +1161,8 @@ const UpdateProductPage = () => {
                                 >
                                   <div className="col-span-1">
                                     <span className="text-sm font-medium">
-                                      {size?.name}
+                                      {size?.name ||
+                                        `Size ${sizeDetail.sizeId}`}
                                     </span>
                                   </div>
 
@@ -1154,7 +1187,9 @@ const UpdateProductPage = () => {
                                     <input
                                       type="number"
                                       placeholder="Price"
-                                      value={sizeDetail.price || ""}
+                                      value={
+                                        sizeDetail.price || formData.basePrice
+                                      }
                                       onChange={(e) =>
                                         handleSizeFieldChange(
                                           colorId,
@@ -1173,7 +1208,7 @@ const UpdateProductPage = () => {
                                     <input
                                       type="number"
                                       placeholder="Quantity"
-                                      value={sizeDetail.quantity || ""}
+                                      value={sizeDetail.quantity || 0}
                                       onChange={(e) =>
                                         handleSizeFieldChange(
                                           colorId,
@@ -1184,13 +1219,14 @@ const UpdateProductPage = () => {
                                       }
                                       min="0"
                                       className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                                      // required
                                     />
                                   </div>
 
                                   <div className="col-span-1 text-sm text-gray-500">
                                     {sizeDetail.price
-                                      ? `$${sizeDetail.price}`
+                                      ? `$${Number(sizeDetail.price).toFixed(
+                                          2
+                                        )}`
                                       : `$${formData.basePrice.toFixed(2)}`}
                                   </div>
                                 </div>
@@ -1345,16 +1381,17 @@ const UpdateProductPage = () => {
               <X className="w-4 h-4" />
               Cancel
             </button>
-
+            {/* submit button */}
             <button
               type="submit"
               disabled={isLoading}
               className="inline-flex items-center gap-2 px-5 py-2 rounded-md
-               bg-blue-600 text-white hover:bg-blue-700 transition
-               disabled:opacity-50"
+   bg-blue-600 text-white hover:bg-blue-700 transition
+   disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              {isLoading ? "Creating..." : "Create Product"}
+              {isLoading ? "Updating..." : "Update Product"}{" "}
+              {/* Changed here */}
             </button>
           </div>
         </form>
