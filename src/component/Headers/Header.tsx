@@ -343,12 +343,7 @@ const Header = () => {
 
     return activeSeries.categories.map((cat) => ({
       title: cat?.name,
-      // cat.slug
-      //   .split("-")
-      //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      //   .join(" ")
       links: cat.subCategories.map((sub) => sub.name),
-      // image: cat?.image,
     }));
   }, [activeNavItem, navItems]);
 
