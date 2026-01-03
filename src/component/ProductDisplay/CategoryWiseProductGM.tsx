@@ -283,6 +283,7 @@ export default function CategoryWiseProduct() {
   const { slug } = useParams<{ slug: string }>();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const { products, meta, isLoading, isFetching } =
     useFetchSubcategoryWiseProducts(slug, {
@@ -290,7 +291,7 @@ export default function CategoryWiseProduct() {
       limit: PRODUCTS_PER_PAGE,
     });
 
-  console.log(products, "sortedImages");
+  // console.log(products, "sortedImages");
 
   const totalPages = meta?.totalPages || 1;
   const totalProducts = meta?.total || 0;
@@ -401,14 +402,20 @@ export default function CategoryWiseProduct() {
               {filter} <ChevronDown size={14} />
             </button>
           ))}
-          <button className="flex items-center gap-2 text-sm font-medium border-l pl-8">
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center gap-2 text-sm font-medium border-l pl-8"
+          >
             All Filters <SlidersHorizontal size={14} />
           </button>
         </div>
 
         {/* Mobile Filter Button */}
         <div className="md:hidden">
-          <button className="w-full py-4 border border-gray-200 flex items-center justify-center gap-3 text-sm tracking-wide">
+          <button
+            onClick={() => setIsFilterOpen(true)}
+            className="w-full py-4 border border-gray-200 flex items-center justify-center gap-3 text-sm tracking-wide"
+          >
             <SlidersHorizontal size={16} />
             Filter & Sort
           </button>
@@ -562,6 +569,61 @@ export default function CategoryWiseProduct() {
       {isFetching && !isLoading && (
         <div className="fixed inset-0 bg-white/50 z-40 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      )}
+
+      {isFilterOpen && (
+        <div className="fixed inset-0 z-50">
+          {/* Overlay */}
+          <div
+            onClick={() => setIsFilterOpen(false)}
+            className="absolute inset-0 bg-black/40"
+          />
+
+          {/* Drawer */}
+          <div className="absolute right-0 top-0 h-full w-full sm:w-[420px] bg-[#FAF9F7] animate-slide-in-right flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-5 border-b flex items-center justify-between">
+              <h3 className="text-sm font-semibold tracking-wide uppercase">
+                Filter & Sort
+              </h3>
+              <button onClick={() => setIsFilterOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto divide-y">
+              {[
+                "Product Type",
+                "Rooms",
+                "In Stock",
+                "Color",
+                "Price",
+                "Material",
+                "Fabric Type",
+                "Free Store Pickup",
+              ].map((item) => (
+                <button
+                  key={item}
+                  className="w-full px-6 py-5 flex items-center justify-between text-sm font-medium"
+                >
+                  {item}
+                  <ChevronRight size={16} />
+                </button>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t flex gap-3">
+              <button className="flex-1 py-3 border text-xs tracking-widest uppercase">
+                Clear All
+              </button>
+              <button className="flex-1 py-3 bg-[#4E5B6D] text-white text-xs tracking-widest uppercase">
+                View Results (186)
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

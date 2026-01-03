@@ -12,9 +12,9 @@ interface FetchProductsParams {
 
 interface ProductsResponse {
   data: {
-    productId: number,
-    subCategoryId: number,
-    product: Product
+    productId: number;
+    subCategoryId: number;
+    product: Product;
   }[];
   meta: {
     total: number;
@@ -36,6 +36,7 @@ const useFetchSubcategoryWiseProducts = (
     if (params?.page) cleanParams.page = params.page;
     if (params?.limit) cleanParams.limit = params.limit;
     if (params?.search) cleanParams.search = params.search;
+    
     if (typeof params?.isActive === "boolean") {
       cleanParams.isActive = params.isActive;
     }

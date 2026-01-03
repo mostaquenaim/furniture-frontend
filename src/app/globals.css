@@ -27,6 +27,19 @@
   }
 }
 
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.35s ease-out forwards;
+}
+
 .animate-pulse-dots {
   animation: pulse-dots 1.2s infinite ease-in-out both;
 }
