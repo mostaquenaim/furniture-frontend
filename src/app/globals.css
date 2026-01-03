@@ -27,7 +27,7 @@
   }
 }
 
-@keyframes slide-in-right {
+@keyframes filter-slide {
   from {
     transform: translateX(100%);
   }
@@ -36,8 +36,8 @@
   }
 }
 
-.animate-slide-in-right {
-  animation: slide-in-right 0.35s ease-out forwards;
+.animate-filter-slide {
+  animation: filter-slide 0.35s ease-out forwards;
 }
 
 .animate-pulse-dots {

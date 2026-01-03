@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import useAxiosSecure from "./useAxiosSecure";
 import { toast } from "react-hot-toast";
+import useAxiosPublic from "./useAxiosPublic";
 
 export interface Color {
   id: number;
@@ -9,14 +9,14 @@ export interface Color {
 }
 
 const useFetchColors = () => {
-  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
   const [colors, setColors] = useState<Color[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchColors = async () => {
       try {
-        const res = await axiosSecure.get("/colors");
+        const res = await axiosPublic.get("/colors");
         setColors(res.data);
       } catch {
         toast.error("Failed to load colors");
@@ -26,7 +26,7 @@ const useFetchColors = () => {
     };
 
     fetchColors();
-  }, [axiosSecure]);
+  }, [axiosPublic]);
 
   return { colors, isLoading };
 };
