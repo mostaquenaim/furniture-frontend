@@ -1,10 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchMaterials from "@/hooks/useFetchMaterials";
-import useFetchSubcategoryWiseProducts from "@/hooks/useFetchSubcategoryWiseProducts";
+import useFetchSubcategoryWiseProducts, {
+  ProductItem,
+} from "@/hooks/useFetchSubcategoryWiseProducts";
+import { Product, ProductImage } from "@/types/product.types";
 import {
   ChevronDown,
   SlidersHorizontal,
@@ -13,65 +17,11 @@ import {
   Heart,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 
-// Types matching your API response
-interface ProductImage {
-  id: number;
-  image: string;
-  serialNo: number;
-  productId: number;
-}
-
-interface Color {
-  id: number;
-  name: string;
-  hexCode: string;
-  image: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: Date;
-}
-
-interface ProductColor {
-  id: number;
-  useDefaultImages: boolean;
-  colorId: number;
-  productId: number;
-  color: Color;
-}
-
-interface Product {
-  id: number;
-  title: string;
-  slug: string;
-  sku: string | null;
-  description: string | null;
-  basePrice: number;
-  hasColorVariants: boolean;
-  showColor: boolean;
-  discountType: string | null;
-  discount: number | null;
-  discountEnd: string | null;
-  discountStart: string | null;
-  note: string | null;
-  deliveryEstimate: string | null;
-  productDetails: string | null;
-  dimension: string | null;
-  shippingReturn: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  images: ProductImage[];
-  colors: ProductColor[];
-}
-
-interface ProductItem {
-  productId: number;
-  subCategoryId: number;
-  product: Product;
-}
+const PRODUCTS_PER_PAGE = 18;
 
 function QuickShopModal({
   product,
@@ -281,8 +231,6 @@ function QuickShopModal({
   );
 }
 
-const PRODUCTS_PER_PAGE = 18;
-
 function FilterDropdown({
   type,
   data,
@@ -330,7 +278,9 @@ export default function CategoryWiseProduct() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [selectedSort, setSelectedSort] = useState(sortData.sortCategories[0].name);
+  const [selectedSort, setSelectedSort] = useState(
+    sortData.sortCategories[0].name
+  );
   const [activeFilterTab, setActiveFilterTab] = useState<string | null>(null);
   const [hoveredFilter, setHoveredFilter] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -456,7 +406,7 @@ export default function CategoryWiseProduct() {
                   onClick={() => {
                     setSelectedSort(item.name);
                     setIsSortOpen(false);
-                    handleSortChange(item.name); 
+                    handleSortChange(item.name);
                   }}
                   className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-100 ${
                     selectedSort === item.name ? "font-medium bg-gray-50" : ""
@@ -570,7 +520,7 @@ export default function CategoryWiseProduct() {
       {!isLoading && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-12">
           {/* Sale Banner (First Slot) */}
-          <div className="bg-[#E3F2FD] flex flex-col items-center justify-center text-center p-8 aspect-[3/4]">
+          {/* <div className="bg-[#E3F2FD] flex flex-col items-center justify-center text-center p-8 aspect-[3/4]">
             <h3 className="text-[#008080] font-serif italic mb-2">
               Bed, Bath & Furniture Event
             </h3>
@@ -580,7 +530,7 @@ export default function CategoryWiseProduct() {
             <button className="bg-white px-8 py-3 text-xs tracking-widest uppercase font-semibold border border-transparent hover:border-black transition">
               Shop Now
             </button>
-          </div>
+          </div> */}
 
           {/* Product Cards from API */}
           {products && products.length > 0 ? (
@@ -592,7 +542,8 @@ export default function CategoryWiseProduct() {
               const displayPrice = getDisplayPrice(product);
 
               return (
-                <div
+                <Link
+                  href={`/products/${product.slug}`}
                   key={product.id}
                   className="group cursor-pointer"
                   onMouseLeave={() => setProductImage("")}
@@ -660,7 +611,7 @@ export default function CategoryWiseProduct() {
                       </span>
                     </div>
                   )}
-                </div>
+                </Link>
               );
             })
           ) : (
@@ -857,7 +808,9 @@ export default function CategoryWiseProduct() {
                             name="price"
                             className="w-4 h-4 accent-black"
                           />
-                          <span className="text-sm text-gray-700">{price.name}</span>
+                          <span className="text-sm text-gray-700">
+                            {price.name}
+                          </span>
                         </label>
                       ))}
                       <div className="pt-6">

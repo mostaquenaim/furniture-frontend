@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // hooks/useFetchProducts.ts
 import { useQuery } from "@tanstack/react-query";
 import { Product } from "@/types/product.types";
@@ -10,12 +11,14 @@ interface FetchProductsParams {
   isActive?: boolean | null;
 }
 
+export interface ProductItem {
+  productId: number;
+  subCategoryId: number;
+  product: Product;
+}
+
 interface ProductsResponse {
-  data: {
-    productId: number;
-    subCategoryId: number;
-    product: Product;
-  }[];
+  data: ProductItem[];
   meta: {
     total: number;
     page: number;
