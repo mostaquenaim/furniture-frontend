@@ -493,17 +493,6 @@ const UpdateProductPage = () => {
   const getSubCategoryName = (id: number) =>
     subCategoryList.find((sc) => sc.id === id)?.name || "";
 
-  // Image upload function
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    try {
-      const response = await handleUploadWithCloudinary(file);
-      return response;
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      throw new Error("Failed to upload image");
-    }
-  };
-
   const uploadIfNew = async (img: any) => {
     if (!img.file) return img.preview;
     return await handleUploadWithCloudinary(img.file);

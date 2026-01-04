@@ -17,6 +17,7 @@ import {
   Heart,
   X,
 } from "lucide-react";
+import Head from "next/head";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
@@ -357,6 +358,9 @@ export default function CategoryWiseProduct() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-6 font-sans text-[#222222]">
+      {/* <Head>
+        <title>Sakigai - {slug}</title>
+      </Head> */}
       {/* Breadcrumbs */}
       <nav className="text-xs mb-8 flex items-center gap-2 text-gray-500">
         <span className="hover:underline cursor-pointer">Décor & Pillows</span>

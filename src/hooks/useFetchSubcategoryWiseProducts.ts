@@ -49,6 +49,8 @@ const useFetchSubcategoryWiseProducts = (
       { params: cleanParams }
     );
 
+    console.log(response.data,'subcategory data');
+
     return response.data;
   };
 

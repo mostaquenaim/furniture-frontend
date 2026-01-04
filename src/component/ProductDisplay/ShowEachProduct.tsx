@@ -6,9 +6,7 @@ import {
   Star,
   ChevronRight,
   ChevronLeft,
-  Heart,
   Truck,
-  Store,
   Facebook,
   Twitter,
   Instagram,
@@ -18,6 +16,9 @@ import { useParams } from "next/navigation";
 import useFetchAProduct from "@/hooks/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
 import { Review } from "@/types/product.types";
+import Title from "../Headers/Title";
+import ShowProductsFlex from "./ShowProductsFlex";
+import LikeItShareIt from "./LikeItShareIt";
 
 interface ReviewsData {
   reviews: Review[];
@@ -28,14 +29,9 @@ interface ReviewsData {
 const ReviewsSection = (reviewsData: ReviewsData) => {
   console.log(reviewsData, "reviewsData");
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12 text-[#262626]">
+    <section className=" py-12 text-[#262626]">
       {/* Header */}
-      <div className="flex justify-between items-baseline border-b border-gray-100 pb-4 mb-0">
-        <h2 className="text-[18px] font-normal">Ratings & Reviews</h2>
-        <button className="text-[11px] font-medium underline uppercase tracking-widest">
-          Write a Review
-        </button>
-      </div>
+      <Title title="Ratings & Reviews" />
 
       {/* Summary Box */}
       <div className="flex flex-col items-center py-10 bg-[#f9f8f6] mb-10">
@@ -141,7 +137,7 @@ const ReviewsSection = (reviewsData: ReviewsData) => {
 export default function ShowEachProduct() {
   const { slug } = useParams<{ slug: string }>();
   const { product, isLoading } = useFetchAProduct(slug);
-  console.log(product, "productproduct");
+  // console.log(product, "productproduct");
 
   // State for selections
   const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
@@ -234,6 +230,7 @@ export default function ShowEachProduct() {
         </span>
       </nav>
 
+      {/* display Images */}
       <div className="flex flex-col lg:flex-row gap-12 mb-20">
         {/* Left: Dynamic Image Gallery */}
         <div className="w-full lg:w-[60%] flex gap-4">
@@ -416,54 +413,22 @@ export default function ShowEachProduct() {
         </div>
       </div>
 
-      <hr className="mb-20" />
+      {/* Trending Section */}
+      <section>
+        <Title title={"You may also like"} />
+        <ShowProductsFlex />
+      </section>
 
       {/* Ratings & Reviews Section */}
       <ReviewsSection reviewsData={reviewsData}></ReviewsSection>
 
       {/* Trending Section */}
       <section>
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-xl font-light tracking-tight">Trending Now</h2>
-          <div className="flex gap-4">
-            <button className="p-2 border rounded-full hover:bg-gray-100">
-              <ChevronLeft size={16} />
-            </button>
-            <button className="p-2 border rounded-full hover:bg-gray-100">
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="group cursor-pointer">
-              <div className="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
-                <div className="w-full h-full bg-gray-200" />{" "}
-                {/* Replace with trending items images */}
-              </div>
-              <h3 className="text-[11px] font-medium leading-tight mb-1">
-                Recommended Item {i}
-              </h3>
-            </div>
-          ))}
-        </div>
+        <Title title="Trending Now" />
+        <ShowProductsFlex />
       </section>
 
-      {/* Footer Socials */}
-      <div className="flex justify-center gap-6 mt-20 pt-10 border-t">
-        <Facebook
-          size={18}
-          className="text-gray-400 hover:text-blue-600 cursor-pointer"
-        />
-        <Twitter
-          size={18}
-          className="text-gray-400 hover:text-blue-400 cursor-pointer"
-        />
-        <Instagram
-          size={18}
-          className="text-gray-400 hover:text-pink-600 cursor-pointer"
-        />
-      </div>
+      <LikeItShareIt />
     </div>
   );
 }
