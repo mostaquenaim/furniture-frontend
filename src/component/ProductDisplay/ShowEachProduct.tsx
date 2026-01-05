@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Star,
   ChevronRight,
@@ -19,36 +19,49 @@ import { Review } from "@/types/product.types";
 import Title from "../Headers/Title";
 import ShowProductsFlex from "./ShowProductsFlex";
 import LikeItShareIt from "./LikeItShareIt";
+import useAxiosPublic from "@/hooks/useAxiosPublic";
+import { isAuthenticated } from "@/utils/auth";
+import AuthModal from "../Auth/AuthModal";
+import useAxiosSecure from "@/hooks/useAxiosSecure";
 
 interface ReviewsData {
-  reviews: Review[];
+  reviews?: Review[];
   averageRating: number;
   ratingCount: number;
 }
 
-const ReviewsSection = (reviewsData: ReviewsData) => {
-  console.log(reviewsData, "reviewsData");
+const ReviewsSection: React.FC<ReviewsData> = ({
+  reviews,
+  averageRating,
+  ratingCount,
+}) => {
+  // console.log(reviewsData, "reviewsData");
   return (
-    <section className=" py-12 text-[#262626]">
+    <section className="py-12 text-[#262626]">
       {/* Header */}
       <Title title="Ratings & Reviews" />
 
       {/* Summary Box */}
-      <div className="flex flex-col items-center py-10 bg-[#f9f8f6] mb-10">
+      <div className="flex flex-col items-center gap-3 py-8 px-4 md:py-10 bg-[#f9f8f6] mb-10 text-center">
         <p className="text-[13px] mb-2 font-light">
-          {reviewsData.averageRating || 0} stars <span className="mx-1">|</span>{" "}
-          {reviewsData.ratingCount || 0}
+          {averageRating || 0} stars <span className="mx-1">|</span>{" "}
+          {ratingCount || 0}
           Reviews
         </p>
         <div className="flex gap-0.5 text-[#eeb012]">
           {[...Array(5)].map((_, i) => (
-            <Star key={i} size={18} fill="currentColor" stroke="none" />
+            <Star
+              key={i}
+              size={16}
+              fill={i < Math.round(averageRating) ? "currentColor" : "none"}
+              stroke="currentColor"
+            />
           ))}
         </div>
       </div>
 
       {/* Filters Row */}
-      <div className="mb-12">
+      <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
         <h3 className="text-[13px] font-medium mb-3">Filter Reviews</h3>
         <div className="space-y-4">
           <div>
@@ -64,8 +77,8 @@ const ReviewsSection = (reviewsData: ReviewsData) => {
       </div>
 
       {/* Sort and Pagination Header */}
-      <div className="flex justify-end items-center gap-6 mb-8">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col md:flex-row md:justify-end md:items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 text-gray-400 mt-6">
           <label className="text-[11px] uppercase tracking-wider">Sort</label>
           <select className="border border-gray-300 rounded-sm px-3 py-2 text-[13px] w-40 outline-none">
             <option>Lowest Rated</option>
@@ -79,9 +92,9 @@ const ReviewsSection = (reviewsData: ReviewsData) => {
       </div>
 
       {/* Individual Review */}
-      <div className="grid grid-cols-12 gap-8 border-t border-gray-100 pt-10 pb-16">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 border-t border-gray-100 pt-10 pb-16">
         {/* User Info Sidebar */}
-        <div className="col-span-3 space-y-1">
+        <div className="md:col-span-3 space-y-1 text-sm">
           <p className="text-[13px] font-medium">EAnthroInsider1</p>
           <p className="text-[12px] text-gray-600 font-light">
             <span className="font-normal text-gray-800">Location:</span> Merion,
@@ -98,7 +111,7 @@ const ReviewsSection = (reviewsData: ReviewsData) => {
         </div>
 
         {/* Review Content */}
-        <div className="col-span-9 relative">
+        <div className="md:col-span-9">
           <div className="flex justify-between items-start mb-2">
             <div className="flex gap-0.5 text-[#eeb012]">
               {[...Array(5)].map((_, i) => (
@@ -109,10 +122,10 @@ const ReviewsSection = (reviewsData: ReviewsData) => {
               Dec 8, 2025
             </span>
           </div>
-          <h4 className="text-[15px] font-medium mb-3">
+          <h4 className="text-sm md:text-[15px] font-medium mb-2">
             Perfect Personalization
           </h4>
-          <p className="text-[13px] text-gray-600 font-light leading-relaxed">
+          <p className="text-xs md:text-[13px] text-gray-600 leading-relaxed">
             Looks like a family heirloom and completes any gallery wall. Makes a
             great gift!
           </p>
@@ -143,6 +156,18 @@ export default function ShowEachProduct() {
   const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
   const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showCartPreview, setShowCartPreview] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  // const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
+
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedSizeId]);
 
   // Memoized derived data
   const currentVariant = useMemo(() => {
@@ -187,6 +212,54 @@ export default function ShowEachProduct() {
     };
   }, [product]);
 
+  // Add to basket handler function
+  const handleAddToBasket = async () => {
+    if (!currentVariant?.size) {
+      alert("Please select a size");
+      return;
+    }
+
+    setIsAdding(true);
+
+    try {
+      const productSizeId =
+        selectedSizeId || currentVariant?.color?.sizes?.[0].id;
+
+      console.log(productSizeId, "productSizeId");
+
+      const payload = {
+        productSizeId,
+        quantity: 1,
+      };
+
+      console.log(payload, "payload");
+
+      const hasUser = isAuthenticated();
+
+      let data = null;
+
+      if (!hasUser) {
+        data = localStorage.setItem(JSON.stringify(payload), "cart");
+      } else {
+        const response = await axiosSecure.post("/cart/items", payload);
+        data = await response.data;
+      }
+
+      setCartItemCount((prev) => prev + 1);
+      setShowCartPreview(true);
+
+      // Hide cart preview after 3 seconds
+      setTimeout(() => {
+        setShowCartPreview(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add to basket");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   if (isLoading)
     return (
       <div className="p-20 text-center animate-pulse">Loading {slug}...</div>
@@ -201,6 +274,8 @@ export default function ShowEachProduct() {
     product.discountType === "percentage"
       ? basePrice * (1 - product.discount / 100)
       : basePrice - product.discount;
+
+  const maxQuantity = Math.min(10, currentVariant?.size?.quantity || 0);
 
   if (isLoading) {
     return (
@@ -229,6 +304,46 @@ export default function ShowEachProduct() {
           {product.subCategories[0]?.subCategory?.name}
         </span>
       </nav>
+
+      {/* show cart preview */}
+      {showCartPreview && (
+        <div className="fixed top-0 lg:top-20 right-0 left-0 lg:left-auto lg:right-4 z-50 bg-white border border-gray-200 shadow-lg w-full lg:w-80 animate-fade-in">
+          <div className="p-4 border-b border-gray-200">
+            <p className="text-sm font-medium mb-4 text-center">
+              {quantity || 1} {quantity && quantity > 1 ? "items" : "item"}{" "}
+              added to your basket
+            </p>
+            <div className="hidden md:flex items-start gap-3">
+              <img
+                src={
+                  (displayImages &&
+                    displayImages[activeImgIndex] &&
+                    displayImages[activeImgIndex]?.image &&
+                    displayImages[activeImgIndex]?.image) ||
+                  ""
+                }
+                alt={product.title}
+                className="w-20 h-24 object-cover"
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium mb-1">{product.title}</p>
+                <p className="text-xs text-gray-600 mb-1">
+                  ৳{discountedPrice.toFixed(2)}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Color: {currentVariant?.color?.color?.name}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Size: {currentVariant?.size?.size?.name}
+                </p>
+              </div>
+            </div>
+          </div>
+          <button className="w-full bg-[#4E5B6D] text-white py-3 text-xs uppercase tracking-wider hover:bg-[#3d4857] transition">
+            Checkout
+          </button>
+        </div>
+      )}
 
       {/* display Images */}
       <div className="flex flex-col lg:flex-row gap-12 mb-20">
@@ -279,7 +394,6 @@ export default function ShowEachProduct() {
           <h1 className="text-3xl font-light mb-2 capitalize">
             {product.title}
           </h1>
-
           <div className="flex items-center gap-2 mb-4">
             <div className="flex text-yellow-500">
               {[...Array(5)].map((_, i) => (
@@ -290,18 +404,16 @@ export default function ShowEachProduct() {
               0 Reviews
             </span>
           </div>
-
           <div className="flex items-baseline gap-3 mb-8">
             <p className="text-2xl font-medium">
-              ${discountedPrice.toLocaleString()}
+              ৳{discountedPrice.toLocaleString()}
             </p>
             {product.discount > 0 && (
               <p className="text-gray-400 line-through text-lg">
-                ${basePrice.toLocaleString()}
+                ৳{basePrice.toLocaleString()}
               </p>
             )}
           </div>
-
           {/* Color Selection with HexCodes */}
           {product.showColor && (
             <div className="mb-6">
@@ -332,7 +444,6 @@ export default function ShowEachProduct() {
               </div>
             </div>
           )}
-
           {/* Size Selection */}
           <div className="mb-6">
             <p className="text-xs font-bold uppercase tracking-widest mb-3">
@@ -356,6 +467,28 @@ export default function ShowEachProduct() {
             </div>
           </div>
 
+          {/* Quantity */}
+          <div className="mb-6">
+            <p className="text-xs font-bold uppercase tracking-widest mb-3">
+              Quantity*
+            </p>
+
+            <select
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+              disabled={!currentVariant?.size?.quantity}
+              className="w-24 border border-gray-300 px-3 py-2 text-xs
+               focus:outline-none focus:border-black
+               disabled:bg-gray-100 disabled:text-gray-400"
+            >
+              {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Stock Info */}
           <p className="text-[10px] uppercase font-bold text-gray-500 mb-4">
             Availability:{" "}
@@ -364,11 +497,18 @@ export default function ShowEachProduct() {
                 `${currentVariant.size.quantity} In Stock`
               : "Out of Stock"}
           </p>
-
-          <button className="w-full bg-[#4E5B6D] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#3d4857] transition mb-4">
-            Add to Basket
+          {/* action buttons */}
+          <button
+            onClick={handleAddToBasket}
+            disabled={isAdding || !currentVariant?.size?.quantity}
+            className="w-full bg-[#4E5B6D] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#3d4857] transition mb-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {isAdding
+              ? "Adding..."
+              // : showCartPreview
+              // ? "Added to Basket"
+              : "Add to Basket"}
           </button>
-
           {/* Logistics from Object */}
           <div className="space-y-6 my-10 border-t pt-10">
             <div className="flex gap-4">
@@ -383,7 +523,6 @@ export default function ShowEachProduct() {
               </div>
             </div>
           </div>
-
           {/* Accordions mapped to JSON keys */}
           <div className="border-t">
             {[
@@ -429,6 +568,7 @@ export default function ShowEachProduct() {
       </section>
 
       <LikeItShareIt />
+      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

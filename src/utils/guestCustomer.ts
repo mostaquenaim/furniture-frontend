@@ -3,7 +3,7 @@ import axios from "axios";
 export const getCustomerInfo = async () => {
   const token = localStorage.getItem("token");
 
-  // 1️⃣ If token exists, verify with backend
+  // If token exists, verify with backend
   if (token) {
     try {
       const res = await axios.get(
@@ -15,7 +15,7 @@ export const getCustomerInfo = async () => {
         }
       );
 
-    //   console.log(res.data,'res.data');
+      //   console.log(res.data,'res.data');
 
       // ✅ Logged-in user
       localStorage.setItem("user", JSON.stringify(res.data));
@@ -27,7 +27,7 @@ export const getCustomerInfo = async () => {
     }
   }
 
-  // 2️⃣ Guest user fallback
+  // Guest user fallback
   let guestCustomerInfo = JSON.parse(
     localStorage.getItem("guestCustomerInfo") || "null"
   );
@@ -48,7 +48,7 @@ export const getCustomerInfo = async () => {
   }
 
   localStorage.setItem("user", JSON.stringify(guestCustomerInfo));
-  const {password, ...guestInfoWithoutPassword} = guestCustomerInfo;
+  const { password, ...guestInfoWithoutPassword } = guestCustomerInfo;
   console.log(guestInfoWithoutPassword);
   return guestInfoWithoutPassword;
 };

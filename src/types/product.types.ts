@@ -52,6 +52,7 @@ export interface ProductSize {
   quantity?: number;
   sizeId?: number;
   colorId?: number;
+  size: ProductSizeRelation;
 }
 
 export interface ProductColor {
@@ -104,10 +105,10 @@ enum UserRole {
 }
 
 export interface ProductSizeRelation {
-  size: {
-    id: number;
-    name: string;
-  };
+  // size: {
+  id: number;
+  name: string;
+  // };
 }
 
 interface ProductsMeta {
