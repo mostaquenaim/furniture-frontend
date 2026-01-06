@@ -10,9 +10,9 @@ const CheckoutPageComponent = () => {
       {/* Checkout Progress Stepper */}
       <div className="flex justify-center items-center mb-12">
         <div className="flex items-center w-full max-w-2xl relative">
-          <Step label="Ship or Pick Up" active />
-          <div className="flex-1 h-[1px] bg-gray-300 mx-2 mt-[-20px]"></div>
-          <Step label="Delivery" active={false} />
+          <Step label="Shipment" active />
+          {/* <div className="flex-1 h-[1px] bg-gray-300 mx-2 mt-[-20px]"></div>
+          <Step label="Delivery" active={false} /> */}
           <div className="flex-1 h-[1px] bg-gray-300 mx-2 mt-[-20px]"></div>
           <Step label="Payment" active={false} />
         </div>
