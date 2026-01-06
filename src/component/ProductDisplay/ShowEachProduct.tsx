@@ -307,7 +307,7 @@ export default function ShowEachProduct() {
 
       {/* show cart preview */}
       {showCartPreview && (
-        <div className="fixed top-0 lg:top-20 right-0 left-0 lg:left-auto lg:right-4 z-50 bg-white border border-gray-200 shadow-lg w-full lg:w-80 animate-fade-in">
+        <div className="fixed top-0 lg:top-14 right-0 left-0 lg:left-auto lg:right-4 z-50 bg-white border border-gray-200 shadow-lg w-full lg:w-80 animate-fade-in">
           <div className="p-4 border-b border-gray-200">
             <p className="text-sm font-medium mb-4 text-center">
               {quantity || 1} {quantity && quantity > 1 ? "items" : "item"}{" "}
@@ -505,9 +505,9 @@ export default function ShowEachProduct() {
           >
             {isAdding
               ? "Adding..."
-              // : showCartPreview
-              // ? "Added to Basket"
-              : "Add to Basket"}
+              : // : showCartPreview
+                // ? "Added to Basket"
+                "Add to Basket"}
           </button>
           {/* Logistics from Object */}
           <div className="space-y-6 my-10 border-t pt-10">

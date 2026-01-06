@@ -5,9 +5,13 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-const ShowProductsFlex = () => {
+type ShowProductType = {
+  maxWidth?: string;
+};
+
+const ShowProductsFlex = ({ maxWidth }: ShowProductType) => {
   return (
-    <div className="relative">
+    <div className={`${maxWidth && maxWidth} relative`}>
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={16}
@@ -38,7 +42,8 @@ const ShowProductsFlex = () => {
             spaceBetween: 16,
           },
         }}
-        className="!pb-12"
+        loop={true}
+        className="pb-12!"
       >
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <SwiperSlide key={i}>
