@@ -170,8 +170,8 @@ const OrderSummary = ({ subtotal, total, surcharge }) => (
       <div className="space-y-3 text-sm border-b pb-4 mb-4">
         <div className="flex justify-between">
           <span>Subtotal</span>
-          <span className="flex items-center">
-            <TakaIcon size={14} /> {subtotal.toLocaleString()}
+          <span className="flex items-center gap-1">
+            <TakaIcon /> {subtotal.toLocaleString()}
           </span>
         </div>
         <div className="flex justify-between">
@@ -180,14 +180,14 @@ const OrderSummary = ({ subtotal, total, surcharge }) => (
         </div>
         <div className="flex justify-between">
           <span>Handling Surcharge</span>
-          <span className="flex items-center">
-            <TakaIcon size={14} /> {surcharge.toLocaleString()}
+          <span className="flex items-center gap-1">
+            <TakaIcon /> {surcharge.toLocaleString()}
           </span>
         </div>
         <div className="flex justify-between font-bold text-base pt-2">
           <span>Total</span>
-          <span className="flex items-center">
-            <TakaIcon size={16} /> {total.toLocaleString()}
+          <span className="flex items-center gap-1">
+            <TakaIcon /> {total.toLocaleString()}
           </span>
         </div>
       </div>
