@@ -1,4 +1,4 @@
-import CreateBlog from "@/component/Blog/BlogPageComp";
+import CreateBlog from "@/component/Blog/CreateBlogPageComp";
 
 const BlogAddPage = () => {
     return (

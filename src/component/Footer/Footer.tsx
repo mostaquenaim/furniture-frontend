@@ -236,7 +236,7 @@ const SocialAndAppLinks: React.FC = () => (
 // --- MAIN FOOTER COMPONENT ---
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-stone-100 text-gray-800 pt-8 mt-12 border-t border-stone-200 ">
+    <footer className="bg-stone-100 text-gray-800 pt-8 border-t border-stone-200 ">
       <div className="max-w-7xl mx-auto">
         <EmailSignUp />
 

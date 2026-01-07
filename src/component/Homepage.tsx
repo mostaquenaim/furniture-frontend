@@ -181,55 +181,6 @@ export default function Homepage() {
           </p>
         </div>
 
-        {/* Email Signup */}
-        <div className="bg-gray-50 px-4 py-8">
-          <h3 className="text-lg font-serif mb-2">Sign Up for Email</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Stay in the know with new arrivals, sales, exclusive coupons, events
-            and more!
-          </p>
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="w-full px-4 py-3 border border-gray-300 rounded mb-3 text-sm"
-          />
-          <button className="w-full bg-gray-700 text-white py-3 rounded font-semibold">
-            SUBMIT
-          </button>
-          <p className="text-xs text-gray-500 mt-4">
-            By signing up, you will receive Sakigai offers, promotions and
-            other commercial messages...
-          </p>
-        </div>
-
-        {/* Footer Links */}
-        <div className="border-t">
-          <div className="px-4 py-4 flex items-center justify-between border-b">
-            <div className="flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-gray-600" />
-              <span className="text-sm">Store Locator</span>
-            </div>
-          </div>
-          <div className="px-4 py-4 flex items-center justify-between border-b">
-            <div className="flex items-center gap-3">
-              <Phone className="w-5 h-5 text-gray-600" />
-              <span className="text-sm">AnthroPerks</span>
-            </div>
-          </div>
-          <div className="px-4 py-4 flex items-center justify-between border-b">
-            <div className="flex items-center gap-3">
-              <ShoppingBag className="w-5 h-5 text-gray-600" />
-              <span className="text-sm">Sign Up For Texts</span>
-            </div>
-          </div>
-          <div className="px-4 py-4 flex items-center justify-between border-b">
-            <div className="flex items-center gap-3">
-              <MessageCircle className="w-5 h-5 text-gray-600" />
-              <span className="text-sm">Chat With Us</span>
-            </div>
-          </div>
-        </div>
-
         {/* Side Menu */}
         <div
           className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity ${
