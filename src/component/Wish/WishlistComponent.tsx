@@ -69,6 +69,10 @@ const WishlistComponent = () => {
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const LIMIT = 8;
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const removeItem = async (id: number) => {
     try {
@@ -121,11 +125,20 @@ const WishlistComponent = () => {
     }
   };
 
+  // fetch wishlist
   useEffect(() => {
     const fetchWishlist = async () => {
+      setLoading(true);
+
       try {
-        const res = await axiosSecure.get("/wishlist");
-        const formatted: WishlistItem[] = res.data.map((w: any) => ({
+        const res = await axiosSecure.get("/wishlist", {
+          params: {
+            page,
+            limit: LIMIT,
+          },
+        });
+
+        const formatted: WishlistItem[] = res.data.items.map((w: any) => ({
           id: w.id,
           productId: w.productId,
           name: w.product.name,
@@ -133,21 +146,33 @@ const WishlistComponent = () => {
           image: w.product.image,
           price: w.product.price,
           originalPrice: w.product.originalPrice,
-          inStock: w.product.inStock || true,
+          inStock: w.product.inStock ?? true,
           isNew: w.product.isNew,
           rating: w.product.rating,
           reviewCount: w.product.reviewCount,
         }));
+
         setItems(formatted);
+        setTotalPages(res.data.totalPages);
       } catch {
-        setItems(mockWishlist);
-        toast.error("Failed to load wishlist");
+        // 🔁 Mock pagination fallback
+        const start = (page - 1) * LIMIT;
+        const paginated = mockWishlist.slice(start, start + LIMIT);
+
+        setItems(paginated);
+        setTotalPages(Math.ceil(mockWishlist.length / LIMIT));
       } finally {
         setLoading(false);
       }
     };
+
     fetchWishlist();
-  }, [axiosSecure]);
+  }, [page, axiosSecure]);
+
+  // smooth page change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -383,12 +408,58 @@ const WishlistComponent = () => {
               ))}
             </div>
 
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-12 flex justify-center items-center gap-2">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  className={`px-3 py-2 text-sm border ${
+                    page === 1
+                      ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                      : "border-gray-800 hover:bg-gray-800 hover:text-white"
+                  }`}
+                >
+                  Prev
+                </button>
+
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`px-4 py-2 text-sm border ${
+                        page === pageNum
+                          ? "bg-gray-900 text-white border-gray-900"
+                          : "border-gray-300 hover:bg-gray-100"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                  className={`px-3 py-2 text-sm border ${
+                    page === totalPages
+                      ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                      : "border-gray-800 hover:bg-gray-800 hover:text-white"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+
             {/* Summary Bar */}
             <div className="mt-12 p-6 bg-white rounded-lg shadow-sm">
               <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="text-sm text-gray-600">
                   <p>
-                    {selectedItems.length} of {items.length} items selected 
+                    {selectedItems.length} of {items.length} items selected
                     {/* {items.filter((item) => item.inStock).length} in stock •
                     {items.filter((item) => !item.inStock).length} out of stock */}
                   </p>
