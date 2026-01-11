@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Home,
   Globe,
+  Filter,
 } from "lucide-react";
 
 interface FAQItem {
@@ -180,6 +181,7 @@ const FAQPageComp = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(1);
   const [activeCategory, setActiveCategory] = useState<string | "All">("All");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar toggle
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const categories = [
@@ -251,7 +253,7 @@ const FAQPageComp = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-gray-900 to-black text-white">
+      <div className="bg-linear-to-r from-gray-900 to-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -297,39 +299,56 @@ const FAQPageComp = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Categories Sidebar */}
+          {/* Categories Sidebar (Expandable on Mobile) */}
           <div className="lg:w-1/4">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-              <h3 className="font-semibold text-gray-900 mb-4">Categories</h3>
-              <div className="space-y-2">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden lg:sticky lg:top-24">
+              {/* Mobile Header / Toggle */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="w-full flex lg:hidden items-center justify-between p-4 bg-white text-gray-900 font-semibold"
+              >
+                <div className="flex items-center gap-2">
+                  <Filter className="w-5 h-5" />
+                  <span>Category: {activeCategory}</span>
+                </div>
+                {isSidebarOpen ? (
+                  <ChevronUp className="w-5 h-5" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
+              </button>
+
+              {/* Desktop Header */}
+              <div className="hidden lg:block p-6 pb-2">
+                <h3 className="font-bold text-gray-900">Categories</h3>
+              </div>
+
+              {/* Categories List */}
+              <div
+                className={`${
+                  isSidebarOpen ? "block" : "hidden"
+                } lg:block p-2 lg:p-4 space-y-1`}
+              >
                 {categories.map((category) => (
                   <button
                     key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+                    onClick={() => {
+                      setActiveCategory(category);
+                      setIsSidebarOpen(false); // Close on selection (mobile)
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
                       activeCategory === category
                         ? "bg-black text-white"
                         : "hover:bg-gray-100 text-gray-700"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      {category !== "All" && (
-                        <div
-                          className={`p-2 rounded-lg ${
-                            activeCategory === category
-                              ? "bg-white/20"
-                              : "bg-gray-100"
-                          }`}
-                        >
-                          {categoryIcons[category]}
-                        </div>
-                      )}
-                      <span className="font-medium">{category}</span>
+                      <span className="text-sm font-medium">{category}</span>
                     </div>
                     <span
-                      className={`text-sm px-2 py-1 rounded-full ${
+                      className={`text-xs px-2 py-0.5 rounded-full ${
                         activeCategory === category
                           ? "bg-white/20"
                           : "bg-gray-100"
@@ -339,8 +358,12 @@ const FAQPageComp = () => {
                     </span>
                   </button>
                 ))}
+                <div className="mt-6 pt-6 border-t lg:hidden grid grid-cols-2 gap-2">
+                   <a href="/contact" className="text-center py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">Email Us</a>
+                   <a href="/live-chat" className="text-center py-2 bg-gray-50 text-gray-600 rounded-lg text-xs font-bold">Live Chat</a>
+                </div>
               </div>
-
+           
               {/* Help Card */}
               <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
                 <h4 className="font-semibold text-blue-900 mb-2">
