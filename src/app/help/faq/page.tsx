@@ -1,11 +1,12 @@
-import React from 'react';
+import FAQPageComp from "@/component/Help/FAQ";
+import React from "react";
 
 const FAQPage = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+  return (
+    <div>
+      <FAQPageComp />
+    </div>
+  );
 };
 
 export default FAQPage;

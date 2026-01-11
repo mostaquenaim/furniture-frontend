@@ -140,6 +140,10 @@ const TrackOrder = () => {
       if (error.response?.status === 404) {
         toast.error("Order not found. Please check your details.");
         setOrder(mockOrder);
+        toast("Showing demo tracking information", {
+          icon: "ℹ️",
+          duration: 4000,
+        });
       } else {
         setOrder(mockOrder);
         toast("Showing demo tracking information", {
@@ -247,9 +251,9 @@ const TrackOrder = () => {
 
         {/* Order Result */}
         {order && (
-          <div className="space-y-8 animate-fadeIn">
+          <div className="space-y-8 animate-fade-in">
             {/* Status Banner */}
-            <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-8">
+            <div className="bg-linear-to-r from-gray-900 to-black text-white rounded-2xl p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
