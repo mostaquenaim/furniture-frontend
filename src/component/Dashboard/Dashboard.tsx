@@ -174,7 +174,7 @@ const DashboardComp = () => {
       title: 'Help & Support',
       description: 'Contact us or browse FAQs',
       icon: <MessageSquare className="w-6 h-6" />,
-      href: '/customer/help',
+      href: '/help/help-center',
       color: 'text-cyan-600',
       bgColor: 'bg-cyan-50'
     },
