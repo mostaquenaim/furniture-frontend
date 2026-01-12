@@ -207,7 +207,7 @@ const OrderHistoryPage = () => {
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
       case "delivered":
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-green-100 text-gray-700 border-gray-200";
       case "shipped":
         return "bg-gray-50 text-gray-700 border-gray-200";
       case "processing":

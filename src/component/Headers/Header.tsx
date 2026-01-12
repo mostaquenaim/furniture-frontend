@@ -30,6 +30,7 @@ import sampleData from "@/data/sampleData";
 import useFetchNavitems from "@/hooks/useFetchNavitems";
 import Link from "next/link";
 import Image from "next/image";
+import { MdDashboard } from "react-icons/md";
 
 // Desktop MegaMenu Component (Unchanged)
 const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
@@ -182,8 +183,8 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                     {" "}
                     {token ? (
                       <span className="flex gap-2 item-center justify-center">
-                        Profile
-                        <User size={20} />
+                        Dashboard
+                        <MdDashboard size={20} />
                       </span>
                     ) : (
                       "Sign In / Sign Up"
@@ -421,8 +422,8 @@ const Header = () => {
                       >
                         {token ? (
                           <span className="flex gap-2 item-center justify-center">
-                            Profile
-                            <User size={20} />
+                            Dashboard
+                            <MdDashboard size={20} />
                           </span>
                         ) : (
                           "Sign In / Sign Up"
