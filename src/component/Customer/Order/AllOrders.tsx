@@ -194,35 +194,39 @@ const OrderHistoryPage = () => {
   const getStatusIcon = (status: Order["status"]) => {
     switch (status) {
       case "delivered":
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
+        return <CheckCircle className="w-4 h-4 text-gray-700" />;
       case "shipped":
-        return <Truck className="w-5 h-5 text-blue-600" />;
+        return <Truck className="w-4 h-4 text-gray-700" />;
       case "processing":
-        return <Package className="w-5 h-5 text-amber-600" />;
+        return <Package className="w-4 h-4 text-gray-700" />;
       case "cancelled":
-        return <XCircle className="w-5 h-5 text-red-600" />;
+        return <XCircle className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
       case "delivered":
-        return "bg-green-50 text-green-700 border-green-200";
+        return "bg-gray-50 text-gray-700 border-gray-200";
       case "shipped":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-gray-50 text-gray-700 border-gray-200";
       case "processing":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-gray-50 text-gray-700 border-gray-200";
       case "cancelled":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "bg-gray-50 text-gray-400 border-gray-200";
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-serif mb-2">Order History</h1>
-        <p className="text-gray-600">View and manage your past orders</p>
+      <div className="mb-10">
+        <h1 className="text-2xl md:text-3xl font-medium mb-1.5 tracking-tight text-gray-900">
+          Order History
+        </h1>
+        <p className="text-sm text-gray-500">
+          View and manage your past orders
+        </p>
       </div>
 
       {/* Search and Filters */}
@@ -230,30 +234,30 @@ const OrderHistoryPage = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search by order number or item..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 placeholder:text-gray-400"
             />
           </div>
 
           {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="px-4 py-2.5 border border-gray-300 rounded-md hover:bg-gray-50 transition flex items-center gap-2 justify-center sm:justify-start"
+            className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 justify-center sm:justify-start text-gray-700"
           >
-            <Filter className="w-5 h-5" />
+            <Filter className="w-4 h-4" />
             <span>Filters</span>
           </button>
         </div>
 
         {/* Filter Options */}
         {showFilters && (
-          <div className="p-4 border border-gray-200 rounded-md bg-gray-50">
-            <label className="block text-sm font-medium mb-2">
+          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <label className="block text-xs font-medium mb-3 text-gray-700 uppercase tracking-wide">
               Order Status
             </label>
             <div className="flex flex-wrap gap-2">
@@ -262,10 +266,10 @@ const OrderHistoryPage = () => {
                   <button
                     key={status}
                     onClick={() => setFilterStatus(status)}
-                    className={`px-4 py-2 rounded-full text-sm transition ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       filterStatus === status
-                        ? "bg-black text-white"
-                        : "bg-white border border-gray-300 hover:border-gray-400"
+                        ? "bg-gray-900 text-white"
+                        : "bg-white border border-gray-200 hover:border-gray-300 text-gray-700"
                     }`}
                   >
                     {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -278,12 +282,12 @@ const OrderHistoryPage = () => {
       </div>
 
       {/* Orders List */}
-      <div className="space-y-4 mb-8">
+      <div className="space-y-3 mb-8">
         {currentOrders.length === 0 ? (
-          <div className="text-center py-12 border border-gray-200 rounded-lg">
-            <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">No orders found</p>
-            <p className="text-gray-400 text-sm mt-1">
+          <div className="text-center py-16 border border-gray-200 rounded-lg bg-white">
+            <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+            <p className="text-gray-900 text-sm font-medium">No orders found</p>
+            <p className="text-gray-500 text-xs mt-1">
               Try adjusting your search or filters
             </p>
           </div>
@@ -291,19 +295,19 @@ const OrderHistoryPage = () => {
           currentOrders.map((order) => (
             <div
               key={order.orderId}
-              className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition"
+              className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 transition-colors bg-white"
             >
               {/* Order Header */}
-              <div className="p-4 md:p-6 bg-white">
+              <div className="p-5 md:p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-2.5 mb-2">
                       {getStatusIcon(order.status)}
-                      <h3 className="font-semibold text-lg">
-                        Order {order.orderId}
+                      <h3 className="font-medium text-base text-gray-900">
+                        {order.orderId}
                       </h3>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                        className={`px-2.5 py-0.5 rounded text-xs font-medium border ${getStatusColor(
                           order.status
                         )}`}
                       >
@@ -311,16 +315,16 @@ const OrderHistoryPage = () => {
                           order.status.slice(1)}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p>Placed on {order.date}</p>
+                    <div className="text-xs text-gray-500 space-y-0.5">
+                      <p>{order.date}</p>
                       <p>
                         {order.items.length}{" "}
-                        {order.items.length === 1 ? "item" : "items"} • $
+                        {order.items.length === 1 ? "item" : "items"} · $
                         {order.total.toFixed(2)}
                       </p>
                       {order.estimatedDelivery && (
-                        <p className="text-blue-600">
-                          Estimated delivery: {order.estimatedDelivery}
+                        <p className="text-gray-700">
+                          Est. delivery: {order.estimatedDelivery}
                         </p>
                       )}
                     </div>
@@ -329,19 +333,19 @@ const OrderHistoryPage = () => {
                   {/* Quick Actions */}
                   <div className="flex flex-wrap gap-2">
                     {order.trackingNumber && (
-                      <button className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition flex items-center gap-2">
-                        <Truck className="w-4 h-4" />
+                      <button className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-gray-700">
+                        <Truck className="w-3.5 h-3.5" />
                         Track
                       </button>
                     )}
                     {order.status === "delivered" && (
-                      <button className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition flex items-center gap-2">
-                        <RotateCcw className="w-4 h-4" />
+                      <button className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-gray-700">
+                        <RotateCcw className="w-3.5 h-3.5" />
                         Return
                       </button>
                     )}
-                    <button className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition flex items-center gap-2">
-                      <Download className="w-4 h-4" />
+                    <button className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-gray-700">
+                      <Download className="w-3.5 h-3.5" />
                       Invoice
                     </button>
                     <button
@@ -350,13 +354,13 @@ const OrderHistoryPage = () => {
                           expandedOrder === order.orderId ? null : order.orderId
                         )
                       }
-                      className="px-4 py-2 text-sm bg-black text-white rounded-md hover:bg-gray-800 transition flex items-center gap-2"
+                      className="px-3 py-1.5 text-xs bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1.5"
                     >
                       Details
                       {expandedOrder === order.orderId ? (
-                        <ChevronUp className="w-4 h-4" />
+                        <ChevronUp className="w-3.5 h-3.5" />
                       ) : (
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown className="w-3.5 h-3.5" />
                       )}
                     </button>
                   </div>
@@ -365,26 +369,30 @@ const OrderHistoryPage = () => {
 
               {/* Expanded Order Details */}
               {expandedOrder === order.orderId && (
-                <div className="border-t border-gray-200 bg-gray-50 p-4 md:p-6">
+                <div className="border-t border-gray-200 bg-gray-50 p-5 md:p-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* Items */}
                     <div>
-                      <h4 className="font-medium mb-3">Items Ordered</h4>
-                      <div className="space-y-3">
+                      <h4 className="font-medium mb-3 text-sm text-gray-900">
+                        Items Ordered
+                      </h4>
+                      <div className="space-y-2">
                         {order.items.map((item) => (
                           <div
                             key={item.id}
-                            className="flex gap-3 bg-white p-3 rounded-md"
+                            className="flex gap-3 bg-white p-3 rounded-lg border border-gray-200"
                           >
-                            <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-3xl">
+                            <div className="w-14 h-14 bg-gray-50 rounded flex items-center justify-center text-2xl flex-shrink-0">
                               {item.image}
                             </div>
-                            <div className="flex-1">
-                              <p className="font-medium text-sm">{item.name}</p>
-                              <p className="text-sm text-gray-600">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-xs text-gray-900 leading-relaxed">
+                                {item.name}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">
                                 Qty: {item.qty}
                               </p>
-                              <p className="text-sm font-medium mt-1">
+                              <p className="text-xs font-medium mt-1 text-gray-900">
                                 ${item.price.toFixed(2)}
                               </p>
                             </div>
@@ -395,38 +403,50 @@ const OrderHistoryPage = () => {
 
                     {/* Order Info */}
                     <div>
-                      <h4 className="font-medium mb-3">Order Information</h4>
-                      <div className="bg-white p-4 rounded-md space-y-3 text-sm">
+                      <h4 className="font-medium mb-3 text-sm text-gray-900">
+                        Order Information
+                      </h4>
+                      <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3 text-xs">
                         <div>
-                          <p className="text-gray-600 mb-1">Delivery Address</p>
-                          <p className="font-medium">{order.deliveryAddress}</p>
+                          <p className="text-gray-500 mb-1">Delivery Address</p>
+                          <p className="font-medium text-gray-900">
+                            {order.deliveryAddress}
+                          </p>
                         </div>
                         {order.trackingNumber && (
                           <div>
-                            <p className="text-gray-600 mb-1">
+                            <p className="text-gray-500 mb-1">
                               Tracking Number
                             </p>
-                            <p className="font-mono text-sm bg-gray-50 px-2 py-1 rounded inline-block">
+                            <p className="font-mono text-xs bg-gray-50 px-2 py-1 rounded inline-block text-gray-900 border border-gray-200">
                               {order.trackingNumber}
                             </p>
                           </div>
                         )}
                         <div className="pt-3 border-t border-gray-200">
                           <div className="flex justify-between mb-2">
-                            <span className="text-gray-600">Subtotal</span>
-                            <span>${(order.total * 0.9).toFixed(2)}</span>
+                            <span className="text-gray-500">Subtotal</span>
+                            <span className="text-gray-900">
+                              ${(order.total * 0.9).toFixed(2)}
+                            </span>
                           </div>
                           <div className="flex justify-between mb-2">
-                            <span className="text-gray-600">Shipping</span>
-                            <span>${(order.total * 0.05).toFixed(2)}</span>
+                            <span className="text-gray-500">Shipping</span>
+                            <span className="text-gray-900">
+                              ${(order.total * 0.05).toFixed(2)}
+                            </span>
                           </div>
                           <div className="flex justify-between mb-2">
-                            <span className="text-gray-600">Tax</span>
-                            <span>${(order.total * 0.05).toFixed(2)}</span>
+                            <span className="text-gray-500">Tax</span>
+                            <span className="text-gray-900">
+                              ${(order.total * 0.05).toFixed(2)}
+                            </span>
                           </div>
-                          <div className="flex justify-between font-semibold text-base pt-2 border-t border-gray-200">
-                            <span>Total</span>
-                            <span>${order.total.toFixed(2)}</span>
+                          <div className="flex justify-between font-medium text-sm pt-2 border-t border-gray-200">
+                            <span className="text-gray-900">Total</span>
+                            <span className="text-gray-900">
+                              ${order.total.toFixed(2)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -445,7 +465,7 @@ const OrderHistoryPage = () => {
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-gray-700"
           >
             Previous
           </button>
@@ -455,10 +475,10 @@ const OrderHistoryPage = () => {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`w-10 h-10 rounded-md transition ${
+                className={`w-9 h-9 rounded-lg transition-colors text-sm ${
                   currentPage === page
-                    ? "bg-black text-white"
-                    : "border border-gray-300 hover:bg-gray-50"
+                    ? "bg-gray-900 text-white"
+                    : "border border-gray-200 hover:bg-gray-50 text-gray-700"
                 }`}
               >
                 {page}
@@ -471,7 +491,7 @@ const OrderHistoryPage = () => {
               setCurrentPage(Math.min(totalPages, currentPage + 1))
             }
             disabled={currentPage === totalPages}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-gray-700"
           >
             Next
           </button>
@@ -479,8 +499,8 @@ const OrderHistoryPage = () => {
       )}
 
       {/* Results Summary */}
-      <div className="text-center mt-4 text-sm text-gray-600">
-        Showing {indexOfFirstOrder + 1}-
+      <div className="text-center mt-4 text-xs text-gray-500">
+        Showing {indexOfFirstOrder + 1}–
         {Math.min(indexOfLastOrder, filteredOrders.length)} of{" "}
         {filteredOrders.length} orders
       </div>

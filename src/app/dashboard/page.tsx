@@ -5,7 +5,7 @@ import React from "react";
 const Dashboard = () => {
   return (
     <div>
-      <DashboardComp/>
+      <DashboardComp />
     </div>
   );
 };

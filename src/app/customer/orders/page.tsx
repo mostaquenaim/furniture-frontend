@@ -1,6 +1,7 @@
 import OrderHistoryPage from "@/component/Customer/Order/AllOrders";
+import React from "react";
 
-const AllOrdersPage = () => {
+const Orders = () => {
   return (
     <div>
       <OrderHistoryPage />
@@ -8,4 +9,4 @@ const AllOrdersPage = () => {
   );
 };
 
-export default AllOrdersPage;
+export default Orders;

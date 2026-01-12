@@ -1,5 +1,5 @@
 import ProtectedRoute from "@/component/ProtectedRoute";
-import WishlistComponent from "@/component/Wish/WishlistComponent";
+import WishlistComponent from "@/component/Customer/Wish/WishlistComponent";
 
 const Wishlist = () => {
   return (

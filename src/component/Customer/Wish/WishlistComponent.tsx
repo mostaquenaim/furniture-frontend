@@ -16,9 +16,9 @@ import {
   Tag,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import Title from "../Headers/Title";
-import LoadingDots from "../Loading/LoadingDS";
-import ShowProductsFlex from "../ProductDisplay/ShowProductsFlex";
+import Title from "../../Headers/Title";
+import LoadingDots from "../../Loading/LoadingDS";
+import ShowProductsFlex from "../../ProductDisplay/ShowProductsFlex";
 
 interface WishlistItem {
   id: number;
