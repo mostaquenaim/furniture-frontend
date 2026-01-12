@@ -93,7 +93,7 @@ const ProductAdd = () => {
     productDetails: "",
     dimension: "",
     shippingReturn:
-      "30 days return policy. Free shipping on orders above $100.",
+      "30 days return policy. Free shipping on orders above ৳100.",
     isActive: true,
     seriesId: null,
     categoryId: null,

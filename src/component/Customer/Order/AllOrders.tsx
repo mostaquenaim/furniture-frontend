@@ -319,7 +319,7 @@ const OrderHistoryPage = () => {
                       <p>{order.date}</p>
                       <p>
                         {order.items.length}{" "}
-                        {order.items.length === 1 ? "item" : "items"} · $
+                        {order.items.length === 1 ? "item" : "items"} · ৳
                         {order.total.toFixed(2)}
                       </p>
                       {order.estimatedDelivery && (

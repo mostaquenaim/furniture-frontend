@@ -40,7 +40,7 @@ const faqData: FAQItem[] = [
     id: 2,
     question: "What payment methods do you accept?",
     answer:
-      "We accept Visa, MasterCard, American Express, PayPal, Apple Pay, and Google Pay. All payments are processed securely through encrypted channels. We also offer installment payment options for orders above $500 through our financing partners.",
+      "We accept Visa, MasterCard, American Express, PayPal, Apple Pay, and Google Pay. All payments are processed securely through encrypted channels. We also offer installment payment options for orders above ৳500 through our financing partners.",
     category: "Ordering & Products",
     tags: ["payment", "credit cards", "financing"],
   },
@@ -58,7 +58,7 @@ const faqData: FAQItem[] = [
     id: 4,
     question: "What are your shipping options and costs?",
     answer:
-      "We offer standard shipping (5-7 business days) for $9.99, express shipping (2-3 business days) for $19.99, and overnight shipping for $39.99. Free standard shipping is available on all orders over $199. International shipping rates vary by destination.",
+      "We offer standard shipping (5-7 business days) for ৳9.99, express shipping (2-3 business days) for ৳19.99, and overnight shipping for ৳39.99. Free standard shipping is available on all orders over ৳199. International shipping rates vary by destination.",
     category: "Shipping & Delivery",
     tags: ["shipping", "delivery", "costs"],
   },
@@ -92,7 +92,7 @@ const faqData: FAQItem[] = [
     id: 8,
     question: "What is your return policy?",
     answer:
-      "We offer a 30-day return policy for most items. Items must be in original condition with all packaging. Custom or made-to-order items are not eligible for return. Return shipping is free for defective items; otherwise, a $9.99 return shipping fee applies.",
+      "We offer a 30-day return policy for most items. Items must be in original condition with all packaging. Custom or made-to-order items are not eligible for return. Return shipping is free for defective items; otherwise, a ৳9.99 return shipping fee applies.",
     category: "Returns & Exchanges",
     tags: ["returns", "refunds", "policy"],
   },
@@ -154,7 +154,7 @@ const faqData: FAQItem[] = [
     id: 15,
     question: "Do you offer interior design consultations?",
     answer:
-      "Yes, we offer complimentary virtual design consultations for orders over $2,500. Our design experts can help you select pieces that work for your space. Book a consultation through our website or contact our design team directly.",
+      "Yes, we offer complimentary virtual design consultations for orders over ৳2,500. Our design experts can help you select pieces that work for your space. Book a consultation through our website or contact our design team directly.",
     category: "Services & Support",
     tags: ["design", "consultation", "styling"],
   },

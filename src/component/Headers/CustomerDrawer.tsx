@@ -295,7 +295,7 @@ const CustomerDashboard = () => {
               <div className="bg-white p-5 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between mb-2">
                   <Gift className="w-8 h-8 text-purple-600" />
-                  <span className="text-2xl font-bold">$45</span>
+                  <span className="text-2xl font-bold">৳45</span>
                 </div>
                 <p className="text-sm text-gray-600 font-medium">Reward Credits</p>
               </div>
@@ -333,7 +333,7 @@ const CustomerDashboard = () => {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-sm">Rewards Earned</p>
-                    <p className="text-sm text-gray-600">You earned $15 in reward credits</p>
+                    <p className="text-sm text-gray-600">You earned ৳15 in reward credits</p>
                     <p className="text-xs text-gray-500 mt-1">3 days ago</p>
                   </div>
                 </div>

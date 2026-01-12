@@ -70,7 +70,7 @@ const megaMenuData = {
     },
     {
       title: "Shop by Price",
-      links: ["Under $25", "Under $50", "Under $75", "Under $100"],
+      links: ["Under ৳25", "Under ৳50", "Under ৳75", "Under ৳100"],
     },
   ],
   "Art & Mirrors": [

@@ -126,7 +126,7 @@ function QuickShopModal({
                 <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
                   {product.discountType === "percentage"
                     ? `${product.discount}% OFF`
-                    : `$${(product.discount / 100).toFixed(2)} OFF`}
+                    : `৳${(product.discount / 100).toFixed(2)} OFF`}
                 </span>
               </div>
             ) : (
@@ -569,7 +569,7 @@ export default function CategoryWiseProduct() {
                       <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">
                         {product.discountType === "percentage"
                           ? `${product.discount}% OFF`
-                          : `$${(product.discount / 100).toFixed(0)} OFF`}
+                          : `৳${(product.discount / 100).toFixed(0)} OFF`}
                       </div>
                     )}
 

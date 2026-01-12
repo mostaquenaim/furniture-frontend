@@ -494,7 +494,7 @@ const RefundComp = () => {
                     <div className="text-xs text-gray-500 space-y-0.5">
                       <p>
                         {refund.items.length}{" "}
-                        {refund.items.length === 1 ? "item" : "items"} • $
+                        {refund.items.length === 1 ? "item" : "items"} • ৳
                         {refund.refundAmount.toFixed(2)} refund
                       </p>
                       <p>Refund to: {formatRefundMethod(refund.refundMethod)}</p>
@@ -636,12 +636,12 @@ const RefundComp = () => {
                           <div className="flex justify-between">
                             <span className="text-gray-500">Return Shipping</span>
                             <span className="text-gray-900">
-                              {refund.labelAvailable ? "Free" : "$0.00"}
+                              {refund.labelAvailable ? "Free" : "৳0.00"}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Restocking Fee</span>
-                            <span className="text-gray-900">$0.00</span>
+                            <span className="text-gray-900">৳0.00</span>
                           </div>
                           <div className="pt-3 border-t border-gray-200">
                             <div className="flex justify-between font-medium text-sm">

@@ -90,7 +90,7 @@ type ProductColorCreateInput = {
 const defaultShippingReturn = `Shipping:
 • Standard shipping: 5-7 business days
 • Express shipping: 2-3 business days
-• Free shipping on orders over $50
+• Free shipping on orders over ৳50
 
 Returns:
 • 30-day return policy
@@ -1093,8 +1093,8 @@ const ProductAddLBL = () => {
 
                                   <div className="col-span-1 text-sm text-gray-500">
                                     {sizeDetail.price
-                                      ? `$${sizeDetail.price}`
-                                      : `$${formData.basePrice.toFixed(2)}`}
+                                      ? `৳${sizeDetail.price}`
+                                      : `৳${formData.basePrice.toFixed(2)}`}
                                   </div>
                                 </div>
                               );
