@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, FormEvent } from "react";
+import React, { useEffect, useState, FormEvent, ChangeEvent } from "react";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -23,12 +23,22 @@ const AddSize = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   /* Fetch variants */
-  const { variants, isLoading: isPending} = useFetchVariants()
+  const { variants, isLoading: isPending } = useFetchVariants();
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+
+    let checked = null;
+
+    if (e.target instanceof HTMLInputElement && e.target.type === "checkbox") {
+      checked = e.target.checked;
+      console.log(name, checked);
+    } else {
+      console.log(name, value);
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,

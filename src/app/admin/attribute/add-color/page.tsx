@@ -27,8 +27,17 @@ const AddColor: React.FC = () => {
 
   //   handle change
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
 
+    let checked = null;
+
+    if (e.target instanceof HTMLInputElement && e.target.type === "checkbox") {
+      checked = e.target.checked;
+      console.log(name, checked);
+    } else {
+      console.log(name, value);
+    }
+    
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
