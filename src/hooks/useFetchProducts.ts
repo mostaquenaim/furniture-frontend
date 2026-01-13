@@ -1,8 +1,12 @@
 // hooks/useFetchProducts.ts
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { Product } from "@/types/product.types";
 import useAxiosPublic from "./useAxiosPublic";
+import { AxiosError } from "axios";
 
+/**
+ * Parameters for fetching products
+ */
 interface FetchProductsParams {
   page?: number;
   limit?: number;
@@ -10,69 +14,118 @@ interface FetchProductsParams {
   isActive?: boolean | null;
 }
 
-interface ProductsResponse {
-  data: Product[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+/**
+ * Metadata for paginated product response
+ */
+interface ProductsMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
-const useFetchProducts = (params?: FetchProductsParams) => {
+/**
+ * Response structure from the products API
+ */
+interface ProductsResponse {
+  data: Product[];
+  meta: ProductsMeta;
+}
+
+/**
+ * Return type for the useFetchProducts hook
+ */
+interface UseFetchProductsReturn {
+  products: Product[];
+  meta: ProductsMeta;
+  isLoading: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+
+const useFetchProducts = (
+  params: FetchProductsParams = {}
+): UseFetchProductsReturn => {
   const axiosPublic = useAxiosPublic();
 
   const fetchProducts = async (): Promise<ProductsResponse> => {
-    const cleanParams: Record<string, any> = {};
+    // Build query parameters, excluding null/undefined values
+    const queryParams: Record<string, string | number | boolean> = {};
 
-    if (params?.page) cleanParams.page = params.page;
-    if (params?.limit) cleanParams.limit = params.limit;
-    if (params?.search) cleanParams.search = params.search;
-    if (typeof params?.isActive === "boolean") {
-      cleanParams.isActive = params.isActive;
+    if (params.page !== undefined && params.page !== null) {
+      queryParams.page = params.page;
+    }
+
+    if (params.limit !== undefined && params.limit !== null) {
+      queryParams.limit = params.limit;
+    }
+
+    if (
+      params.search !== undefined &&
+      params.search !== null &&
+      params.search.trim() !== ""
+    ) {
+      queryParams.search = params.search.trim();
+    }
+
+    if (typeof params.isActive === "boolean") {
+      queryParams.isActive = params.isActive;
     }
 
     const response = await axiosPublic.get<ProductsResponse>("/product/all", {
-      params: cleanParams,
+      params: queryParams,
     });
-    
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("Fetched products:", response.data);
+    }
+
     return response.data;
   };
 
-  const queryKey = ["products", params?.page, params?.limit, params?.search, params?.isActive];
+  // Construct query key for React Query caching
+  const queryKey = [
+    "products",
+    params.page ?? 1,
+    params.limit ?? 10,
+    params.search ?? "",
+    params.isActive ?? null,
+  ] as const;
 
   const {
-    data: response,
+    data,
     isLoading,
     isError,
     error,
     refetch,
     isFetching,
-  } = useQuery<ProductsResponse, Error>({
+  }: UseQueryResult<ProductsResponse, AxiosError> = useQuery({
     queryKey,
     queryFn: fetchProducts,
-    keepPreviousData: true, // Smooth pagination transitions
+    placeholderData: keepPreviousData, // React Query v5 syntax
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime in v5)
     retry: 1,
-    onError: (err: Error) => {
-      console.error("Error fetching products:", err);
-    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
   });
 
+  const defaultMeta: ProductsMeta = {
+    total: 0,
+    page: params.page ?? 1,
+    limit: params.limit ?? 10,
+    totalPages: 1,
+  };
+
   return {
-    products: response?.data || [],
-    meta: response?.meta || {
-      total: 0,
-      page: params?.page || 1,
-      limit: params?.limit || 10,
-      totalPages: 1,
-    },
+    products: data?.data ?? [],
+    meta: data?.meta ?? defaultMeta,
     isLoading,
     isFetching,
     isError,
-    error,
+    error: error as Error | null,
     refetch,
   };
 };

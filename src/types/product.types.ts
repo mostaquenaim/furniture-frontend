@@ -1,3 +1,5 @@
+import { SubCategory } from "./menu";
+
 export interface Product {
   id: number;
   title: string;
@@ -22,6 +24,14 @@ export interface Product {
   images: ProductImage[];
   colors: ProductColor[];
   reviews: Review[];
+  subCategories: ProductSubCategory[];
+}
+
+interface ProductSubCategory {
+  productId: number;
+  subCategoryId: number;
+  product: Product;
+  subCategory: SubCategory;
 }
 
 export interface SubCategoryRelation {

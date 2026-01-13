@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import useFetchProducts from "@/hooks/useFetchProducts";
 import { FiChevronLeft, FiChevronRight, FiRefreshCw } from "react-icons/fi";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
+import LoadingDots from "@/component/Loading/LoadingDS";
+import { Product, ProductColor, ProductSize, SubCategoryRelation } from "@/types/product.types";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -24,12 +26,12 @@ const AllProducts = () => {
   });
 
   // Calculate stock safely
-  const calculateStock = (product: any) => {
+  const calculateStock = (product: Product) => {
     if (!product.colors || !Array.isArray(product.colors)) return 0;
 
-    return product.colors.reduce((sum: number, color: any) => {
+    return product.colors.reduce((sum: number, color: ProductColor) => {
       if (!color.sizes || !Array.isArray(color.sizes)) return sum;
-      const colorStock = color.sizes.reduce((sizeSum: number, size: any) => {
+      const colorStock = color.sizes.reduce((sizeSum: number, size: ProductSize) => {
         return sizeSum + (size.quantity || 0);
       }, 0);
       return sum + colorStock;
@@ -37,7 +39,7 @@ const AllProducts = () => {
   };
 
   // Get first image safely
-  const getFirstImage = (product: any) => {
+  const getFirstImage = (product: Product) => {
     if (
       !product.images ||
       !Array.isArray(product.images) ||
@@ -196,8 +198,7 @@ const AllProducts = () => {
               <tr>
                 <td colSpan={7} className="text-center py-12 text-gray-500">
                   <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-2"></div>
-                    Loading products...
+                    <LoadingDots />
                   </div>
                 </td>
               </tr>
@@ -242,7 +243,7 @@ const AllProducts = () => {
                       <img
                         src={imageUrl}
                         alt={product.title}
-                        className="w-12 h-12 rounded object-cover border bg-gray-100"
+                        className="w-12 h-12 rounded object-cover border border-gray-200 bg-gray-100"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src =
                             "/placeholder.jpg";
@@ -256,7 +257,7 @@ const AllProducts = () => {
                           product.subCategories.length > 0 && (
                             <span className="text-xs text-gray-500">
                               {product.subCategories
-                                .map((sc: any) => sc.subCategory?.name)
+                                .map((sc: SubCategoryRelation) => sc.subCategory?.name)
                                 .filter(Boolean)
                                 .join(", ")}
                             </span>
@@ -303,7 +304,7 @@ const AllProducts = () => {
                     <td className="py-3 px-4 text-right">
                       <div className="flex justify-end gap-3">
                         <button
-                          onClick={() => handleView(product.id)}
+                          onClick={() => handleView(product.slug)}
                           className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                           title="View Details"
                         >
@@ -318,7 +319,7 @@ const AllProducts = () => {
                         </button>
                         <button
                           onClick={() => handleToggleStatus(product.slug)}
-                          disabled={togglingId === product.id}
+                          disabled={togglingId === product.slug}
                           className={`text-sm font-medium disabled:opacity-50 ${
                             product.isActive
                               ? "text-red-600 hover:text-red-800"
@@ -330,7 +331,7 @@ const AllProducts = () => {
                               : "Enable Product"
                           }
                         >
-                          {togglingId === product.id
+                          {togglingId === product.slug
                             ? "..."
                             : product.isActive
                             ? "Disable"
@@ -364,7 +365,7 @@ const AllProducts = () => {
             return (
               <div
                 key={product.id}
-                className="bg-white rounded-lg shadow border p-4 space-y-3"
+                className="bg-white rounded-lg shadow border border-gray-200 p-4 space-y-3"
               >
                 {/* Top */}
                 <div className="flex items-center gap-3">
@@ -418,7 +419,7 @@ const AllProducts = () => {
                 {/* Actions */}
                 <div className="flex gap-4 pt-2 border-t text-sm">
                   <button
-                    onClick={() => handleView(product.id)}
+                    onClick={() => handleView(product.slug)}
                     className="text-blue-600 font-medium"
                   >
                     View
@@ -431,12 +432,12 @@ const AllProducts = () => {
                   </button>
                   <button
                     onClick={() => handleToggleStatus(product.slug)}
-                    disabled={togglingId === product.id}
+                    disabled={togglingId === product.slug}
                     className={`font-medium disabled:opacity-50 ${
                       product.isActive ? "text-red-600" : "text-green-600"
                     }`}
                   >
-                    {togglingId === product.id
+                    {togglingId === product.slug
                       ? "..."
                       : product.isActive
                       ? "Disable"
@@ -462,7 +463,7 @@ const AllProducts = () => {
             <button
               disabled={meta.page === 1}
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="flex items-center gap-1 px-3 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               <FiChevronLeft className="w-4 h-4" />
               Prev
@@ -488,7 +489,7 @@ const AllProducts = () => {
                     className={`w-10 h-10 flex items-center justify-center rounded-md ${
                       meta.page === pageNum
                         ? "bg-blue-600 text-white"
-                        : "border hover:bg-gray-50"
+                        : "border border-gray-200 hover:bg-gray-50"
                     }`}
                   >
                     {pageNum}
@@ -502,7 +503,7 @@ const AllProducts = () => {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, meta.totalPages))
               }
-              className="flex items-center gap-1 px-3 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               Next
               <FiChevronRight className="w-4 h-4" />
