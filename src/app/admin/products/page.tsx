@@ -51,7 +51,7 @@ const AllProducts = () => {
     const sortedImages = [...product.images].sort(
       (a, b) => (a.serialNo || 0) - (b.serialNo || 0)
     );
-    return sortedImages[0]?.url || sortedImages[0]?.image || "/placeholder.jpg";
+    return sortedImages[0]?.image || "/placeholder.jpg";
   };
 
   // Handle View Product
