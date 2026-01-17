@@ -28,21 +28,21 @@ const parseMarkdown = (text: string) => {
   let html = text;
   html = html.replace(
     /^# (.*$)/gim,
-    '<h1 class="text-3xl font-light mb-6">$1</h1>'
+    '<h1 class="text-3xl font-light mb-6">$1</h1>',
   );
   html = html.replace(
     /^## (.*$)/gim,
-    '<h2 class="text-2xl font-light mt-10 mb-4">$1</h2>'
+    '<h2 class="text-2xl font-light mt-10 mb-4">$1</h2>',
   );
   html = html.replace(
     /\*\*(.+?)\*\*/g,
-    '<strong class="font-bold text-gray-900">$1</strong>'
+    '<strong class="font-bold text-gray-900">$1</strong>',
   );
   return html
     .split("\n\n")
     .map(
       (p) =>
-        `<p class="mb-6 font-serif leading-relaxed text-gray-700 text-lg">${p}</p>`
+        `<p class="mb-6 font-serif leading-relaxed text-gray-700 text-lg">${p}</p>`,
     )
     .join("");
 };
@@ -58,11 +58,11 @@ export default function BlogPostPage() {
     async function getPostData() {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/blogs/${slug}`,
-          { next: { revalidate: 60 } }
+          `${process.env.NEXT_PUBLIC_API_URL}/api/blogs/details/${slug}`,
+          { next: { revalidate: 60 } },
         );
         if (!res.ok) throw new Error("Fetch failed");
-        const data = res.json();
+        const data = await res.json();
         setPost(data);
         setLoading(false);
       } catch (error) {

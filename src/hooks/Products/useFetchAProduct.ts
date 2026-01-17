@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Product } from "@/types/product.types";
-import useAxiosPublic from "./useAxiosPublic";
+import useAxiosPublic from "../Axios/useAxiosPublic";
 
 const useFetchAProduct = (slug?: string) => {
   const axiosPublic = useAxiosPublic();

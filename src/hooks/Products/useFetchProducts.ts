@@ -1,7 +1,7 @@
 // hooks/useFetchProducts.ts
 import { keepPreviousData, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { Product } from "@/types/product.types";
-import useAxiosPublic from "./useAxiosPublic";
+import useAxiosPublic from "../Axios/useAxiosPublic";
 import { AxiosError } from "axios";
 
 /**

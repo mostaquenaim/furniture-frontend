@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Plus, Edit, Trash2, GripVertical } from 'lucide-react';
 import type { PromoBanner, BannerLink } from '@/types/promo-banner';
-import useAxiosPublic  from '@/hooks/useAxiosPublic';
+import useAxiosPublic  from '@/hooks/Axios/useAxiosPublic';
 
 interface BannerManagerProps {
   initialBanners: PromoBanner[];

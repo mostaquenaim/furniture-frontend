@@ -2,7 +2,7 @@
 "use client";
 
 import ProtectedRoute from "@/component/ProtectedRoute";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {

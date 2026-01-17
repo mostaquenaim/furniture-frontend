@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FiUpload, FiX, FiSave } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 
 interface Series {

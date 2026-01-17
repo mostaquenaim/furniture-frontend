@@ -12,16 +12,21 @@ import {
 } from "@/component/admin/Product/ImageUploader";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import useFetchSeries from "@/hooks/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/useFetchSeries";
 import useFetchVariants from "@/hooks/useFetchVariants";
 import useFetchColors from "@/hooks/useFetchColors";
-import useFetchCategoriesBySeriesIds from "@/hooks/useFetchCategoriesBySeriesIds";
-import useFetchSubCategoriesByCategoryIds from "@/hooks/useFetchSubCategoriesByCategoryIds";
+import useFetchCategoriesBySeriesIds from "@/hooks/Categories/useFetchCategoriesBySeriesIds";
+import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCategoriesByCategoryIds";
 import GotoArrows from "@/component/Arrow/GotoArrows";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
-import useAxiosPublic from "@/hooks/useAxiosPublic";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import LoadingDots from "@/component/Loading/LoadingDS";
+import {
+  Product,
+  ProductImage,
+  ProductSubCategory,
+} from "@/types/product.types";
 
 interface ProductFormData {
   title: string;
@@ -104,8 +109,6 @@ Returns:
 const UpdateProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const productId = slug;
-
-  //   console.log(productId,'productId');
 
   const axiosSecure = useAxiosSecure();
   const axiosPublic = useAxiosPublic();
@@ -195,12 +198,12 @@ const UpdateProductPage = () => {
   >({});
 
   //   form hydration / initial values
-  const hydrateForm = (product: any) => {
+  const hydrateForm = (product: Product) => {
     const seriesSet = new Set<number>();
     const categorySet = new Set<number>();
     const subCategoryIds: number[] = [];
 
-    product.subCategories.forEach((psc: any) => {
+    product.subCategories.forEach((psc: ProductSubCategory) => {
       const sub = psc.subCategory;
       subCategoryIds.push(sub.id);
 
@@ -214,7 +217,7 @@ const UpdateProductPage = () => {
     });
 
     // Get variant from first color's first size
-    const variantId = product?.colors[0]?.sizes[0]?.size?.variantId || null;
+    const variantId = product?.colors?.[0]?.sizes?.[0]?.size?.variantId || null;
 
     // BASIC DATA
     setFormData({
@@ -246,12 +249,13 @@ const UpdateProductPage = () => {
 
     // DEFAULT IMAGES
     setDefaultImages(
-      product.images.map((img: any) => ({
+      product?.images?.map((img: any) => ({
         id: img.id,
         preview: img.image,
         serialNo: img.serialNo,
+        colorId: null,
         file: null,
-      }))
+      })) ?? []
     );
 
     // COLOR IMAGES + SIZES
@@ -1078,11 +1082,11 @@ const UpdateProductPage = () => {
                           );
 
                           // Add new sizes that don't exist yet
-                          const newSizes = newVariant.sizes.filter(
+                          const newSizes = newVariant?.sizes?.filter(
                             (size) => !existingSizeIds.has(size.id)
                           );
 
-                          if (newSizes.length > 0) {
+                          if (newSizes && newSizes.length > 0) {
                             updated[colorId] = [
                               ...existingSizes,
                               ...newSizes.map((size) => ({

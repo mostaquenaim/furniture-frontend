@@ -167,6 +167,7 @@ const AdminDrawerTS = () => {
         { href: "/admin/content/banners", label: "Banners & Sliders" },
         { href: "/admin/content/pages", label: "Pages" },
         { href: "/admin/content/blogs", label: "Blog Posts" },
+        { href: "/admin/blog/add", label: "Create a blog" },
       ],
     },
     {

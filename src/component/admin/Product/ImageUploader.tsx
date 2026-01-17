@@ -16,7 +16,7 @@ export interface ProductImageItem {
   id: string;
   file: File | null;
   preview: string;
-  colorId: number | null; // null for default images
+  colorId: number | null;
   serialNo: number;
   originalSize?: number;
   optimizedSize?: number;

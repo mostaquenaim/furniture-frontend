@@ -5,6 +5,7 @@ import { InfoIcon } from "lucide-react";
 import Title from "../Headers/Title";
 import TakaIcon from "../TakaIcon";
 import ShowProductsFlex from "../ProductDisplay/ShowProductsFlex";
+import { Product } from "@/types/product.types";
 
 // Mock Data - In a real app, this might come from a Context or API
 const cartData = [
@@ -31,7 +32,7 @@ const cartData = [
 ];
 
 // Mock for "You may also like" section
-const recommendedProducts = [
+const recommendedProducts: Product[] = [
   /* ... your product objects ... */
 ];
 
@@ -61,7 +62,7 @@ const CartPageComponent = () => {
           <Title title="Basket" />
 
           <header className="hidden md:flex border-b border-gray-200 py-2 text-xs uppercase tracking-wider text-gray-500">
-            <div className="flex-[2]">Item</div>
+            <div className="flex-2">Item</div>
             <div className="flex-1 text-center">Item Price</div>
             <div className="flex-1 text-center">Quantity</div>
             <div className="flex-1 text-right">Total Price</div>
@@ -104,7 +105,7 @@ const CartItemComponent = ({ item }) => {
   return (
     <div className="flex flex-col md:flex-row py-6 border-b border-gray-200 gap-4 items-start md:items-center">
       {/* Product Image & Info */}
-      <div className="flex flex-[2] gap-4 w-full">
+      <div className="flex flex-2 gap-4 w-full">
         <div className="w-24 h-32 bg-gray-100 shrink-0">
           <img
             src={item.image}

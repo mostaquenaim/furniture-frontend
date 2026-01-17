@@ -7,7 +7,7 @@ import useFetchColors from "@/hooks/useFetchColors";
 import useFetchMaterials from "@/hooks/useFetchMaterials";
 import useFetchSubcategoryWiseProducts, {
   ProductItem,
-} from "@/hooks/useFetchSubcategoryWiseProducts";
+} from "@/hooks/Products/useFetchSubcategoryWiseProducts";
 import { Product, ProductImage } from "@/types/product.types";
 import {
   ChevronDown,
@@ -553,7 +553,7 @@ export default function CategoryWiseProduct() {
                   onMouseLeave={() => setProductImage("")}
                   onMouseEnter={() => handleImageChange(product.images)}
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-50 mb-4">
+                  <div className="relative aspect-3/4 overflow-hidden bg-gray-50 mb-4">
                     <img
                       src={
                         hoveredProduct === product.id

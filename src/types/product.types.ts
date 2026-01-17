@@ -9,7 +9,7 @@ export interface Product {
   basePrice: number;
   hasColorVariants: boolean;
   showColor: boolean;
-  discountType: string | null;
+  discountType?: "PERCENT" | "FIXED";
   discount: number;
   discountEnd: string | null;
   discountStart: string | null;
@@ -27,7 +27,7 @@ export interface Product {
   subCategories: ProductSubCategory[];
 }
 
-interface ProductSubCategory {
+export interface ProductSubCategory {
   productId: number;
   subCategoryId: number;
   product: Product;
@@ -118,6 +118,7 @@ export interface ProductSizeRelation {
   // size: {
   id: number;
   name: string;
+  variantId: number;
   // };
 }
 
@@ -133,16 +134,16 @@ export interface ProductsResponse {
   meta: ProductsMeta;
 }
 
-export interface FetchProductsParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  isActive?: boolean | null;
-}
-
 export interface ProductFilters {
   page?: number;
   limit?: number;
   search?: string;
   isActive?: boolean;
+}
+
+export interface FetchProductsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean | null;
 }

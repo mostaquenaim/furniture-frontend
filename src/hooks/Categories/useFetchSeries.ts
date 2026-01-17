@@ -1,21 +1,19 @@
 import { useEffect, useState } from "react";
-import useAxiosSecure from "./useAxiosSecure";
 import { toast } from "react-hot-toast";
+import useAxiosPublic from "../Axios/useAxiosPublic";
+import { Series } from "@/types/menu";
 
-interface Series {
-  id: number;
-  name: string;
-}
 
 const useFetchSeries = () => {
-  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
   const [seriesList, setSeries] = useState<Series[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSeries = async () => {
       try {
-        const res = await axiosSecure.get("/series");
+        const res = await axiosPublic.get("/series");
+        console.log(res.data,'serieees');
         setSeries(res.data);
       } catch {
         toast.error("Failed to load series");
@@ -25,7 +23,7 @@ const useFetchSeries = () => {
     };
 
     fetchSeries();
-  }, [axiosSecure]);
+  }, [axiosPublic]);
 
   return { seriesList, isLoading };
 };

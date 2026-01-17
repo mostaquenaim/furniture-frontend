@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { hasRequiredRole, getUserRole, isAuthenticated } from "@/utils/auth";
 import LoadingDots from "./Loading/LoadingDS";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

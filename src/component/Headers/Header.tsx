@@ -23,7 +23,7 @@ import type {
 } from "@/types/menu";
 import AuthModal from "../Auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
 import { useRouter } from "next/navigation";
 import sampleData from "@/data/sampleData";
@@ -113,6 +113,11 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
   );
 };
 
+type ActiveCategory = {
+  name: string;
+  slug: string;
+} | null;
+
 // --- MOBILE MENU DRILLDOWN COMPONENTS ---
 const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   navItems,
@@ -127,9 +132,8 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   handleAuthModal,
   // handleAuthModal
 }) => {
-  const [mobileActiveCategory, setMobileActiveCategory] = useState<
-    string | null
-  >(null);
+  const [mobileActiveCategory, setMobileActiveCategory] =
+    useState<ActiveCategory>(null);
 
   const [collapsibleStates, setCollapsibleStates] = useState<
     Record<string, boolean>
@@ -137,14 +141,14 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   // const isLoggedIn = false;
 
   const activeCategoryData = mobileActiveCategory
-    ? mobileMenuContent[mobileActiveCategory]
+    ? mobileMenuContent[mobileActiveCategory.slug]
     : null;
 
   const toggleCollapsible = (label: string) => {
     setCollapsibleStates((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const hasDrilldown = (item: string): boolean =>
+  const hasDrillDown = (item: string): boolean =>
     mobileMenuContent.hasOwnProperty(item);
 
   return (
@@ -203,19 +207,22 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             {navItems.map((item) => (
               <Link
                 key={item.id}
-                href={hasDrilldown(item.slug) ? "#" : `/shop/${item.slug}`}
+                href={hasDrillDown(item.slug) ? "#" : `/shop/${item.slug}`}
                 className={`py-3 text-gray-700 hover:text-amber-700 border-b border-gray-100 text-lg font-medium flex justify-between items-center`}
                 onClick={(e) => {
-                  if (hasDrilldown(item.slug)) {
+                  if (hasDrillDown(item.slug)) {
                     e.preventDefault();
-                    setMobileActiveCategory(item.slug);
+                    setMobileActiveCategory({
+                      slug: item.slug,
+                      name: item.name,
+                    });
                   } else {
                     setIsMenuOpen(false);
                   }
                 }}
               >
                 {item.name}
-                {hasDrilldown(item.slug) && (
+                {hasDrillDown(item.slug) && (
                   <ChevronRight size={20} className="text-gray-400" />
                 )}
               </Link>
@@ -224,9 +231,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
         </div>
 
         {/* Panel 2: Drilldown Sub-Category Panel (Takes up 1/2 of 200% width = 100% viewport width) */}
-        <div
-          className={`w-1/2 h-full flex-shrink-0 bg-white p-6 overflow-y-auto`}
-        >
+        <div className={`w-1/2 h-full shrink-0 bg-white p-6 overflow-y-auto`}>
           {/* Header: Back Button and Category Title */}
           <div className="flex items-center mb-6">
             <button
@@ -236,7 +241,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               <ChevronLeft size={24} />
             </button>
             <h2 className="text-xl font-medium text-gray-900">
-              {mobileActiveCategory}
+              {mobileActiveCategory?.name}
             </h2>
           </div>
 
@@ -247,7 +252,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 return (
                   <a
                     key={index}
-                    href={`/shop/${mobileActiveCategory?.toLowerCase()}/${item.label
+                    href={`/shop/${mobileActiveCategory?.slug?.toLowerCase()}/${item.label
                       .toLowerCase()
                       .replace(/\s/g, "-")}`}
                     className="block py-3 text-gray-700 border-b border-gray-100 font-medium"
@@ -393,9 +398,9 @@ const Header = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col lg:flex-row items-center justify-between mb-4">
             {/* Logo */}
-            <h1 className="text-2xl font-serif font-bold text-gray-900 tracking-wider">
+            <Link href={'/'} className="text-2xl font-serif font-bold text-gray-900 tracking-wider">
               SAKIGAI
-            </h1>
+            </Link>
 
             {/* Right Side Actions (unchanged for brevity) */}
             <div className="lg:w-fit w-full sm:gap-4 flex justify-between items-center">
@@ -460,7 +465,7 @@ const Header = () => {
               navItems.map((item) => (
                 <Link
                   key={item.id}
-                  href="#"
+                  href={`/series/${item.slug}`}
                   className={`font-semibold heading text-xs
                   text-gray-700 transition-colors relative border-b-2 pb-4
                   ${
@@ -499,11 +504,7 @@ const Header = () => {
           />
         </div>
       </div>
-      {
-        // isModalOpen && (
-        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-        // )
-      }
+      {<AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
     </header>
   );
 };

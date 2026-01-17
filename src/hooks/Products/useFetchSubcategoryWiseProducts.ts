@@ -1,15 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // hooks/useFetchProducts.ts
 import { useQuery } from "@tanstack/react-query";
-import { Product } from "@/types/product.types";
-import useAxiosPublic from "./useAxiosPublic";
-
-interface FetchProductsParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  isActive?: boolean | null;
-}
+import { FetchProductsParams, Product } from "@/types/product.types";
+import useAxiosPublic from "../Axios/useAxiosPublic";
 
 export interface ProductItem {
   productId: number;

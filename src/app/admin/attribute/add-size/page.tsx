@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, FormEvent, ChangeEvent } from "react";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import useFetchVariants from "@/hooks/useFetchVariants";

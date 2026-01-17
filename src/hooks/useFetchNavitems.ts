@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import useAxiosPublic from './useAxiosPublic';
+import useAxiosPublic from './Axios/useAxiosPublic';
 import axios from 'axios';
 import { Series } from '@/types/menu';
 

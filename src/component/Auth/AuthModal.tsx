@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import useAxiosPublic from "@/hooks/useAxiosPublic";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";

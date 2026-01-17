@@ -3,9 +3,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import useFetchProducts from "@/hooks/useFetchProducts";
+import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import { FiChevronLeft, FiChevronRight, FiRefreshCw } from "react-icons/fi";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { Product, ProductColor, ProductSize, SubCategoryRelation } from "@/types/product.types";
 
@@ -115,7 +115,6 @@ const AllProducts = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-semibold text-gray-800">All Products</h1>
 

@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import {
   CheckCircle,
   Package,

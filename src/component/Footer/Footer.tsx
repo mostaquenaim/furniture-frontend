@@ -60,13 +60,13 @@ const countries = ["US", "Canada", "France", "Germany", "Italy", "Spain", "UK"];
 
 // legal links for bottom links
 const legalLinks = [
-                "Privacy Policy",
-                "CA Transparency",
-                "Accessibility",
-                "URBN.com",
-                "Support Code",
-                "Your Privacy Choices",
-              ];
+  "Privacy Policy",
+  "CA Transparency",
+  "Accessibility",
+  "URBN.com",
+  "Support Code",
+  "Your Privacy Choices",
+];
 
 // Social media links (mocked, as images aren't used for icons)
 const socialLinks = [
@@ -166,9 +166,8 @@ const EmailSignUp: React.FC = () => {
         </div>
 
         <p className="text-xs text-gray-500">
-          By signing up, you will receive Sakigai offers, promotions, and
-          other commercial messages. You are also agreeing to
-          Sakigai&apos;s{" "}
+          By signing up, you will receive Sakigai offers, promotions, and other
+          commercial messages. You are also agreeing to Sakigai&apos;s{" "}
           <a href="#" className="underline hover:text-gray-700">
             Privacy Policy
           </a>
@@ -319,30 +318,39 @@ const Footer: React.FC = () => {
           </div>
           <div className="flex flex-col lg:flex-row justify-between gap-4">
             <div className="max-w-7xl mx-auto lg:mx-0 px-4 flex flex-wrap justify-center lg:justify-between items-center">
-            {/* Legal Links (Responsive: stacked on mobile, in line on desktop) */}
-            <div className="flex flex-row flex-wrap sm:space-y-0 sm:space-x-3 sm:text-left space-y-2 items-center justify-center ">
-              {legalLinks.map((link, idx) => (
-                <a key={link} href="#" className={`hover:underline blue-link px-2 ${idx != legalLinks.length - 1 ? "border-gray-200 border-r-2" : ""}`}>
-                  {link}
-                </a>
-              ))}
+              {/* Legal Links (Responsive: stacked on mobile, in line on desktop) */}
+              <div className="flex flex-row flex-wrap sm:space-y-0 sm:space-x-3 sm:text-left space-y-2 items-center justify-center ">
+                {legalLinks.map((link, idx) => (
+                  <a
+                    key={link}
+                    href="#"
+                    className={`hover:underline blue-link px-2 ${idx != legalLinks.length - 1 ? "border-gray-200 border-r-2" : ""}`}
+                  >
+                    {link}
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="text-center mt-2 text-xs">
-            © 2023 URBN. All Rights Reserved.
-          </div>
+            <div className="text-center mt-2 text-xs">
+              © 2023 URBN. All Rights Reserved.
+            </div>
           </div>
         </div>
       </div>
 
       {/* Back to Top Button */}
-      <a
-        href="#"
+      <button
+        onClick={() =>
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          })
+        }
         aria-label="Back to Top"
-        className="fixed bottom-4 right-4 bg-gray-900 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
+        className="fixed bottom-4 right-4 bg-gray-900 hover:bg-gray-700 text-white p-1 md:p-2 lg:p-3 rounded-full shadow-lg transition-colors z-40"
       >
         <ChevronUp size={24} />
-      </a>
+      </button>
     </footer>
   );
 };

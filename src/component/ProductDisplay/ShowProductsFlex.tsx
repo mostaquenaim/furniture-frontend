@@ -4,12 +4,14 @@ import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { Product } from "@/types/product.types";
 
 type ShowProductType = {
   maxWidth?: string;
+  products?: Product[]
 };
 
-const ShowProductsFlex = ({ maxWidth }: ShowProductType) => {
+const ShowProductsFlex = ({ maxWidth, products }: ShowProductType) => {
   return (
     <div className={`${maxWidth && maxWidth} relative`}>
       <Swiper

@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { FiUpload, FiX, FiSave, FiPlus, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
-import useAxiosPublic from "@/hooks/useAxiosPublic";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import {
   DragDropContext,
@@ -15,11 +15,12 @@ import {
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import useFetchSeries from "@/hooks/useFetchSeries";
-import useFetchCategoriesBySeries from "@/hooks/useFetchCategoriesBySeries";
-import useFetchSubCategoriesByCategory from "@/hooks/useFetchSubCategoriesByCategory";
+import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import useFetchCategoriesBySeries from "@/hooks/Categories/useFetchCategoriesBySeries";
+import useFetchSubCategoriesByCategory from "@/hooks/Categories/useFetchSubCategoriesByCategory";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchVariants from "@/hooks/useFetchVariants";
+import { generateSlug } from "@/utils/generateSlug";
 
 // Types
 
@@ -113,17 +114,6 @@ const ProductAdd = () => {
   const { colors, isLoading: isColorPending } = useFetchColors();
   const { variants, isLoading: isVariantsPending } = useFetchVariants();
 
-  // -------------------------
-  // Utils
-  // -------------------------
-  const generateSlug = (value: string) =>
-    value
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/--+/g, "-")
-      .trim();
-
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     setFormData((prev) => ({
@@ -135,7 +125,7 @@ const ProductAdd = () => {
 
   const handleImageUpload = (
     colorId: number,
-    e: ChangeEvent<HTMLInputElement>
+    e: ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -211,7 +201,7 @@ const ProductAdd = () => {
   const updateVariantOption = (
     index: number,
     field: string,
-    value: unknown
+    value: unknown,
   ) => {
     setFormData((prev) => {
       const newOptions = [...prev.variantOptions];
@@ -235,7 +225,7 @@ const ProductAdd = () => {
         return {
           ...prev,
           subCategoryIds: prev.subCategoryIds.filter(
-            (id) => id !== subCategoryId
+            (id) => id !== subCategoryId,
           ),
         };
       } else {
@@ -284,7 +274,7 @@ const ProductAdd = () => {
             colorId: img.colorId,
             serialNo: img.serialNo,
           };
-        })
+        }),
       );
 
       // Prepare variant options with images
@@ -329,7 +319,7 @@ const ProductAdd = () => {
       if (axios.isAxiosError(err)) {
         toast.error(
           (err.response?.data as { message?: string })?.message ||
-            "Failed to create product"
+            "Failed to create product",
         );
       } else {
         toast.error("Failed to create product");
@@ -481,7 +471,7 @@ const ProductAdd = () => {
                 Select Series *
               </label>
               <select
-                value={formData.seriesId}
+                value={formData.seriesId || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -505,7 +495,7 @@ const ProductAdd = () => {
                 Select Category *
               </label>
               <select
-                value={formData.categoryId}
+                value={formData.categoryId || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -562,7 +552,7 @@ const ProductAdd = () => {
                 <div key={color.id} className="border rounded-lg p-4">
                   <div
                     className="w-8 h-8 rounded-full mx-auto mb-2 border"
-                    style={{ backgroundColor: color.code }}
+                    style={{ backgroundColor: color.hexCode }}
                   />
                   <p className="text-center text-sm mb-2">{color.name}</p>
                   <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-2 cursor-pointer">
@@ -656,7 +646,7 @@ const ProductAdd = () => {
 
           {formData.variantOptions.map((option, index) => {
             const selectedVariant = variants.find(
-              (v) => v.id === option.variantId
+              (v) => v.id === option.variantId,
             );
             return (
               <div key={index} className="border rounded-lg p-4 mb-4">
@@ -682,7 +672,7 @@ const ProductAdd = () => {
                         updateVariantOption(
                           index,
                           "variantId",
-                          Number(e.target.value)
+                          Number(e.target.value),
                         )
                       }
                       className="w-full px-3 py-2 border rounded-lg"
@@ -706,18 +696,19 @@ const ProductAdd = () => {
                         updateVariantOption(
                           index,
                           "sizeId",
-                          e.target.value ? Number(e.target.value) : undefined
+                          e.target.value ? Number(e.target.value) : undefined,
                         )
                       }
                       className="w-full px-3 py-2 border rounded-lg"
                       disabled={!selectedVariant}
                     >
                       <option value="">Select Size</option>
-                      {selectedVariant?.sizes.map((size) => (
-                        <option key={size.id} value={size.id}>
-                          {size.name}
-                        </option>
-                      ))}
+                      {selectedVariant &&
+                        selectedVariant?.sizes?.map((size) => (
+                          <option key={size.id} value={size.id}>
+                            {size.name}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
@@ -735,7 +726,7 @@ const ProductAdd = () => {
                           "price",
                           e.target.value
                             ? parseFloat(e.target.value)
-                            : undefined
+                            : undefined,
                         )
                       }
                       className="w-full px-3 py-2 border rounded-lg"
@@ -754,7 +745,7 @@ const ProductAdd = () => {
                         updateVariantOption(
                           index,
                           "stock",
-                          e.target.value ? parseInt(e.target.value) : undefined
+                          e.target.value ? parseInt(e.target.value) : undefined,
                         )
                       }
                       className="w-full px-3 py-2 border rounded-lg"

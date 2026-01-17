@@ -1,7 +1,7 @@
 "use client";
 
 import LoadingDots from "@/component/Loading/LoadingDS";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import axios from "axios";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import toast from "react-hot-toast";

@@ -13,16 +13,16 @@ import {
   Plus,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import useFetchAProduct from "@/hooks/useFetchAProduct";
+import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
 import { Review } from "@/types/product.types";
 import Title from "../Headers/Title";
 import ShowProductsFlex from "./ShowProductsFlex";
 import LikeItShareIt from "./LikeItShareIt";
-import useAxiosPublic from "@/hooks/useAxiosPublic";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import { isAuthenticated } from "@/utils/auth";
 import AuthModal from "../Auth/AuthModal";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 interface ReviewsData {
   reviews?: Review[];

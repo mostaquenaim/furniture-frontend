@@ -22,7 +22,7 @@ import type {
 } from "@/types/menu";
 import AuthModal from "../Auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
 import { useRouter } from "next/navigation";
 

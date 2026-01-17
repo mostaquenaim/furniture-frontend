@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import PromoBannerCarousel from './PromoBannerCarousel';
 import type { PromoBanner } from '@/types/promo-banner';
-import useAxiosPublic from '@/hooks/useAxiosPublic';
+import useAxiosPublic from '@/hooks/Axios/useAxiosPublic';
 
 export default function PromoBannerContainer() {
   const [banners, setBanners] = useState<PromoBanner[]>([]);

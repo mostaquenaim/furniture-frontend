@@ -9,10 +9,7 @@ const test = () => {
   return (
     <div>
       {/* <PromoBannerContainer /> */}
-      {/* <Header></Header> */}
       <BannerManager initialBanners={[]} token={""}></BannerManager>
-      {/* <p className="blue-link flex gap-2">
-      </p> */}
       <Footer></Footer>
     </div>
   );

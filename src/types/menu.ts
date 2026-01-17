@@ -46,6 +46,7 @@ export interface SubCategory {
   categoryId: number;
   createdAt: string;
   updatedAt: string;
+  category: Category;
 }
 
 export interface Category {
@@ -58,6 +59,7 @@ export interface Category {
   seriesId: number;
   createdAt: string;
   updatedAt: string;
+  series: Series;
   subCategories: SubCategory[];
 }
 

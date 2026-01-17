@@ -10,13 +10,13 @@ import {
 } from "@/component/admin/Product/ImageUploader";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import useFetchSeries from "@/hooks/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/useFetchSeries";
 import useFetchVariants from "@/hooks/useFetchVariants";
 import useFetchColors from "@/hooks/useFetchColors";
-import useFetchCategoriesBySeriesIds from "@/hooks/useFetchCategoriesBySeriesIds";
-import useFetchSubCategoriesByCategoryIds from "@/hooks/useFetchSubCategoriesByCategoryIds";
+import useFetchCategoriesBySeriesIds from "@/hooks/Categories/useFetchCategoriesBySeriesIds";
+import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCategoriesByCategoryIds";
 import GotoArrows from "@/component/Arrow/GotoArrows";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 
 interface ProductFormData {

@@ -1,5 +1,5 @@
 'use client'
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 const DashboardPageComp = () => {
   const axiosSecure = useAxiosSecure();

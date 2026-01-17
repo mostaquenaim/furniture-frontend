@@ -5,7 +5,7 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiUpload, FiX, FiSave } from "react-icons/fi";
 import { toast, Toaster } from "react-hot-toast";
-import useAxiosSecure from "@/hooks/useAxiosSecure";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import axios from "axios";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 
@@ -154,7 +154,6 @@ const AddSeries = () => {
   return (
     <div>
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>

@@ -1,22 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
-import {
-  Menu,
-  X,
-  Search,
-  ShoppingBag,
-  User,
-  Heart,
-  MapPin,
-  Phone,
-  Mail,
-  MessageCircle,
-  ChevronRight,
-  Home,
-} from "lucide-react";
-import HeaderDS from "./Headers/HeaderDS";
+import { useState } from "react";
+import { X, User, ChevronRight, Home } from "lucide-react";
+import HomepageBanner from "./Headers/HomepageBanner";
+import SeasonalCategory from "./Homepage/SeasonalCategory";
+import CategoryNavigation from "./Homepage/CategoryNavigation";
+import ShowProductsFlex from "./ProductDisplay/ShowProductsFlex";
+import Title from "./Headers/Title";
+import HomepageGallery from "./Homepage/HomepageGallery";
 
 export default function Homepage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -127,63 +119,33 @@ export default function Homepage() {
 
   return (
     <div>
-      {/* <Header></Header> */}
       <div className="min-h-screen bg-white">
-        {/* Top Banner */}
-      
-
-        {/* Header */}
-       
-
         {/* Sale Banner */}
-        <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white text-center py-8 px-4">
-          <h2 className="text-2xl font-serif mb-2">EXTRA 30% OFF SALE</h2>
-          <p className="text-sm mb-3">online only</p>
-          <button className="bg-white text-teal-700 px-6 py-2 rounded text-sm font-semibold">
-            SHOP NOW
-          </button>
-        </div>
+        <HomepageBanner />
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 gap-0.5 bg-gray-200 mt-0.5">
-          {productImages.map((product, idx) => (
-            <div key={idx} className="relative aspect-square overflow-hidden">
-              {/* Product Image */}
-              <img
-                src={product.imageURL}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
+        {/* seasonal categories  */}
+        <SeasonalCategory />
 
-              {/* Dark overlay for text */}
-              <div className="absolute inset-0 bg-black/30"></div>
+        {/* larger device gallery */}
+        <HomepageGallery />
 
-              {/* Text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-white text-sm font-semibold">
-                  {product.title}
-                </p>
-                <p className="text-white text-xs">{product.category}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* small device category navigation */}
+        <CategoryNavigation />
 
         {/* More to Explore */}
-        <div className="px-4 py-8">
-          <h3 className="text-lg font-serif mb-4">More to Explore</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="aspect-video bg-gray-100 rounded-lg"></div>
-            <div className="aspect-video bg-gray-100 rounded-lg"></div>
-          </div>
-          <p className="text-xs text-gray-600 text-center mt-4">
-            *All sales final. Excludes sale furniture. Other exclusions may
-            apply. <span className="underline">See details</span>
-          </p>
+        <div className="px-4 md:px-12 lg:px-40 py-8">
+          <Title title="More to Explore" />
+          <ShowProductsFlex />
+        </div>
+
+        {/* Recently viewed products */}
+        <div className="px-4 md:px-12 lg:px-40 py-8">
+          <Title title="Recently Viewed" />
+          <ShowProductsFlex />
         </div>
 
         {/* Side Menu */}
-        <div
+        {/* <div
           className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity ${
             menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
@@ -194,8 +156,9 @@ export default function Homepage() {
               menuOpen ? "translate-x-0" : "-translate-x-full"
             }`}
             onClick={(e) => e.stopPropagation()}
-          >
-            {/* Menu Header */}
+          >*/}
+        {/* Menu Header */}
+        {/*
             <div className="bg-gray-700 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Home className="w-5 h-5" />
@@ -205,18 +168,20 @@ export default function Homepage() {
                 <X className="w-6 h-6" />
               </button>
             </div>
-
-            {/* Menu Content */}
+*/}
+        {/* Menu Content */}
+        {/*
             <div className="overflow-y-auto h-full pb-20">
-              {/* Sign In */}
+            */}
+        {/* Sign In */}
+        {/*
               <div className="px-6 py-4 border-b flex items-center gap-3">
                 <User className="w-6 h-6 blue-link" />
-                <span className="blue-link font-medium">
-                  Sign In / Sign Up
-                </span>
+                <span className="blue-link font-medium">Sign In / Sign Up</span>
               </div>
-
-              {/* Menu Items */}
+*/}
+        {/* Menu Items */}
+        {/* 
               {menuItems.map((item, idx) => (
                 <div
                   key={idx}
@@ -234,9 +199,8 @@ export default function Homepage() {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
-      
     </div>
   );
 }
