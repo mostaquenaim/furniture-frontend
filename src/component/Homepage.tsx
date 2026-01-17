@@ -127,23 +127,31 @@ export default function Homepage() {
         <SeasonalCategory />
 
         {/* larger device gallery */}
-        <HomepageGallery />
+        <div className="hidden lg:block">
+          <HomepageGallery />
+        </div>
+
+        {/* larger device gif */}
+        <div className="hidden lg:block py-5">
+          <img
+            src={"/images/home/homepage-large-image.jpg"}
+            alt={"Gallery Heading"}
+            className="w-full h-full object-cover"
+          />
+        </div>
 
         {/* small device category navigation */}
         <CategoryNavigation />
-
         {/* More to Explore */}
         <div className="px-4 md:px-12 lg:px-40 py-8">
           <Title title="More to Explore" />
           <ShowProductsFlex />
         </div>
-
         {/* Recently viewed products */}
         <div className="px-4 md:px-12 lg:px-40 py-8">
           <Title title="Recently Viewed" />
           <ShowProductsFlex />
         </div>
-
         {/* Side Menu */}
         {/* <div
           className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity ${
