@@ -40,7 +40,7 @@ function QuickShopModal({
     (a, b) => a.serialNo - b.serialNo
   );
   const currentPrice = product.discount
-    ? product.discountType === "percentage"
+    ? product.discountType === "PERCENT"
       ? product.basePrice - (product.basePrice * product.discount) / 100
       : product.basePrice - product.discount
     : product.basePrice;
@@ -124,7 +124,7 @@ function QuickShopModal({
                   ${(product.basePrice / 100).toFixed(2)}
                 </p>
                 <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
-                  {product.discountType === "percentage"
+                  {product.discountType === "PERCENT"
                     ? `${product.discount}% OFF`
                     : `৳${(product.discount / 100).toFixed(2)} OFF`}
                 </span>
@@ -328,7 +328,7 @@ export default function CategoryWiseProduct() {
   const getDisplayPrice = (product: Product) => {
     if (!product.discount) return product.basePrice;
 
-    if (product.discountType === "percentage") {
+    if (product.discountType === "PERCENT") {
       return product.basePrice - (product.basePrice * product.discount) / 100;
     }
     return product.basePrice - product.discount;
@@ -567,7 +567,7 @@ export default function CategoryWiseProduct() {
                     {/* Discount Badge */}
                     {product.discount && (
                       <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">
-                        {product.discountType === "percentage"
+                        {product.discountType === "PERCENT"
                           ? `${product.discount}% OFF`
                           : `৳${(product.discount / 100).toFixed(0)} OFF`}
                       </div>

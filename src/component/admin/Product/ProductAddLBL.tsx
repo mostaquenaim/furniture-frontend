@@ -27,7 +27,7 @@ interface ProductFormData {
   description?: string;
   hasColorVariants: boolean;
   showColor: boolean;
-  discountType?: "percentage" | "fixed";
+  discountType?: "PERCENT" | "fixed";
   discount: number;
   discountStart: string;
   discountEnd: string;
@@ -110,7 +110,7 @@ const ProductAddLBL = () => {
     description: "",
     hasColorVariants: true,
     showColor: true,
-    discountType: "percentage",
+    discountType: "PERCENT",
     discount: 0,
     discountStart: new Date().toISOString().split("T")[0],
     discountEnd: new Date().toISOString().split("T")[0],
@@ -497,8 +497,8 @@ const ProductAddLBL = () => {
         hasColorVariants: formData.hasColorVariants,
         showColor: formData.showColor,
         discountType:
-          formData.discountType === "percentage"
-            ? "percentage"
+          formData.discountType === "PERCENT"
+            ? "PERCENT"
             : formData.discountType === "fixed"
             ? "fixed"
             : undefined,
@@ -546,7 +546,7 @@ const ProductAddLBL = () => {
   const discountedPrice = useMemo(() => {
     if (formData.discount <= 0) return formData.basePrice;
 
-    if (formData.discountType === "percentage") {
+    if (formData.discountType === "PERCENT") {
       return formData.basePrice * (1 - formData.discount / 100);
     } else {
       return Math.max(0, formData.basePrice - formData.discount);

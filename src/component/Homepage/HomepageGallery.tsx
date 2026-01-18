@@ -5,11 +5,36 @@ import Image from "next/image";
 import Link from "next/link";
 
 const products = [
-  { id: 1, name: "Summer Dress", image: "/images/products/p5.jpg", slug: "summer-dress-1" },
-  { id: 2, name: "Winter Jacket", image: "/images/products/p5.jpg", slug: "winter-jacket" },
-  { id: 3, name: "Casual Shirt", image: "/images/products/p5.jpg", slug: "casual-shirt" },
-  { id: 4, name: "Formal Pants", image: "/images/products/p5.jpg", slug: "formal-pants" },
-  { id: 5, name: "Eid Kurta", image: "/images/products/p5.jpg", slug: "eid-kurta" },
+  {
+    id: 1,
+    name: "Summer Dress",
+    image: "/images/products/p5.jpg",
+    slug: "summer-dress-1",
+  },
+  {
+    id: 2,
+    name: "Winter Jacket",
+    image: "/images/products/p5.jpg",
+    slug: "winter-jacket",
+  },
+  {
+    id: 3,
+    name: "Casual Shirt",
+    image: "/images/products/p5.jpg",
+    slug: "casual-shirt",
+  },
+  {
+    id: 4,
+    name: "Formal Pants",
+    image: "/images/products/p5.jpg",
+    slug: "formal-pants",
+  },
+  {
+    id: 5,
+    name: "Eid Kurta",
+    image: "/images/products/p5.jpg",
+    slug: "eid-kurta",
+  },
 ];
 
 const HomepageGallery = () => {
@@ -18,7 +43,7 @@ const HomepageGallery = () => {
 
   return (
     <section className="py-12 bg-gray-50 overflow-hidden hidden lg:block">
-      <div className="container mx-auto px-4 mb-10">
+      <div className="container mx-auto px-4">
         <div className="relative w-full h-24 md:h-32">
           <Image
             src="/images/heading/gallery-heading-photo.webp"
@@ -41,7 +66,7 @@ const HomepageGallery = () => {
               style={{ minWidth: "220px" }}
             >
               {/* Image Card */}
-              <div className="relative w-full aspect-[3/5] overflow-hidden rounded-xl bg-gray-100 shadow-sm transition-shadow duration-300 hover:shadow-xl">
+              <div className="relative w-full aspect-3/5 overflow-hidden rounded-xl bg-gray-100 shadow-sm transition-shadow duration-300 hover:shadow-xl">
                 <Image
                   src={product.image}
                   alt={product.name}
@@ -50,7 +75,7 @@ const HomepageGallery = () => {
                   className="object-cover"
                 />
               </div>
-              
+
               {/* Typography */}
               <p
                 // onClick={() => handleProductClick(product.slug)}

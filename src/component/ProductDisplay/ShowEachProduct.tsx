@@ -30,11 +30,16 @@ interface ReviewsData {
   ratingCount: number;
 }
 
-const ReviewsSection: React.FC<ReviewsData> = ({
-  reviews,
-  averageRating,
-  ratingCount,
-}) => {
+interface ReviewsSectionProps {
+  data: {
+    reviews: Review[];
+    averageRating: number;
+    ratingCount: number;
+  };
+}
+
+const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
+  const { reviews, averageRating, ratingCount } = data;
   // console.log(reviewsData, "reviewsData");
   return (
     <section className="py-12 text-[#262626]">
@@ -173,10 +178,10 @@ export default function ShowEachProduct() {
   const currentVariant = useMemo(() => {
     if (!product) return null;
     const color = product.colors.find(
-      (c: any) => c.id === (selectedColorId || product.colors[0]?.id)
+      (c: any) => c.id === (selectedColorId || product.colors[0]?.id),
     );
     const size = color?.sizes?.find(
-      (s: any) => s.id === (selectedSizeId || color?.sizes?.[0]?.id)
+      (s: any) => s.id === (selectedSizeId || color?.sizes?.[0]?.id),
     );
     return { color, size };
   }, [product, selectedColorId, selectedSizeId]);
@@ -271,7 +276,7 @@ export default function ShowEachProduct() {
   const basePrice = currentVariant?.size?.price || product.basePrice;
 
   const discountedPrice =
-    product.discountType === "percentage"
+    product.discountType === "PERCENT"
       ? basePrice * (1 - product.discount / 100)
       : basePrice - product.discount;
 
@@ -559,8 +564,7 @@ export default function ShowEachProduct() {
       </section>
 
       {/* Ratings & Reviews Section */}
-      <ReviewsSection reviewsData={reviewsData}></ReviewsSection>
-
+      <ReviewsSection data={reviewsData} />
       {/* Trending Section */}
       <section>
         <Title title="Trending Now" />

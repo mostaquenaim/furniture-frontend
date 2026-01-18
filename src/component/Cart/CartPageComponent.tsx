@@ -118,8 +118,8 @@ const CartItemComponent = ({ item }: CartItemComponentProps) => {
       <div className="flex flex-2 gap-4 w-full">
         <div className="w-24 h-32 bg-gray-100 shrink-0">
           <img
-            src={item.image}
-            alt={item.name}
+            src={item?.productSize?.color?.product?.images?.[0].image || ""}
+            alt={item?.productSize?.color?.product?.title}
             className="object-cover w-full h-full"
             onError={(e) =>
               (e.currentTarget.src = "/images/categories/fallback.jpg")
@@ -127,8 +127,10 @@ const CartItemComponent = ({ item }: CartItemComponentProps) => {
           />
         </div>
         <div className="text-sm space-y-1 flex-1">
-          <h3 className="font-medium">{item.name}</h3>
-          <p className="text-gray-600">Style #{item.style}</p>
+          <h3 className="font-medium">
+            {item?.productSize?.color?.product?.title}
+          </h3>
+          {/* <p className="text-gray-600">Style #{item.style}</p> */}
           <p className="text-gray-600">Color: {item.color}</p>
           <p className="text-gray-600">Size: {item.size}</p>
           <div className="flex gap-4 mt-4 text-xs underline cursor-pointer">

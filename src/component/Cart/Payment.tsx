@@ -14,7 +14,7 @@ const PaymentPageComponent = () => {
           <Step label="Shipment" completed />
           {/* <div className="flex-1 h-[1px] bg-slate-700 mx-2 mt-[-20px]"></div>
           <Step label="Delivery" completed /> */}
-          <div className="flex-1 h-[1px] bg-slate-700 mx-2 mt-[-20px]"></div>
+          <div className="flex-1 h-[px] bg-slate-700 mx-2 -mt-5"></div>
           <Step label="Payment" active />
         </div>
       </div>
@@ -168,15 +168,21 @@ const PaymentPageComponent = () => {
   );
 };
 
-const Step = ({ label, active, completed }) => (
+type StepTypeProps = {
+  label: string;
+  active?: boolean;
+  completed?: boolean;
+};
+
+const Step = ({ label, active, completed }: StepTypeProps) => (
   <div className="flex flex-col items-center flex-1">
     <div
       className={`w-4 h-4 rounded-full border-2 transition-colors ${
         completed
           ? "bg-slate-700 border-slate-700"
           : active
-          ? "bg-white border-slate-700 ring-4 ring-slate-100"
-          : "bg-white border-gray-300"
+            ? "bg-white border-slate-700 ring-4 ring-slate-100"
+            : "bg-white border-gray-300"
       } z-10`}
     ></div>
     <span
@@ -197,7 +203,7 @@ const PaymentSummary = () => (
       <div className="flex justify-between">
         <span className="text-gray-600">Subtotal</span>
         <span>
-          <TakaIcon size={12} /> 3,598.00
+          <TakaIcon /> 3,598.00
         </span>
       </div>
       <div className="flex justify-between">
@@ -207,13 +213,13 @@ const PaymentSummary = () => (
       <div className="flex justify-between">
         <span className="text-gray-600">Tax</span>
         <span>
-          <TakaIcon size={12} /> 0.00
+          <TakaIcon /> 0.00
         </span>
       </div>
       <div className="flex justify-between font-bold text-sm border-t pt-4">
         <span>Total</span>
         <span>
-          <TakaIcon size={14} /> 3,598.00
+          <TakaIcon /> 3,598.00
         </span>
       </div>
 
@@ -222,7 +228,7 @@ const PaymentSummary = () => (
       </button>
 
       <p className="text-[10px] text-gray-400 text-center px-4">
-        By clicking "Place Order", you agree to our Terms of Use and Privacy
+        By clicking &quot;Place Order&quot;, you agree to our Terms of Use and Privacy
         Policy.
       </p>
     </div>
@@ -240,9 +246,9 @@ const PaymentSummary = () => (
         </div>
         <div className="text-[10px]">
           <p className="font-bold truncate w-40">
-            Selma Fransois Tapestry 90" Sofa
+            Selma Fransois Tapestry 90&quot; Sofa
           </p>
-          <p className="text-gray-500 text-[9px]">Qty: 1 • Color: Fransois</p>
+          <p className="text-gray-500 text-[9px]">Qty: 1 • Color: Francois</p>
         </div>
       </div>
     </div>

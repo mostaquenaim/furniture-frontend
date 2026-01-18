@@ -171,7 +171,12 @@ const CheckoutPageComponent = () => {
   );
 };
 
-const Step = ({ label, active }) => (
+type StepTypeProps = {
+  label: string;
+  active: boolean;
+};
+
+const Step = ({ label, active }: StepTypeProps) => (
   <div className="flex flex-col items-center flex-1">
     <div
       className={`w-4 h-4 rounded-full border-2 ${
@@ -199,7 +204,7 @@ const CheckoutSummary = () => (
       <div className="flex justify-between">
         <span className="text-gray-600">Subtotal</span>
         <span>
-          <TakaIcon size={12} /> 3,598.00
+          <TakaIcon /> 3,598.00
         </span>
       </div>
       <div className="flex justify-between">
@@ -209,13 +214,13 @@ const CheckoutSummary = () => (
       <div className="flex justify-between">
         <span className="text-gray-600">Estimated Tax</span>
         <span>
-          <TakaIcon size={12} /> 0.00
+          <TakaIcon /> 0.00
         </span>
       </div>
       <div className="flex justify-between font-bold text-sm border-t pt-4">
         <span>Total</span>
         <span>
-          <TakaIcon size={14} /> 3,598.00
+          <TakaIcon /> 3,598.00
         </span>
       </div>
 

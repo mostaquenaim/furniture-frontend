@@ -1,6 +1,5 @@
 import BannerManager from "@/component/admin/BannerManager";
 import Footer from "@/component/Footer/Footer";
-import HeaderDS from "@/component/Headers/HeaderDS";
 import PromoBannerContainer from "@/component/Headers/PromoBannerContainer";
 import { User } from "lucide-react";
 import React from "react";

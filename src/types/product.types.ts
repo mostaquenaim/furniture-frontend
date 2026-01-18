@@ -61,16 +61,18 @@ export interface ProductSize {
   price: number;
   quantity?: number;
   sizeId?: number;
-  colorId?: number;
   size: ProductSizeRelation;
+  colorId?: number;
+  color?: ProductColor;
 }
 
 export interface ProductColor {
   id: number;
   useDefaultImages: boolean;
   colorId: number;
-  productId: number;
   color: Color;
+  productId: number;
+  product: Product;
   images?: ProductColorImage[];
   sizes?: ProductSize[];
 }
@@ -156,9 +158,8 @@ export interface CartItem {
   subtotal: number;
   color: string;
   size: string;
-  productSizeId: number;
-
   cart?: Cart;
+  productSizeId: number;
   productSize?: ProductSize;
 }
 
