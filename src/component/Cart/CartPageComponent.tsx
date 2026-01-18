@@ -5,29 +5,35 @@ import { InfoIcon } from "lucide-react";
 import Title from "../Headers/Title";
 import TakaIcon from "../TakaIcon";
 import ShowProductsFlex from "../ProductDisplay/ShowProductsFlex";
-import { Product } from "@/types/product.types";
+import { CartItem, Product } from "@/types/product.types";
+
+interface OrderSummaryProps {
+  subtotal: number;
+  total: number;
+  surcharge: number;
+}
 
 // Mock Data - In a real app, this might come from a Context or API
-const cartData = [
+const cartData: CartItem[] = [
   {
     id: 1,
-    name: 'Selma Fransois Tapestry 90" Sofa',
-    style: "99122321",
+    cartId: 1, // required
+    quantity: 1,
+    priceAtAdd: 3598.0,
+    subtotal: 3598.0, // price * quantity
     color: "Fransois",
     size: '90"',
-    price: 3598.0,
-    quantity: 1,
-    image: "/api/placeholder/100/130",
+    productSizeId: 1, // just example, replace with actual ID
   },
   {
     id: 2,
-    name: "Velvet Accent Chair",
-    style: "88233412",
+    cartId: 1,
+    quantity: 2,
+    priceAtAdd: 1200.0,
+    subtotal: 2400.0, // 1200 * 2
     color: "Emerald",
     size: "Standard",
-    price: 1200.0,
-    quantity: 2,
-    image: "/api/placeholder/100/130",
+    productSizeId: 2,
   },
 ];
 
@@ -39,8 +45,8 @@ const recommendedProducts: Product[] = [
 const CartPageComponent = () => {
   // Logic to calculate totals dynamically
   const subtotal = cartData.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
+    (acc, item) => acc + item.priceAtAdd * item.quantity,
+    0,
   );
   const handlingSurcharge = 20.0;
   const total = subtotal + handlingSurcharge;
@@ -99,8 +105,12 @@ const CartPageComponent = () => {
   );
 };
 
-const CartItemComponent = ({ item }) => {
-  const itemTotal = item.price * item.quantity;
+type CartItemComponentProps = {
+  item: CartItem;
+};
+
+const CartItemComponent = ({ item }: CartItemComponentProps) => {
+  const itemTotal = item.priceAtAdd * item.quantity;
 
   return (
     <div className="flex flex-col md:flex-row py-6 border-b border-gray-200 gap-4 items-start md:items-center">
@@ -111,11 +121,14 @@ const CartItemComponent = ({ item }) => {
             src={item.image}
             alt={item.name}
             className="object-cover w-full h-full"
+            onError={(e) =>
+              (e.currentTarget.src = "/images/categories/fallback.jpg")
+            }
           />
         </div>
         <div className="text-sm space-y-1 flex-1">
           <h3 className="font-medium">{item.name}</h3>
-          <p className="text-gray-600">Style # {item.style}</p>
+          <p className="text-gray-600">Style #{item.style}</p>
           <p className="text-gray-600">Color: {item.color}</p>
           <p className="text-gray-600">Size: {item.size}</p>
           <div className="flex gap-4 mt-4 text-xs underline cursor-pointer">
@@ -129,7 +142,7 @@ const CartItemComponent = ({ item }) => {
       <div className="flex flex-1 w-full justify-between md:justify-center items-center text-sm">
         <span className="md:hidden font-semibold">Price:</span>
         <span className="flex items-center">
-          <TakaIcon /> {item.price.toLocaleString()}
+          <TakaIcon /> {item.priceAtAdd?.toLocaleString()}
         </span>
       </div>
 
@@ -159,7 +172,7 @@ const CartItemComponent = ({ item }) => {
   );
 };
 
-const OrderSummary = ({ subtotal, total, surcharge }) => (
+const OrderSummary = ({ subtotal, total, surcharge }: OrderSummaryProps) => (
   <div className="w-full">
     <div className="flex justify-between items-center mb-4">
       <h2 className="text-lg">Order Summary</h2>

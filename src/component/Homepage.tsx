@@ -141,73 +141,21 @@ export default function Homepage() {
         </div>
 
         {/* small device category navigation */}
-        <CategoryNavigation />
+        <div className="px-4 md:px-12 lg:px-40 py-8">
+          <CategoryNavigation />
+        </div>
+
         {/* More to Explore */}
         <div className="px-4 md:px-12 lg:px-40 py-8">
           <Title title="More to Explore" />
           <ShowProductsFlex />
         </div>
+
         {/* Recently viewed products */}
         <div className="px-4 md:px-12 lg:px-40 py-8">
           <Title title="Recently Viewed" />
           <ShowProductsFlex />
         </div>
-        {/* Side Menu */}
-        {/* <div
-          className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity ${
-            menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-          onClick={() => setMenuOpen(false)}
-        >
-          <div
-            className={`absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl transform transition-transform ${
-              menuOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >*/}
-        {/* Menu Header */}
-        {/*
-            <div className="bg-gray-700 text-white p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Home className="w-5 h-5" />
-                <span className="font-semibold">sakigai.com/an</span>
-              </div>
-              <button onClick={() => setMenuOpen(false)} className="p-1">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-*/}
-        {/* Menu Content */}
-        {/*
-            <div className="overflow-y-auto h-full pb-20">
-            */}
-        {/* Sign In */}
-        {/*
-              <div className="px-6 py-4 border-b flex items-center gap-3">
-                <User className="w-6 h-6 blue-link" />
-                <span className="blue-link font-medium">Sign In / Sign Up</span>
-              </div>
-*/}
-        {/* Menu Items */}
-        {/* 
-              {menuItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`px-6 py-4 border-b flex items-center justify-between hover:bg-gray-50 cursor-pointer ${
-                    ["Gifts", "Holiday", "Sale"].includes(item)
-                      ? "text-red-600"
-                      : ""
-                  }`}
-                >
-                  <span className={item === "Sale" ? "text-red-600" : ""}>
-                    {item}
-                  </span>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

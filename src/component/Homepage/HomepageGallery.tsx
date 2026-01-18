@@ -1,86 +1,68 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
+
 import React from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+
+const products = [
+  { id: 1, name: "Summer Dress", image: "/images/products/p5.jpg", slug: "summer-dress-1" },
+  { id: 2, name: "Winter Jacket", image: "/images/products/p5.jpg", slug: "winter-jacket" },
+  { id: 3, name: "Casual Shirt", image: "/images/products/p5.jpg", slug: "casual-shirt" },
+  { id: 4, name: "Formal Pants", image: "/images/products/p5.jpg", slug: "formal-pants" },
+  { id: 5, name: "Eid Kurta", image: "/images/products/p5.jpg", slug: "eid-kurta" },
+];
 
 const HomepageGallery = () => {
-  const router = useRouter();
-
-  // Sample product data - replace with your actual data
-  const products = [
-    {
-      id: 1,
-      name: "Summer Dress",
-      image: "/images/products/p1.jpg",
-      slug: "summer-dress-1",
-    },
-    {
-      id: 2,
-      name: "Winter Jacket",
-      image: "/images/products/p2.jpg",
-      slug: "winter-jacket",
-    },
-    {
-      id: 3,
-      name: "Casual Shirt",
-      image: "/images/products/p3.jpg",
-      slug: "casual-shirt",
-    },
-    {
-      id: 4,
-      name: "Formal Pants",
-      image: "/images/products/p4.jpg",
-      slug: "formal-pants",
-    },
-    {
-      id: 5,
-      name: "Eid Kurta",
-      image: "/images/products/p5.jpg",
-      slug: "eid-kurta",
-    },
-  ];
-
-  const handleProductClick = (slug: string) => {
-    router.push(`/product/${slug}`);
-  };
+  // Triple the items to ensure a seamless loop on larger screens
+  const marqueeItems = [...products, ...products, ...products];
 
   return (
-    <div className="py-6 overflow-hidden hidden lg:block">
-      <img
-        src={"/images/heading/gallery-heading-photo.webp"}
-        alt={"Gallery Heading"}
-        className="w-full h-full object-cover"
-      />
-      {/* Marquee container */}
-      <div className="relative flex overflow-x-hidden">
-        {/* First marquee */}
-        <div className="flex animate-marquee whitespace-nowrap py-2">
-          {products.concat(products).map((product, index) => (
-            <div
+    <section className="py-12 bg-gray-50 overflow-hidden hidden lg:block">
+      <div className="container mx-auto px-4 mb-10">
+        <div className="relative w-full h-24 md:h-32">
+          <Image
+            src="/images/heading/gallery-heading-photo.webp"
+            alt="Our Collection"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+      </div>
+
+      {/* Marquee Wrapper */}
+      <div className="group relative flex overflow-x-hidden border-y border-gray-100 bg-white py-8">
+        <div className="flex animate-marquee whitespace-nowrap group-hover:pause-animation">
+          {marqueeItems.map((product, index) => (
+            <Link
+              href={`/product/${product.slug}`}
               key={`${product.id}-${index}`}
-              className="inline-flex flex-col items-center mx-3"
-              style={{ minWidth: "180px" }} // Adjust width as needed
+              className="inline-flex flex-col items-center mx-6 transition-transform duration-300 hover:scale-105"
+              style={{ minWidth: "220px" }}
             >
-              {/* Image container with 3:5 ratio */}
-              <div className="relative w-full" style={{ aspectRatio: "3/5" }}>
-                <img
-                  onClick={() => handleProductClick(product.slug)}
+              {/* Image Card */}
+              <div className="relative w-full aspect-[3/5] overflow-hidden rounded-xl bg-gray-100 shadow-sm transition-shadow duration-300 hover:shadow-xl">
+                <Image
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-cover rounded-lg shadow-md cursor-pointer"
+                  fill
+                  sizes="220px"
+                  className="object-cover"
                 />
               </div>
-              {/* Product name */}
+              
+              {/* Typography */}
               <p
-                onClick={() => handleProductClick(product.slug)}
+                // onClick={() => handleProductClick(product.slug)}
                 className="mt-2 text-sm font-medium text-center text-gray-800 cursor-pointer border-b hover:border-none"
               >
                 {product.name}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

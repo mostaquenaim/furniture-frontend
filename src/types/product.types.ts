@@ -147,3 +147,31 @@ export interface FetchProductsParams {
   search?: string;
   isActive?: boolean | null;
 }
+
+export interface CartItem {
+  id: number;
+  cartId: number;
+  quantity: number;
+  priceAtAdd: number;
+  subtotal: number;
+  color: string;
+  size: string;
+  productSizeId: number;
+
+  cart?: Cart;
+  productSize?: ProductSize;
+}
+
+export type CartStatus = "ACTIVE" | "COMPLETED" | "CANCELLED"; // adjust if you have more
+
+export interface Cart {
+  id: number;
+  userId: number;
+  status: CartStatus;
+  createdAt: string; // DateTime in Prisma is usually serialized as ISO string
+  updatedAt: string;
+
+  // Relations
+  items?: CartItem[];
+  user?: User;
+}
