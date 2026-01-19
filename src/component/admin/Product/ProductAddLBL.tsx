@@ -214,7 +214,7 @@ const ProductAddLBL = () => {
         .filter((c) => newSeriesIds.includes(c.seriesId))
         .map((c) => c.id);
       const newCategoryIds = prev.selectedCategoryIds.filter((id) =>
-        validCategoryIds.includes(id)
+        validCategoryIds.includes(id),
       );
 
       return {
@@ -237,7 +237,7 @@ const ProductAddLBL = () => {
         .filter((sc) => newCategoryIds.includes(sc.categoryId))
         .map((sc) => sc.id);
       const newSubCategoryIds = prev.selectedSubCategoryIds.filter((id) =>
-        validSubCategoryIds.includes(id)
+        validSubCategoryIds.includes(id),
       );
 
       return {
@@ -284,14 +284,14 @@ const ProductAddLBL = () => {
 
   const handleColorImagesChange = (
     colorId: number,
-    images: ProductImageItem[]
+    images: ProductImageItem[],
   ) => {
     setColorImages((prev) => ({ ...prev, [colorId]: images }));
   };
 
   const handleColorUseDefaultChange = (
     colorId: number,
-    useDefault: boolean
+    useDefault: boolean,
   ) => {
     setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
   };
@@ -301,13 +301,13 @@ const ProductAddLBL = () => {
     colorId: number,
     sizeId: number,
     field: keyof SizeDetail,
-    value: string | number
+    value: string | number,
   ) => {
     setSizeSelections((prev) => {
       const newSelections = { ...prev };
       if (newSelections[colorId]) {
         const sizeIndex = newSelections[colorId].findIndex(
-          (s) => s.sizeId === sizeId
+          (s) => s.sizeId === sizeId,
         );
         if (sizeIndex !== -1) {
           newSelections[colorId][sizeIndex] = {
@@ -429,19 +429,19 @@ const ProductAddLBL = () => {
                 }
                 return null;
               })
-            : []
+            : [],
         ),
       ];
 
       const uploadedImages = (await Promise.all(uploadPromises)).filter(
-        Boolean
+        Boolean,
       ) as UploadedImage[];
 
       // Separate default and color images
       const defaultImageUrls = uploadedImages
         .filter(
           (img): img is Extract<UploadedImage, { serialNo: number }> =>
-            "serialNo" in img
+            "serialNo" in img,
         )
         .map((img) => ({
           image: img.url,
@@ -451,7 +451,7 @@ const ProductAddLBL = () => {
       const colorImageMap = uploadedImages
         .filter(
           (img): img is Extract<UploadedImage, { colorId: number }> =>
-            "colorId" in img
+            "colorId" in img,
         )
         .reduce<ColorImageMap>((acc, img) => {
           if (!acc[img.colorId]) acc[img.colorId] = [];
@@ -500,8 +500,8 @@ const ProductAddLBL = () => {
           formData.discountType === "PERCENT"
             ? "PERCENT"
             : formData.discountType === "fixed"
-            ? "fixed"
-            : undefined,
+              ? "fixed"
+              : undefined,
         discount: formData.discount,
         discountStart: formData.discountStart
           ? new Date(formData.discountStart)
@@ -569,6 +569,7 @@ const ProductAddLBL = () => {
             description="Product name, pricing, and stock"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* product name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Product Name *
@@ -583,7 +584,7 @@ const ProductAddLBL = () => {
                   required
                 />
               </div>
-
+              {/* slug */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Slug
@@ -602,7 +603,7 @@ const ProductAddLBL = () => {
              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-
+              {/* price */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Price *
@@ -630,6 +631,7 @@ const ProductAddLBL = () => {
           {/* Discount */}
           <FormSection title="Discount" description="Set up product discount">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Discount */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Discount (%)
@@ -651,6 +653,7 @@ const ProductAddLBL = () => {
                 />
               </div>
 
+              {/* start date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Date
@@ -806,7 +809,7 @@ const ProductAddLBL = () => {
                     {formData.selectedSubCategoryIds.map((id) => {
                       const sc = subCategoryList.find((s) => s.id === id);
                       const cat = categoryList.find(
-                        (c) => c.id === sc?.categoryId
+                        (c) => c.id === sc?.categoryId,
                       );
                       return sc ? (
                         <span
@@ -1022,7 +1025,7 @@ const ProductAddLBL = () => {
                           <div className="space-y-3">
                             {colorSizes.map((sizeDetail, index) => {
                               const size = availableSizes.find(
-                                (s) => s.id === sizeDetail.sizeId
+                                (s) => s.id === sizeDetail.sizeId,
                               );
 
                               return (
@@ -1046,7 +1049,7 @@ const ProductAddLBL = () => {
                                           colorId,
                                           sizeDetail.sizeId,
                                           "sku",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
@@ -1063,7 +1066,7 @@ const ProductAddLBL = () => {
                                           colorId,
                                           sizeDetail.sizeId,
                                           "price",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       min="0"
@@ -1082,7 +1085,7 @@ const ProductAddLBL = () => {
                                           colorId,
                                           sizeDetail.sizeId,
                                           "quantity",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       min="0"

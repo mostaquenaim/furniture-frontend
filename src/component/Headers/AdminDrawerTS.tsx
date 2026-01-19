@@ -93,7 +93,7 @@ const AdminDrawerTS = () => {
       name: "Series",
       icon: <FiLayers className="text-xl" />,
       tasks: [
-        { href: "/admin/series", label: "All Series" },
+        { href: "/admin/series/all", label: "All Series" },
         { href: "/admin/series/add", label: "Add Series" },
         { href: "/admin/series/arrange", label: "Arrange Series" },
       ],
