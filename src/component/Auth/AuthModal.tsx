@@ -119,7 +119,7 @@ export default function AuthModal({
           oldPassword,
           newPassword,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       alert("Password changed successfully!");
@@ -128,7 +128,7 @@ export default function AuthModal({
       if (axios.isAxiosError(err)) {
         setError(
           (err.response?.data as { message?: string })?.message ||
-            "Failed to change password."
+            "Failed to change password.",
         );
       } else if (err instanceof Error) {
         setError(err.message);
@@ -182,7 +182,7 @@ export default function AuthModal({
       if (data.otpSentTo) {
         setVerificationTarget(data.otpSentTo);
         toast.success(
-          `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`
+          `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`,
         );
         handleView("otp-verification");
       } else {
@@ -212,7 +212,7 @@ export default function AuthModal({
 
       if (errorMessage.includes("Too many attempts")) {
         setError(
-          "Account temporarily locked. Please try again after a few minutes."
+          "Account temporarily locked. Please try again after a few minutes.",
         );
       } else {
         setError("Invalid password. Please try again.");
@@ -280,7 +280,7 @@ export default function AuthModal({
       if (axios.isAxiosError(err)) {
         setError(
           (err.response?.data as { message?: string })?.message ||
-            "Failed to create account."
+            "Failed to create account.",
         );
       } else if (err instanceof Error) {
         setError(err.message);
@@ -310,7 +310,7 @@ export default function AuthModal({
         },
         {
           withCredentials: true,
-        }
+        },
       );
 
       const data = res.data;
@@ -328,7 +328,7 @@ export default function AuthModal({
       if (axios.isAxiosError(err)) {
         setError(
           (err.response?.data as { message?: string })?.message ||
-            "Failed to create account."
+            "Failed to create account.",
         );
       } else if (err instanceof Error) {
         setError(err.message);
@@ -351,12 +351,12 @@ export default function AuthModal({
         "/auth/reset-password",
         useMobileForSignin
           ? { emailOrPhone: mobileNumber, type: "phone" }
-          : { emailOrPhone: email, type: "email" }
+          : { emailOrPhone: email, type: "email" },
       );
 
       // console.log(otpSent,'otpSent');
       toast.success(
-        `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`
+        `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`,
       );
 
       handleView("otp-verification");
@@ -366,7 +366,7 @@ export default function AuthModal({
       if (axios.isAxiosError(err)) {
         setError(
           (err.response?.data as { message?: string })?.message ||
-            "Failed to send reset email. Please try again."
+            "Failed to send reset email. Please try again.",
         );
       } else if (err instanceof Error) {
         setError(err.message);

@@ -7,7 +7,12 @@ import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import { FiChevronLeft, FiChevronRight, FiRefreshCw } from "react-icons/fi";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "@/component/Loading/LoadingDS";
-import { Product, ProductColor, ProductSize, SubCategoryRelation } from "@/types/product.types";
+import {
+  Product,
+  ProductColor,
+  ProductSize,
+  SubCategoryRelation,
+} from "@/types/product.types";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -31,9 +36,12 @@ const AllProducts = () => {
 
     return product.colors.reduce((sum: number, color: ProductColor) => {
       if (!color.sizes || !Array.isArray(color.sizes)) return sum;
-      const colorStock = color.sizes.reduce((sizeSum: number, size: ProductSize) => {
-        return sizeSum + (size.quantity || 0);
-      }, 0);
+      const colorStock = color.sizes.reduce(
+        (sizeSum: number, size: ProductSize) => {
+          return sizeSum + (size.quantity || 0);
+        },
+        0,
+      );
       return sum + colorStock;
     }, 0);
   };
@@ -49,7 +57,7 @@ const AllProducts = () => {
     }
 
     const sortedImages = [...product.images].sort(
-      (a, b) => (a.serialNo || 0) - (b.serialNo || 0)
+      (a, b) => (a.serialNo || 0) - (b.serialNo || 0),
     );
     return sortedImages[0]?.image || "/placeholder.jpg";
   };
@@ -72,7 +80,7 @@ const AllProducts = () => {
       setTogglingId(productId);
 
       const response = await axiosSecure.patch(
-        `/product/${productId}/toggle-status`
+        `/product/${productId}/toggle-status`,
       );
 
       //   console.log(response.data);
@@ -228,7 +236,7 @@ const AllProducts = () => {
                 </td>
               </tr>
             ) : (
-              products.map((product, index) => {
+              products?.map((product, index) => {
                 const stock = calculateStock(product);
                 const imageUrl = getFirstImage(product);
 
@@ -255,8 +263,11 @@ const AllProducts = () => {
                         {product.subCategories &&
                           product.subCategories.length > 0 && (
                             <span className="text-xs text-gray-500">
-                              {product.subCategories
-                                .map((sc: SubCategoryRelation) => sc.subCategory?.name)
+                              {product?.subCategories
+                                ?.map(
+                                  (sc: SubCategoryRelation) =>
+                                    sc.subCategory?.name,
+                                )
                                 .filter(Boolean)
                                 .join(", ")}
                             </span>
@@ -280,8 +291,8 @@ const AllProducts = () => {
                           stock > 20
                             ? "bg-green-100 text-green-700"
                             : stock > 0
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
                         }`}
                       >
                         {stock} pcs
@@ -333,8 +344,8 @@ const AllProducts = () => {
                           {togglingId === product.slug
                             ? "..."
                             : product.isActive
-                            ? "Disable"
-                            : "Enable"}
+                              ? "Disable"
+                              : "Enable"}
                         </button>
                       </div>
                     </td>
@@ -357,7 +368,7 @@ const AllProducts = () => {
             No products found
           </div>
         ) : (
-          products.map((product, index) => {
+          products?.map((product, index) => {
             const stock = calculateStock(product);
             const imageUrl = getFirstImage(product);
 
@@ -406,8 +417,8 @@ const AllProducts = () => {
                         stock > 20
                           ? "bg-green-100 text-green-700"
                           : stock > 0
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
                       }`}
                     >
                       {stock} pcs
@@ -439,8 +450,8 @@ const AllProducts = () => {
                     {togglingId === product.slug
                       ? "..."
                       : product.isActive
-                      ? "Disable"
-                      : "Enable"}
+                        ? "Disable"
+                        : "Enable"}
                   </button>
                 </div>
               </div>

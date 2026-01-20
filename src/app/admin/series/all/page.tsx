@@ -1,9 +1,11 @@
+import AllSeriesComp from "@/component/admin/Series/AllSeriesComp";
+
 const AllSeriesPage = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+  return (
+    <div>
+      <AllSeriesComp />
+    </div>
+  );
 };
 
 export default AllSeriesPage;

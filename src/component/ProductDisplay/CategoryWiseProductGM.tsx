@@ -95,7 +95,7 @@ function QuickShopModal({
                 <ChevronRight size={20} />
               </button>
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
-                {sortedImages.map((_, idx) => (
+                {sortedImages?.map((_, idx) => (
                   <div
                     key={idx}
                     className={`w-1.5 h-1.5 rounded-full ${
@@ -148,7 +148,7 @@ function QuickShopModal({
                 </span>
               </p>
               <div className="flex gap-3">
-                {product.colors.map((color, i) => (
+                {product.colors?.map((color, i) => (
                   <button
                     key={color.id}
                     className={`w-10 h-10 rounded-full border-2 p-0.5 transition ${
@@ -198,7 +198,7 @@ function QuickShopModal({
               onChange={(e) => setQuantity(Number(e.target.value))}
               className="border border-gray-300 px-4 py-3 text-xs appearance-none bg-white min-w-[60px]"
             >
-              {[1, 2, 3, 4, 5].map((num) => (
+              {[1, 2, 3, 4, 5]?.map((num) => (
                 <option key={num} value={num}>
                   {num}
                 </option>
@@ -404,7 +404,7 @@ export default function CategoryWiseProduct() {
           {/* Dropdown */}
           {isSortOpen && (
             <div className="absolute top-full left-[48px] mt-2 w-56 bg-white border shadow-lg z-40">
-              {sortData.sortCategories.map((item, idx) => (
+              {sortData.sortCategories?.map((item, idx) => (
                 <button
                   key={idx}
                   onClick={() => {
@@ -459,7 +459,7 @@ export default function CategoryWiseProduct() {
             // { name: "In Stock", data: [] },
             { name: "Color", data: colorsData },
             { name: "Material", data: materials },
-          ].map((filter) => (
+          ]?.map((filter) => (
             <div
               key={filter.name}
               className="relative"
@@ -538,7 +538,7 @@ export default function CategoryWiseProduct() {
 
           {/* Product Cards from API */}
           {products && products.length > 0 ? (
-            products.map((item: ProductItem) => {
+            products?.map((item: ProductItem) => {
               const product = item.product;
               const mainImage = product.images.sort(
                 (a, b) => a.serialNo - b.serialNo
@@ -602,7 +602,7 @@ export default function CategoryWiseProduct() {
                   </div>
                   {product.showColor && product.colors.length > 0 && (
                     <div className="flex gap-1 items-center">
-                      {product.colors.slice(0, 5).map((color) => (
+                      {product.colors.slice(0, 5)?.map((color) => (
                         <div
                           key={color.id}
                           className="w-3 h-3 rounded-full border border-gray-200"
@@ -708,7 +708,7 @@ export default function CategoryWiseProduct() {
                       Sort By
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {sortData.sortCategories.map((s) => (
+                      {sortData.sortCategories?.map((s) => (
                         <button
                           key={s.id}
                           onClick={() => {
@@ -737,7 +737,7 @@ export default function CategoryWiseProduct() {
                       "Color",
                       "Price",
                       "Material",
-                    ].map((item) => (
+                    ]?.map((item) => (
                       <button
                         key={item}
                         onClick={() => setActiveFilterTab(item)}
@@ -802,7 +802,7 @@ export default function CategoryWiseProduct() {
                   {/* PRICE VIEW */}
                   {activeFilterTab === "Price" && (
                     <div className="space-y-4">
-                      {priceData.priceRanges.map((price) => (
+                      {priceData.priceRanges?.map((price) => (
                         <label
                           key={price.id}
                           className="flex items-center gap-3 cursor-pointer py-1"

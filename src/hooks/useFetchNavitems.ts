@@ -24,11 +24,11 @@ const useFetchNavitems = () => {
         // Sort Series → Categories → SubCategories (defensive, traditional)
         const sortedData = data
           .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map(series => ({
+          ?.map(series => ({
             ...series,
             categories: series.categories
               ?.sort((a, b) => a.sortOrder - b.sortOrder)
-              .map(category => ({
+              ?.map(category => ({
                 ...category,
                 subCategories: category.subCategories?.sort(
                   (a, b) => a.sortOrder - b.sortOrder

@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 import useFetchSeries from "@/hooks/Categories/useFetchSeries";
 import useFetchVariants from "@/hooks/useFetchVariants";
 import useFetchColors from "@/hooks/useFetchColors";
-import useFetchCategoriesBySeriesIds from "@/hooks/Categories/useFetchCategoriesBySeriesIds";
+import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCategoriesBySeriesIds";
 import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCategoriesByCategoryIds";
 import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
@@ -24,6 +24,7 @@ import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import {
   Product,
+  ProductColor,
   ProductImage,
   ProductSubCategory,
 } from "@/types/product.types";
@@ -237,7 +238,7 @@ const UpdateProductPage = () => {
       selectedCategoryIds: Array.from(categorySet),
       selectedSubCategoryIds: subCategoryIds,
 
-      selectedColors: product.colors?.map((c: any) => c.colorId) || [],
+      selectedColors: product.colors?.map((c: ProductColor) => c.colorId) || [],
       variantId: variantId, // This was already set above
       note: product.note || "",
       deliveryEstimate: product.deliveryEstimate || "",
@@ -255,7 +256,7 @@ const UpdateProductPage = () => {
         serialNo: img.serialNo,
         colorId: null,
         file: null,
-      })) ?? []
+      })) ?? [],
     );
 
     // COLOR IMAGES + SIZES
@@ -301,16 +302,16 @@ const UpdateProductPage = () => {
 
         formData.selectedColors.forEach((colorId) => {
           const existingSizes = newSizeSelections[colorId] || [];
-          const existingSizeIds = existingSizes.map((s) => s.sizeId);
+          const existingSizeIds = existingSizes?.map((s) => s.sizeId);
 
           //  if variant has new sizes that aren't in existing data
           const newSizesNeeded = availableSizes.filter(
-            (size) => !existingSizeIds.includes(size.id)
+            (size) => !existingSizeIds.includes(size.id),
           );
 
           if (!newSizeSelections[colorId]) {
             // First time - initialize all sizes
-            newSizeSelections[colorId] = availableSizes.map((size) => ({
+            newSizeSelections[colorId] = availableSizes?.map((size) => ({
               sizeId: size.id,
               sku: "",
               price: formData.basePrice || undefined,
@@ -321,7 +322,7 @@ const UpdateProductPage = () => {
             // Variant changed - add only NEW sizes, keep existing ones
             newSizeSelections[colorId] = [
               ...existingSizes,
-              ...newSizesNeeded.map((size) => ({
+              ...newSizesNeeded?.map((size) => ({
                 sizeId: size.id,
                 sku: "",
                 price: formData.basePrice || undefined,
@@ -366,9 +367,9 @@ const UpdateProductPage = () => {
       // Clear categories that don't belong to selected series
       const validCategoryIds = categoryList
         .filter((c) => newSeriesIds.includes(c.seriesId))
-        .map((c) => c.id);
+        ?.map((c) => c.id);
       const newCategoryIds = prev.selectedCategoryIds.filter((id) =>
-        validCategoryIds.includes(id)
+        validCategoryIds.includes(id),
       );
 
       return {
@@ -390,9 +391,9 @@ const UpdateProductPage = () => {
       // Clear subcategories that don't belong to selected categories
       const validSubCategoryIds = subCategoryList
         .filter((sc) => newCategoryIds.includes(sc.categoryId))
-        .map((sc) => sc.id);
+        ?.map((sc) => sc.id);
       const newSubCategoryIds = prev.selectedSubCategoryIds.filter((id) =>
-        validSubCategoryIds.includes(id)
+        validSubCategoryIds.includes(id),
       );
 
       return {
@@ -434,7 +435,7 @@ const UpdateProductPage = () => {
       if (!sizeSelections[colorId] && selectedVariant?.sizes) {
         setSizeSelections((prev) => ({
           ...prev,
-          [colorId]: (selectedVariant.sizes || []).map((size) => ({
+          [colorId]: (selectedVariant.sizes || [])?.map((size) => ({
             sizeId: size.id,
             sku: "",
             price: formData.basePrice || undefined,
@@ -453,14 +454,14 @@ const UpdateProductPage = () => {
 
   const handleColorImagesChange = (
     colorId: number,
-    images: ProductImageItem[]
+    images: ProductImageItem[],
   ) => {
     setColorImages((prev) => ({ ...prev, [colorId]: images }));
   };
 
   const handleColorUseDefaultChange = (
     colorId: number,
-    useDefault: boolean
+    useDefault: boolean,
   ) => {
     setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
   };
@@ -470,13 +471,13 @@ const UpdateProductPage = () => {
     colorId: number,
     sizeId: number,
     field: keyof SizeDetail,
-    value: string | number
+    value: string | number,
   ) => {
     setSizeSelections((prev) => {
       const newSelections = { ...prev };
       if (newSelections[colorId]) {
         const sizeIndex = newSelections[colorId].findIndex(
-          (s) => s.sizeId === sizeId
+          (s) => s.sizeId === sizeId,
         );
         if (sizeIndex !== -1) {
           newSelections[colorId][sizeIndex] = {
@@ -581,25 +582,25 @@ const UpdateProductPage = () => {
 
       // Upload default images
       const defaultImageUrls = await Promise.all(
-        defaultImages.map(async (img) => ({
+        defaultImages?.map(async (img) => ({
           image: await uploadIfNew(img),
           serialNo: img.serialNo,
-        }))
+        })),
       );
 
       console.log(sizeSelections, "sizeSelections");
 
       // Prepare colors with proper size data
       const colorVariants = await Promise.all(
-        formData.selectedColors.map(async (colorId) => {
+        formData.selectedColors?.map(async (colorId) => {
           const images = colorUseDefault[colorId]
             ? []
-            : await Promise.all((colorImages[colorId] || []).map(uploadIfNew));
+            : await Promise.all((colorImages[colorId] || [])?.map(uploadIfNew));
 
           // Get sizes for this color, ensuring all required fields are present
           const sizes = (sizeSelections[colorId] || [])
             .filter((s) => s.sku != "")
-            .map((size) => ({
+            ?.map((size) => ({
               sizeId: size.sizeId,
               sku: size.sku || "",
               price: size.price || formData.basePrice,
@@ -612,7 +613,7 @@ const UpdateProductPage = () => {
             images,
             sizes,
           };
-        })
+        }),
       );
 
       const payload = {
@@ -843,7 +844,7 @@ const UpdateProductPage = () => {
                   Series (select multiple)
                 </label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {seriesList.map((s) => (
+                  {seriesList?.map((s) => (
                     <button
                       key={s.id}
                       type="button"
@@ -874,7 +875,7 @@ const UpdateProductPage = () => {
                     </div>
                   ) : categoryList.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {categoryList.map((c) => (
+                      {categoryList?.map((c) => (
                         <button
                           key={c.id}
                           type="button"
@@ -912,7 +913,7 @@ const UpdateProductPage = () => {
                     </div>
                   ) : subCategoryList.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {subCategoryList.map((sc) => (
+                      {subCategoryList?.map((sc) => (
                         <button
                           key={sc.id}
                           type="button"
@@ -945,10 +946,10 @@ const UpdateProductPage = () => {
                     Selected subcategories:
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {formData.selectedSubCategoryIds.map((id) => {
+                    {formData.selectedSubCategoryIds?.map((id) => {
                       const sc = subCategoryList.find((s) => s.id === id);
                       const cat = categoryList.find(
-                        (c) => c.id === sc?.categoryId
+                        (c) => c.id === sc?.categoryId,
                       );
                       return sc ? (
                         <span
@@ -981,7 +982,7 @@ const UpdateProductPage = () => {
               <div className="text-muted-foreground">Loading colors...</div>
             ) : (
               <div className="flex flex-wrap gap-3">
-                {colors.map((color) => (
+                {colors?.map((color) => (
                   <button
                     key={color.id}
                     type="button"
@@ -1021,7 +1022,7 @@ const UpdateProductPage = () => {
                   <h4 className="text-sm font-medium text-foreground">
                     Color-specific Images
                   </h4>
-                  {formData.selectedColors.map((colorId) => {
+                  {formData.selectedColors?.map((colorId) => {
                     const color = colors.find((c) => c.id === colorId);
                     if (!color) return null;
                     return (
@@ -1061,7 +1062,7 @@ const UpdateProductPage = () => {
                       ? Number(e.target.value)
                       : null;
                     const newVariant = variants.find(
-                      (v) => v.id === newVariantId
+                      (v) => v.id === newVariantId,
                     );
 
                     setFormData((prev) => ({
@@ -1078,18 +1079,18 @@ const UpdateProductPage = () => {
                         formData.selectedColors.forEach((colorId) => {
                           const existingSizes = updated[colorId] || [];
                           const existingSizeIds = new Set(
-                            existingSizes.map((s) => s.sizeId)
+                            existingSizes?.map((s) => s.sizeId),
                           );
 
                           // Add new sizes that don't exist yet
                           const newSizes = newVariant?.sizes?.filter(
-                            (size) => !existingSizeIds.has(size.id)
+                            (size) => !existingSizeIds.has(size.id),
                           );
 
                           if (newSizes && newSizes.length > 0) {
                             updated[colorId] = [
                               ...existingSizes,
-                              ...newSizes.map((size) => ({
+                              ...newSizes?.map((size) => ({
                                 sizeId: size.id,
                                 sku: "",
                                 price: formData.basePrice || undefined,
@@ -1110,7 +1111,7 @@ const UpdateProductPage = () => {
                   required={formData.hasColorVariants}
                 >
                   <option value="">-- Select Variant --</option>
-                  {variants.map((v) => (
+                  {variants?.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.name}
                     </option>
@@ -1123,7 +1124,7 @@ const UpdateProductPage = () => {
                   <h4 className="text-sm font-medium text-gray-700">
                     Size Management per Color
                   </h4>
-                  {formData.selectedColors.map((colorId) => {
+                  {formData.selectedColors?.map((colorId) => {
                     const color = colors.find((c) => c.id === colorId);
                     const colorSizes = sizeSelections[colorId] || [];
 
@@ -1142,9 +1143,9 @@ const UpdateProductPage = () => {
 
                         {colorSizes.length > 0 ? (
                           <div className="space-y-3">
-                            {colorSizes.map((sizeDetail, index) => {
+                            {colorSizes?.map((sizeDetail, index) => {
                               const size = availableSizes.find(
-                                (s) => s.id === sizeDetail.sizeId
+                                (s) => s.id === sizeDetail.sizeId,
                               );
 
                               return (
@@ -1169,7 +1170,7 @@ const UpdateProductPage = () => {
                                           colorId,
                                           sizeDetail.sizeId,
                                           "sku",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
@@ -1188,7 +1189,7 @@ const UpdateProductPage = () => {
                                           colorId,
                                           sizeDetail.sizeId,
                                           "price",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       min="0"
@@ -1207,7 +1208,7 @@ const UpdateProductPage = () => {
                                           colorId,
                                           sizeDetail.sizeId,
                                           "quantity",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       min="0"
@@ -1218,7 +1219,7 @@ const UpdateProductPage = () => {
                                   <div className="col-span-1 text-sm text-gray-500">
                                     {sizeDetail.price
                                       ? `৳${Number(sizeDetail.price).toFixed(
-                                          2
+                                          2,
                                         )}`
                                       : `৳${formData.basePrice.toFixed(2)}`}
                                   </div>

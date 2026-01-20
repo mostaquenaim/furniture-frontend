@@ -88,7 +88,7 @@ const WishlistComponent = () => {
   const removeSelectedItems = async () => {
     try {
       await Promise.all(
-        selectedItems.map((id) => axiosSecure.delete(`/wishlist/${id}`))
+        selectedItems?.map((id) => axiosSecure.delete(`/wishlist/${id}`))
       );
       setItems((prev) => prev.filter((i) => !selectedItems.includes(i.id)));
       setSelectedItems([]);
@@ -121,7 +121,7 @@ const WishlistComponent = () => {
     if (selectedItems.length === items.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(items.map((item) => item.id));
+      setSelectedItems(items?.map((item) => item.id));
     }
   };
 
@@ -138,7 +138,7 @@ const WishlistComponent = () => {
           },
         });
 
-        const formatted: WishlistItem[] = res.data.items.map((w: any) => ({
+        const formatted: WishlistItem[] = res.data.items?.map((w: any) => ({
           id: w.id,
           productId: w.productId,
           name: w.product.name,
@@ -257,7 +257,7 @@ const WishlistComponent = () => {
           <>
             {/* Wishlist Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {items.map((item) => (
+              {items?.map((item) => (
                 <>
                   {item.inStock && (
                     <div
@@ -332,7 +332,7 @@ const WishlistComponent = () => {
                           {item.rating && (
                             <div className="flex items-center gap-2 mb-3">
                               <div className="flex">
-                                {[...Array(5)].map((_, i) => (
+                                {[...Array(5)]?.map((_, i) => (
                                   <Star
                                     key={i}
                                     size={14}
@@ -423,7 +423,7 @@ const WishlistComponent = () => {
                   Prev
                 </button>
 
-                {[...Array(totalPages)].map((_, i) => {
+                {[...Array(totalPages)]?.map((_, i) => {
                   const pageNum = i + 1;
                   return (
                     <button

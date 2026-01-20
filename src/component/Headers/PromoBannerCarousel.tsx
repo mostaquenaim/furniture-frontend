@@ -41,7 +41,7 @@ export default function PromoBannerCarousel({
         spaceBetween={0}
         className="w-full"
       >
-        {banners.map((banner) => (
+        {banners?.map((banner) => (
           <SwiperSlide key={banner.id}>
             <div
               className="w-full py-2 px-10 flex items-center justify-center text-center transition-colors duration-300"

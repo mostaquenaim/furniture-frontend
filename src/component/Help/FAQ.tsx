@@ -186,7 +186,7 @@ const FAQPageComp = () => {
 
   const categories = [
     "All",
-    ...Array.from(new Set(faqData.map((item) => item.category))),
+    ...Array.from(new Set(faqData?.map((item) => item.category))),
   ];
 
   const filteredFAQs = faqData.filter((item) => {
@@ -217,7 +217,7 @@ const FAQPageComp = () => {
     if (!searchQuery) return text;
 
     const regex = new RegExp(`(${searchQuery})`, "gi");
-    return text.split(regex).map((part, index) =>
+    return text.split(regex)?.map((part, index) =>
       regex.test(part) ? (
         <mark key={index} className="bg-yellow-100 px-1 rounded">
           {part}
@@ -331,7 +331,7 @@ const FAQPageComp = () => {
                   isSidebarOpen ? "block" : "hidden"
                 } lg:block p-2 lg:p-4 space-y-1`}
               >
-                {categories.map((category) => (
+                {categories?.map((category) => (
                   <button
                     key={category}
                     onClick={() => {
@@ -417,7 +417,7 @@ const FAQPageComp = () => {
             {/* FAQ List */}
             <div className="space-y-4">
               {filteredFAQs.length > 0 ? (
-                filteredFAQs.map((item) => (
+                filteredFAQs?.map((item) => (
                   <div
                     key={item.id}
                     className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl"
@@ -435,7 +435,7 @@ const FAQPageComp = () => {
                             {highlightText(item.question)}
                           </h3>
                           <div className="flex flex-wrap gap-2">
-                            {item.tags.map((tag) => (
+                            {item.tags?.map((tag) => (
                               <span
                                 key={tag}
                                 className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
@@ -506,7 +506,7 @@ const FAQPageComp = () => {
                   Popular Questions
                 </h3>
                 <div className="grid md:grid-cols-2 gap-6">
-                  {faqData.slice(0, 4).map((item) => (
+                  {faqData.slice(0, 4)?.map((item) => (
                     <a
                       key={item.id}
                       href={`#faq-${item.id}`}

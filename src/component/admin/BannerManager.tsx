@@ -66,7 +66,7 @@ export default function BannerManager({ initialBanners, token }: BannerManagerPr
 
       {/* Banner List */}
       <div className="space-y-4">
-        {banners.map((banner) => (
+        {banners?.map((banner) => (
           <div
             key={banner.id}
             className="border rounded-lg p-4 flex items-center gap-4"
@@ -80,7 +80,7 @@ export default function BannerManager({ initialBanners, token }: BannerManagerPr
               <p className="font-medium">{banner.text}</p>
               {banner.links && banner.links.length > 0 && (
                 <div className="text-sm text-gray-600 mt-1">
-                  Links: {banner.links.map(l => l.text).join(', ')}
+                  Links: {banner.links?.map(l => l.text).join(', ')}
                 </div>
               )}
             </div>
@@ -151,7 +151,7 @@ export default function BannerManager({ initialBanners, token }: BannerManagerPr
                   </button>
                 </div>
                 
-                {formData.links.map((link, idx) => (
+                {formData.links?.map((link, idx) => (
                   <div key={idx} className="flex gap-2 mb-2">
                     <input
                       type="text"

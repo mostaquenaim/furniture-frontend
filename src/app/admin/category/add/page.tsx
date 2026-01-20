@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
+import useFetchSeries from "@/hooks/Categories/useFetchSeries";
 
 interface Series {
   id: number;
@@ -28,8 +29,9 @@ const AddCategory = () => {
   const axiosSecure = useAxiosSecure();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const { seriesList } = useFetchSeries();
 
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
@@ -50,21 +52,6 @@ const AddCategory = () => {
       .replace(/\s+/g, "-")
       .replace(/--+/g, "-")
       .trim();
-
-  // -------------------------
-  // Fetch series list
-  // -------------------------
-  useEffect(() => {
-    const fetchSeries = async () => {
-      try {
-        const res = await axiosSecure.get("/series");
-        setSeriesList(res.data);
-      } catch {
-        toast.error("Failed to load series");
-      }
-    };
-    fetchSeries();
-  }, [axiosSecure]);
 
   // -------------------------
   // Handlers
@@ -177,7 +164,7 @@ const AddCategory = () => {
             required
           >
             <option value="">-- Select Series --</option>
-            {seriesList.map((s) => (
+            {seriesList?.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>

@@ -13,14 +13,14 @@ import { Save, X, ImageIcon } from "lucide-react";
 import { PageHeader } from "../PageHeader/PageHeader";
 import { FormSection } from "../admin/Product/FormSection";
 import useFetchSeries from "@/hooks/Categories/useFetchSeries";
-import useFetchCategoriesBySeriesIds from "@/hooks/Categories/useFetchCategoriesBySeriesIds";
+import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCategoriesBySeriesIds";
 import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCategoriesByCategoryIds";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
 import axios, { AxiosError } from "axios";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { optimizeImage } from "@/utils/imageOptimizer";
-import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
+import useFetchBlogCategories from "@/hooks/Admin/Blog/useFetchBlogCategories";
 import { generateSlug } from "@/utils/generateSlug";
 
 interface ImageResponse {
@@ -246,7 +246,7 @@ export default function CreateBlogPage() {
     // Paragraphs
     html = html
       .split("\n\n")
-      .map((para) => {
+      ?.map((para) => {
         if (para.trim() && !para.match(/^<(h[1-3]|ul|ol|blockquote|hr)/)) {
           return `<p class="mb-4 leading-relaxed">${para}</p>`;
         }
@@ -361,7 +361,7 @@ export default function CreateBlogPage() {
                 </label>
                 {seriesList && seriesList.length > 0 ? (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {seriesList.map((s: any) => (
+                    {seriesList?.map((s: any) => (
                       <button
                         key={s.id}
                         type="button"
@@ -416,7 +416,7 @@ export default function CreateBlogPage() {
                   </label>
                   {categoryList && categoryList.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {categoryList.map((c: any) => (
+                      {categoryList?.map((c: any) => (
                         <button
                           key={c.id}
                           type="button"
@@ -487,7 +487,7 @@ export default function CreateBlogPage() {
                   </label>
                   {subCategoryList && subCategoryList.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {subCategoryList.map((sc: any) => (
+                      {subCategoryList?.map((sc: any) => (
                         <button
                           key={sc.id}
                           type="button"
@@ -541,7 +541,7 @@ export default function CreateBlogPage() {
                     {formData.selectedSubCategoryIds.length}):
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {formData.selectedSubCategoryIds.map((id) => {
+                    {formData.selectedSubCategoryIds?.map((id) => {
                       const sc = subCategoryList?.find((s: any) => s.id === id);
                       const cat = categoryList?.find(
                         (c: any) => c.id === sc?.categoryId,
@@ -650,7 +650,7 @@ export default function CreateBlogPage() {
                 </option>
 
                 {blogCategories &&
-                  blogCategories.map((cat) => (
+                  blogCategories?.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>

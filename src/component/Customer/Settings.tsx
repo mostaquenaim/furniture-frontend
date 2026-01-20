@@ -179,7 +179,7 @@ const Settings = () => {
 
   const toggleNotification = (id: string) => {
     setNotifications((prev) =>
-      prev.map((item) =>
+      prev?.map((item) =>
         item.id === id ? { ...item, enabled: !item.enabled } : item
       )
     );
@@ -187,7 +187,7 @@ const Settings = () => {
 
   const togglePrivacy = (id: string) => {
     setPrivacy((prev) =>
-      prev.map((item) =>
+      prev?.map((item) =>
         item.id === id ? { ...item, value: !item.value } : item
       )
     );
@@ -357,7 +357,7 @@ const Settings = () => {
           Notification Preferences
         </h3>
         <div className="space-y-4">
-          {notifications.map((item) => (
+          {notifications?.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
@@ -410,7 +410,7 @@ const Settings = () => {
           Privacy Settings
         </h3>
         <div className="space-y-4">
-          {privacy.map((item) => (
+          {privacy?.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
@@ -660,7 +660,7 @@ const Settings = () => {
         {/* Sidebar Navigation */}
         <div className="lg:w-64 flex-shrink-0">
           <div className="bg-white border border-gray-200 rounded-sm overflow-hidden">
-            {sections.map((section) => (
+            {sections?.map((section) => (
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}

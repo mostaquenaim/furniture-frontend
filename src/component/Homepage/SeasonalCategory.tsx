@@ -39,12 +39,14 @@ const SeasonalCategory = () => {
   return (
     <div className="w-full px-4 my-8">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6 lg:gap-10">
-        {seasonalCategories.map((item) => (
+        {seasonalCategories?.map((item) => (
           <Link key={item.id} href={item.href}>
             <div className="relative w-full aspect-3/1 overflow-hidden rounded-md cursor-pointer">
               <Image
                 src={item.image}
                 alt="Seasonal Category"
+                // width={160}
+                // height={40}
                 fill
                 className="object-cover"
               />

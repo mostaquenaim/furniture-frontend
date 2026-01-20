@@ -19,7 +19,7 @@ const CategoryNavigation = () => {
     <div className="md:hidden">
       <div className="grid grid-cols-2 gap-0.5 bg-gray-200 mt-0.5">
         {isLoading &&
-          skeletons.map((_, idx) => (
+          skeletons?.map((_, idx) => (
             <div
               key={idx}
               className="relative aspect-square bg-gray-300 animate-pulse"
@@ -27,7 +27,7 @@ const CategoryNavigation = () => {
           ))}
 
         {!isLoading &&
-          seriesList.map((category) => (
+          seriesList?.map((category) => (
             <div
               key={category.id}
               className="relative aspect-square overflow-hidden cursor-pointer"

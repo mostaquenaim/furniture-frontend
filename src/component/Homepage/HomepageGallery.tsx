@@ -58,7 +58,7 @@ const HomepageGallery = () => {
       {/* Marquee Wrapper */}
       <div className="group relative flex overflow-x-hidden border-y border-gray-100 bg-white py-8">
         <div className="flex animate-marquee whitespace-nowrap group-hover:pause-animation">
-          {marqueeItems.map((product, index) => (
+          {marqueeItems?.map((product, index) => (
             <Link
               href={`/product/${product.slug}`}
               key={`${product.id}-${index}`}

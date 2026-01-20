@@ -463,7 +463,7 @@ const RefundComp = () => {
             </p>
           </div>
         ) : (
-          currentRefunds.map((refund) => (
+          currentRefunds?.map((refund) => (
             <div
               key={refund.id}
               className="border border-gray-200 rounded-sm overflow-hidden"
@@ -554,7 +554,7 @@ const RefundComp = () => {
                           Items Being Returned
                         </h4>
                         <div className="space-y-3">
-                          {refund.items.map((item) => (
+                          {refund.items?.map((item) => (
                             <div
                               key={item.id}
                               className="flex gap-3 bg-white p-3 rounded-sm border border-gray-100"
@@ -734,7 +734,7 @@ const RefundComp = () => {
           </button>
 
           <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1)?.map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}

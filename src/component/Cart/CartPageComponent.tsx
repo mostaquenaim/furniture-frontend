@@ -75,7 +75,7 @@ const CartPageComponent = () => {
           </header>
 
           {/* Dynamic Mapping of Cart Items */}
-          {cartData.map((item) => (
+          {cartData?.map((item) => (
             <CartItemComponent key={item.id} item={item} />
           ))}
 
@@ -155,7 +155,7 @@ const CartItemComponent = ({ item }: CartItemComponentProps) => {
           className="border p-1 text-sm w-16 bg-transparent"
           defaultValue={item.quantity}
         >
-          {[1, 2, 3, 4, 5].map((n) => (
+          {[1, 2, 3, 4, 5]?.map((n) => (
             <option key={n} value={n}>
               {n}
             </option>

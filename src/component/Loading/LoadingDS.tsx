@@ -36,7 +36,7 @@ const LoadingDots: React.FC<LoadingDotsProps> = ({
 
   return (
     <div className={`relative ${sizeClasses[size]}`}>
-      {positions.map((pos, index) => (
+      {positions?.map((pos, index) => (
         <div
           key={index}
           className={`absolute ${dotSize[size]} rounded-full animate-pulse-dots`}

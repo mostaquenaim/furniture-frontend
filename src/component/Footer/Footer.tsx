@@ -110,7 +110,7 @@ const MobileCollapsible: React.FC<{ title: string; links: string[] }> = ({
       </button>
       {isOpen && (
         <ul className="pb-4 space-y-2 text-sm text-gray-600">
-          {links.map((link, index) => (
+          {links?.map((link, index) => (
             <li key={index}>
               <a href="#" className="hover:underline">
                 {link}
@@ -217,7 +217,7 @@ const SocialAndAppLinks: React.FC = () => (
 
     {/* Social Icons */}
     <div className="flex space-x-6 text-gray-700">
-      {socialLinks.map((item) => (
+      {socialLinks?.map((item) => (
         <a
           key={item.name}
           href="#"
@@ -244,13 +244,13 @@ const Footer: React.FC = () => {
           {/* Desktop Navigation Columns (Grid Layout) */}
           <div className="w-full flex flex-col-reverse lg:flex-row lg:pb-10 lg:pt-10 justify-around">
             <div className="hidden lg:grid grid-cols-4 gap-8 justify-around">
-              {footerData.map((section, index) => (
+              {footerData?.map((section, index) => (
                 <div key={index}>
                   <h4 className="heading text-gray-900 mb-4 text-sm">
                     {section.title}
                   </h4>
                   <ul className="space-y-2 text-sm text-gray-600">
-                    {section.links.map((link, linkIndex) => (
+                    {section.links?.map((link, linkIndex) => (
                       <li key={linkIndex}>
                         <a href="#" className="hover:underline text-[12px]">
                           {link}
@@ -265,7 +265,7 @@ const Footer: React.FC = () => {
             {/* Desktop Connect Column (Icons) */}
             <div>
               <ul className=" space-y-4 text-sm text-gray-600 flex flex-col justify-center items-center lg:items-start">
-                {desktopConnectIcons.map((item, index) => (
+                {desktopConnectIcons?.map((item, index) => (
                   <li
                     key={index}
                     className="border-b-2 lg:border-b-0 border-gray-200 w-full lg:w-fit py-4 lg:py-0 "
@@ -285,7 +285,7 @@ const Footer: React.FC = () => {
 
           {/* Mobile Collapsible Navigation (Stack) */}
           <div className="lg:hidden">
-            {footerData.map((section, index) => (
+            {footerData?.map((section, index) => (
               <MobileCollapsible
                 key={index}
                 title={section.title}
@@ -304,7 +304,7 @@ const Footer: React.FC = () => {
         <div className="py-4 text-xs text-gray-500 border-t border-gray-200">
           {/* Country Links */}
           <div className="flex flex-wrap justify-center mb-2 lg:mb-0 pb-8 space-y-2">
-            {countries.map((country, idx) => (
+            {countries?.map((country, idx) => (
               <a
                 key={country}
                 href="#"
@@ -320,7 +320,7 @@ const Footer: React.FC = () => {
             <div className="max-w-7xl mx-auto lg:mx-0 px-4 flex flex-wrap justify-center lg:justify-between items-center">
               {/* Legal Links (Responsive: stacked on mobile, in line on desktop) */}
               <div className="flex flex-row flex-wrap sm:space-y-0 sm:space-x-3 sm:text-left space-y-2 items-center justify-center ">
-                {legalLinks.map((link, idx) => (
+                {legalLinks?.map((link, idx) => (
                   <a
                     key={link}
                     href="#"

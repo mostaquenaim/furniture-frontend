@@ -254,7 +254,7 @@ const HelpCenter: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {allFaqs.map((faq, idx) => (
+                {allFaqs?.map((faq, idx) => (
                   <FAQItem
                     key={idx}
                     faq={faq}
@@ -285,7 +285,7 @@ const HelpCenter: React.FC = () => {
 
             {categories
               .filter((c) => c.id === selectedCategory)
-              .map((cat) => {
+              ?.map((cat) => {
                 const Icon = cat.icon;
                 return (
                   <div key={cat.id} className="flex items-start gap-3 mb-6">
@@ -303,7 +303,7 @@ const HelpCenter: React.FC = () => {
               })}
 
             <div className="space-y-3">
-              {filteredFaqs.map((faq, idx) => (
+              {filteredFaqs?.map((faq, idx) => (
                 <FAQItem
                   key={idx}
                   faq={faq}
@@ -325,7 +325,7 @@ const HelpCenter: React.FC = () => {
                     Browse by Category
                   </h2>
                   <div className="grid md:grid-cols-2 gap-3">
-                    {categories.map((category) => {
+                    {categories?.map((category) => {
                       const Icon = category.icon;
                       return (
                         <button
@@ -361,7 +361,7 @@ const HelpCenter: React.FC = () => {
                     Contact Support
                   </h2>
                   <div className="grid md:grid-cols-3 gap-4">
-                    {contactOptions.map((option) => {
+                    {contactOptions?.map((option) => {
                       const Icon = option.icon;
                       return (
                         <div

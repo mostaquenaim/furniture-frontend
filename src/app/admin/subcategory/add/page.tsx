@@ -9,6 +9,7 @@ import axios from "axios";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
+import useFetchSeries from "@/hooks/Categories/useFetchSeries";
 
 interface Series {
   id: number;
@@ -36,9 +37,10 @@ const AddSubcategory = () => {
   const axiosPublic = useAxiosPublic();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [seriesList, setSeriesList] = useState<Series[]>([]);
+  // const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const { seriesList } = useFetchSeries();
 
   const [formData, setFormData] = useState<SubCategoryFormData>({
     name: "",
@@ -60,21 +62,6 @@ const AddSubcategory = () => {
       .replace(/\s+/g, "-")
       .replace(/--+/g, "-")
       .trim();
-
-  // -------------------------
-  // Fetch Series
-  // -------------------------
-  useEffect(() => {
-    const fetchSeries = async () => {
-      try {
-        const res = await axiosSecure.get("/series");
-        setSeriesList(res.data);
-      } catch {
-        toast.error("Failed to load series");
-      }
-    };
-    fetchSeries();
-  }, [axiosSecure]);
 
   // -------------------------
   // Fetch Categories when Series changes
@@ -215,7 +202,7 @@ const AddSubcategory = () => {
             className="w-full px-4 py-2 border rounded-lg"
           >
             <option value="">-- Select Series --</option>
-            {seriesList.map((s) => (
+            {seriesList?.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
@@ -240,7 +227,7 @@ const AddSubcategory = () => {
             disabled={!formData.seriesId}
           >
             <option value="">-- Select Category --</option>
-            {categoryList.map((c) => (
+            {categoryList?.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>

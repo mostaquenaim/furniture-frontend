@@ -42,7 +42,7 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
 
     try {
       const newImages: ProductImageItem[] = await Promise.all(
-        Array.from(files).map(async (file, index) => {
+        Array.from(files)?.map(async (file, index) => {
           const originalSize = file.size;
           const optimizedFile = await optimizeImage(file);
           const optimizedSize = optimizedFile.size;
@@ -72,7 +72,7 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
   const removeImage = (imageId: string) => {
     const updated = images
       .filter((img) => img.id !== imageId)
-      .map((img, idx) => ({ ...img, serialNo: idx + 1 }));
+      ?.map((img, idx) => ({ ...img, serialNo: idx + 1 }));
     onImagesChange(updated);
   };
 
@@ -89,7 +89,7 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
     newImages.splice(draggedIndex, 1);
     newImages.splice(index, 0, draggedItem);
 
-    const reordered = newImages.map((img, idx) => ({
+    const reordered = newImages?.map((img, idx) => ({
       ...img,
       serialNo: idx + 1,
     }));
@@ -114,7 +114,7 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {images.map((image, index) => (
+        {images?.map((image, index) => (
           <div
             key={image.id}
             draggable
@@ -214,7 +214,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
 
     try {
       const newImages: ProductImageItem[] = await Promise.all(
-        Array.from(files).map(async (file, index) => {
+        Array.from(files)?.map(async (file, index) => {
           const originalSize = file.size;
           const optimizedFile = await optimizeImage(file);
           const optimizedSize = optimizedFile.size;
@@ -246,7 +246,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
   const removeImage = (imageId: string) => {
     const updated = images
       .filter((img) => img.id !== imageId)
-      .map((img, idx) => ({ ...img, serialNo: idx + 1 }));
+      ?.map((img, idx) => ({ ...img, serialNo: idx + 1 }));
     onImagesChange(colorId, updated);
   };
 
@@ -265,7 +265,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
     newImages.splice(draggedIndex, 1);
     newImages.splice(index, 0, draggedItem);
 
-    const reordered = newImages.map((img, idx) => ({
+    const reordered = newImages?.map((img, idx) => ({
       ...img,
       serialNo: idx + 1,
     }));
@@ -278,7 +278,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
   };
 
   const copyFromDefault = () => {
-    const copiedImages = defaultImages.map((img, index) => ({
+    const copiedImages = defaultImages?.map((img, index) => ({
       ...img,
       id: `${colorId}-copy-${Date.now()}-${index}`,
       colorId,
@@ -334,7 +334,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {images.map((image, index) => (
+          {images?.map((image, index) => (
             <div
               key={image.id}
               draggable

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import useAxiosPublic from "../Axios/useAxiosPublic";
+import useAxiosPublic from "../../Axios/useAxiosPublic";
 
 export interface BlogCategory {
   id: number;

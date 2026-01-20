@@ -351,7 +351,7 @@ const DashboardComp = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {dashboardCards
               .filter(card => card.priority === 'high')
-              .map((card) => (
+              ?.map((card) => (
                 <DashboardCardItem key={card.id} card={card} />
               ))}
           </div>
@@ -369,7 +369,7 @@ const DashboardComp = () => {
           </div>
           <div className="bg-white border border-gray-200 rounded-sm">
             <div className="divide-y divide-gray-200">
-              {recentActivity.slice(0, 3).map((activity) => (
+              {recentActivity.slice(0, 3)?.map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
             </div>
@@ -388,7 +388,7 @@ const DashboardComp = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {dashboardCards.map((card) => (
+        {dashboardCards?.map((card) => (
           <DashboardCardItem key={card.id} card={card} detailed />
         ))}
       </div>
@@ -414,7 +414,7 @@ const DashboardComp = () => {
         </div>
       </div>
       <div className="divide-y divide-gray-200">
-        {recentActivity.map((activity) => (
+        {recentActivity?.map((activity) => (
           <ActivityItem key={activity.id} activity={activity} expanded />
         ))}
       </div>
@@ -434,7 +434,7 @@ const DashboardComp = () => {
         </button>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
-        {activeOrders.map((order) => (
+        {activeOrders?.map((order) => (
           <OrderCard key={order.id} order={order} />
         ))}
       </div>
@@ -525,7 +525,7 @@ const DashboardComp = () => {
       </div>
       
       <div className="mb-4">
-        {order.items.map((item, index) => (
+        {order.items?.map((item, index) => (
           <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
             <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
             <span>{item}</span>
@@ -622,14 +622,14 @@ const DashboardComp = () => {
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          {statCards.map((stat) => (
+          {statCards?.map((stat) => (
             <StatCard key={stat.id} stat={stat} />
           ))}
         </div>
 
         {/* Tabs */}
         <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
-          {(['overview', 'navigation', 'activity', 'orders'] as const).map((tab) => (
+          {(['overview', 'navigation', 'activity', 'orders'] as const)?.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}

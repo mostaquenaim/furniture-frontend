@@ -40,7 +40,7 @@ const parseMarkdown = (text: string) => {
   );
   return html
     .split("\n\n")
-    .map(
+    ?.map(
       (p) =>
         `<p class="mb-6 font-serif leading-relaxed text-gray-700 text-lg">${p}</p>`,
     )

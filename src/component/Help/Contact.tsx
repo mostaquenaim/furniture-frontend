@@ -405,7 +405,7 @@ const ContactComponent = () => {
                 Quick Answers
               </h3>
               <div className="space-y-4">
-                {faqs.map((faq, index) => (
+                {faqs?.map((faq, index) => (
                   <details
                     key={index}
                     className="bg-white rounded-xl shadow-md border border-gray-200 p-6"
@@ -443,7 +443,7 @@ const ContactComponent = () => {
               </p>
 
               <div className="space-y-6">
-                {storeLocations.map((store, index) => (
+                {storeLocations?.map((store, index) => (
                   <div
                     key={index}
                     className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200"

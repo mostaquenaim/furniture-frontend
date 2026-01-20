@@ -54,7 +54,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
           Reviews
         </p>
         <div className="flex gap-0.5 text-[#eeb012]">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(5)]?.map((_, i) => (
             <Star
               key={i}
               size={16}
@@ -119,7 +119,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
         <div className="md:col-span-9">
           <div className="flex justify-between items-start mb-2">
             <div className="flex gap-0.5 text-[#eeb012]">
-              {[...Array(5)].map((_, i) => (
+              {[...Array(5)]?.map((_, i) => (
                 <Star key={i} size={14} fill="currentColor" stroke="none" />
               ))}
             </div>
@@ -356,7 +356,7 @@ export default function ShowEachProduct() {
         <div className="w-full lg:w-[60%] flex gap-4">
           <div className="hidden md:flex flex-col gap-2 w-20">
             {displayImages &&
-              displayImages.map((img: any, idx: number) => (
+              displayImages?.map((img: any, idx: number) => (
                 <button
                   key={img.id}
                   onClick={() => setActiveImgIndex(idx)}
@@ -401,7 +401,7 @@ export default function ShowEachProduct() {
           </h1>
           <div className="flex items-center gap-2 mb-4">
             <div className="flex text-yellow-500">
-              {[...Array(5)].map((_, i) => (
+              {[...Array(5)]?.map((_, i) => (
                 <Star key={i} size={14} fill="currentColor" />
               ))}
             </div>
@@ -426,7 +426,7 @@ export default function ShowEachProduct() {
                 Color: {currentVariant?.color?.color?.name}
               </p>
               <div className="flex gap-3">
-                {product.colors.map((c: any) => (
+                {product.colors?.map((c: any) => (
                   <button
                     key={c.id}
                     className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${
@@ -486,7 +486,7 @@ export default function ShowEachProduct() {
                focus:outline-none focus:border-black
                disabled:bg-gray-100 disabled:text-gray-400"
             >
-              {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((q) => (
+              {Array.from({ length: maxQuantity }, (_, i) => i + 1)?.map((q) => (
                 <option key={q} value={q}>
                   {q}
                 </option>
@@ -537,7 +537,7 @@ export default function ShowEachProduct() {
                 content: `Dimensions: ${product.dimension}`,
               },
               { label: "Shipping & Returns", content: product.shippingReturn },
-            ].map((item) => (
+            ]?.map((item) => (
               <div key={item.label} className="border-b py-4 group">
                 <div className="flex justify-between items-center cursor-pointer">
                   <span className="text-xs font-bold uppercase tracking-widest">

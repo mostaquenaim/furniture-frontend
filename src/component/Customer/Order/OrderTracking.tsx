@@ -301,7 +301,7 @@ const TrackOrder = () => {
 
                 {/* Timeline Steps */}
                 <div className="relative space-y-8">
-                  {order.statusTimeline.map((step, index) => (
+                  {order.statusTimeline?.map((step, index) => (
                     <div key={index} className="flex gap-6">
                       <div
                         className={`relative z-10 flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center ${
@@ -358,7 +358,7 @@ const TrackOrder = () => {
                 </h3>
 
                 <div className="space-y-6">
-                  {order.items.map((item, i) => (
+                  {order.items?.map((item, i) => (
                     <div
                       key={i}
                       className="flex gap-4 p-4 bg-gray-50 rounded-lg"

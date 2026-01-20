@@ -117,7 +117,7 @@ const CustomerDashboard = () => {
 
             {/* Navigation */}
             <nav className="space-y-1">
-              {navigationItems.map((item) => (
+              {navigationItems?.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
@@ -209,7 +209,7 @@ const CustomerDashboard = () => {
 
             {/* Mobile Navigation */}
             <nav className="p-4 space-y-1">
-              {navigationItems.map((item) => (
+              {navigationItems?.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}

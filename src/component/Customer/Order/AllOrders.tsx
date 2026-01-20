@@ -261,7 +261,7 @@ const OrderHistoryPage = () => {
               Order Status
             </label>
             <div className="flex flex-wrap gap-2">
-              {["all", "delivered", "shipped", "processing", "cancelled"].map(
+              {["all", "delivered", "shipped", "processing", "cancelled"]?.map(
                 (status) => (
                   <button
                     key={status}
@@ -292,7 +292,7 @@ const OrderHistoryPage = () => {
             </p>
           </div>
         ) : (
-          currentOrders.map((order) => (
+          currentOrders?.map((order) => (
             <div
               key={order.orderId}
               className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 transition-colors bg-white"
@@ -377,7 +377,7 @@ const OrderHistoryPage = () => {
                         Items Ordered
                       </h4>
                       <div className="space-y-2">
-                        {order.items.map((item) => (
+                        {order.items?.map((item) => (
                           <div
                             key={item.id}
                             className="flex gap-3 bg-white p-3 rounded-lg border border-gray-200"
@@ -471,7 +471,7 @@ const OrderHistoryPage = () => {
           </button>
 
           <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1)?.map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}

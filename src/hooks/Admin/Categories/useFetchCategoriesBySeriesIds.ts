@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import useAxiosSecure from "../Axios/useAxiosSecure";
+import useAxiosSecure from "../../Axios/useAxiosSecure";
 import { toast } from "react-hot-toast";
 
 interface Category {
@@ -31,14 +31,12 @@ const useFetchCategoriesBySeriesIds = (seriesIds: number[]) => {
     fetchAllActive();
   }, [axiosSecure]);
 
-  // Use useMemo to filter the list whenever seriesIds change 
+  // Use useMemo to filter the list whenever seriesIds change
   // without re-fetching from the server
   const filteredCategories = useMemo(() => {
     if (!seriesIds || seriesIds.length === 0) return [];
-    
-    return allCategories.filter((cat) => 
-      seriesIds.includes(cat.seriesId)
-    );
+
+    return allCategories.filter((cat) => seriesIds.includes(cat.seriesId));
   }, [allCategories, seriesIds]);
 
   return { categoryList: filteredCategories, isLoading };

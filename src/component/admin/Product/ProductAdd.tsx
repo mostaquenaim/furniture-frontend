@@ -16,7 +16,7 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import useFetchSeries from "@/hooks/Categories/useFetchSeries";
-import useFetchCategoriesBySeries from "@/hooks/Categories/useFetchCategoriesBySeries";
+import useFetchCategoriesBySeries from "@/hooks/Admin/Categories/useFetchCategoriesBySeries";
 import useFetchSubCategoriesByCategory from "@/hooks/Categories/useFetchSubCategoriesByCategory";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchVariants from "@/hooks/useFetchVariants";
@@ -264,7 +264,7 @@ const ProductAdd = () => {
     try {
       // Upload product images
       const uploadedImages = await Promise.all(
-        formData.productImages.map(async (img) => {
+        formData.productImages?.map(async (img) => {
           let imageUrl = "";
           if (img.image) {
             imageUrl = await handleUploadWithCloudinary(img.image);
@@ -278,13 +278,13 @@ const ProductAdd = () => {
       );
 
       // Prepare variant options with images
-      const variantOptionsWithImages = formData.variantOptions.map((option) => {
+      const variantOptionsWithImages = formData.variantOptions?.map((option) => {
         const variantImages = formData.productImages
           .filter((img) => {
             const color = colors.find((c) => c.id === img.colorId);
             return color && option.variantId === color.id;
           })
-          .map((img) => (img.image ? URL.createObjectURL(img.image) : ""));
+          ?.map((img) => (img.image ? URL.createObjectURL(img.image) : ""));
 
         return {
           ...option,
@@ -482,7 +482,7 @@ const ProductAdd = () => {
                 className="w-full px-4 py-2 border rounded-lg"
               >
                 <option value="">-- Select Series --</option>
-                {seriesList.map((s) => (
+                {seriesList?.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
                   </option>
@@ -508,7 +508,7 @@ const ProductAdd = () => {
               >
                 <option value="">-- Select Category --</option>
                 {categoryList &&
-                  categoryList.map((c) => (
+                  categoryList?.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -521,7 +521,7 @@ const ProductAdd = () => {
                 Select Subcategories *
               </label>
               <div className="max-h-40 overflow-y-auto border rounded-lg p-2">
-                {subCategoryList.map((sc) => (
+                {subCategoryList?.map((sc) => (
                   <div key={sc.id} className="flex items-center mb-2">
                     <input
                       type="checkbox"
@@ -548,7 +548,7 @@ const ProductAdd = () => {
               Add Images for Colors
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {colors.map((color) => (
+              {colors?.map((color) => (
                 <div key={color.id} className="border rounded-lg p-4">
                   <div
                     className="w-8 h-8 rounded-full mx-auto mb-2 border"
@@ -584,7 +584,7 @@ const ProductAdd = () => {
                       ref={provided.innerRef}
                       className="flex flex-wrap gap-4"
                     >
-                      {formData.productImages.map((img, index) => {
+                      {formData.productImages?.map((img, index) => {
                         const color = colors.find((c) => c.id === img.colorId);
                         return (
                           <Draggable
@@ -644,7 +644,7 @@ const ProductAdd = () => {
             </button>
           </div>
 
-          {formData.variantOptions.map((option, index) => {
+          {formData.variantOptions?.map((option, index) => {
             const selectedVariant = variants.find(
               (v) => v.id === option.variantId,
             );
@@ -678,7 +678,7 @@ const ProductAdd = () => {
                       className="w-full px-3 py-2 border rounded-lg"
                     >
                       <option value="">Select Variant</option>
-                      {variants.map((v) => (
+                      {variants?.map((v) => (
                         <option key={v.id} value={v.id}>
                           {v.name}
                         </option>

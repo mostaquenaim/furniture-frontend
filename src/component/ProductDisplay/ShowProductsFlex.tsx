@@ -5,10 +5,11 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Product } from "@/types/product.types";
+import Image from "next/image";
 
 type ShowProductType = {
   maxWidth?: string;
-  products?: Product[]
+  products?: Product[];
 };
 
 const ShowProductsFlex = ({ maxWidth, products }: ShowProductType) => {
@@ -47,11 +48,17 @@ const ShowProductsFlex = ({ maxWidth, products }: ShowProductType) => {
         loop={true}
         className="pb-12!"
       >
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8]?.map((i) => (
           <SwiperSlide key={i}>
             <div className="group cursor-pointer">
-              <div className="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
-                <div className="w-full h-full bg-gray-200 group-hover:bg-gray-300 transition-colors" />
+              <div className="aspect-3/4 bg-gray-100 mb-3 overflow-hidden">
+                <Image
+                  alt="Product Image"
+                  width={260}
+                  height={350}
+                  src={"/images/260X350/260X350.jpeg"}
+                />
+                {/* <div className="w-full h-full bg-gray-200 group-hover:bg-gray-300 transition-colors" /> */}
               </div>
               <h3 className="text-[11px] font-medium leading-tight mb-1">
                 Recommended Item {i}

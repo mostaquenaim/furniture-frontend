@@ -251,7 +251,7 @@ const AdminDrawerTS = () => {
         {/* navigation  */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <ul className="space-y-2">
-            {navSections.map((section) => {
+            {navSections?.map((section) => {
               const isExpanded = expandedSections[section.name];
               const hasActiveChild = section.tasks.some((task) =>
                 pathname.startsWith(task.href)
@@ -296,7 +296,7 @@ const AdminDrawerTS = () => {
                   {/* Section Tasks */}
                   {isAdminOpen && isExpanded && (
                     <ul className="ml-10 mt-1 space-y-1">
-                      {section.tasks.map((task) => {
+                      {section.tasks?.map((task) => {
                         const isActive =
                           pathname === task.href ||
                           pathname.startsWith(task.href);

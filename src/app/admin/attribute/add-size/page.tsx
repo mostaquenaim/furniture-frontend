@@ -112,7 +112,7 @@ const AddSize = () => {
             className="w-full border rounded px-3 py-2"
           >
             <option value="">Select variant</option>
-            {variants.map((variant) => (
+            {variants?.map((variant) => (
               <option key={variant.id} value={variant.id}>
                 {variant.name}
               </option>

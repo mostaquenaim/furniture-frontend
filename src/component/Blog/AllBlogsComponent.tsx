@@ -72,7 +72,7 @@ export default function AllBlogsComponent() {
               onChange={(e) => setActiveCategory(e.target.value)}
             >
               <option disabled>Shop by Category</option>
-              {CATEGORIES.map((cat) => (
+              {CATEGORIES?.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
@@ -87,7 +87,7 @@ export default function AllBlogsComponent() {
             </p>
             <p className="text-sm font-semibold mb-6">Stories</p>
             <ul className="space-y-3 text-[13px] tracking-wide text-gray-700">
-              {CATEGORIES.map((cat) => (
+              {CATEGORIES?.map((cat) => (
                 <li
                   key={cat}
                   className={`cursor-pointer hover:underline ${
@@ -114,7 +114,7 @@ export default function AllBlogsComponent() {
 
           {/* Grid: 1 col on mobile, 3 cols on desktop */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-12">
-            {BLOG_POSTS.map((post) => (
+            {BLOG_POSTS?.map((post) => (
               <article key={post.id} className="group cursor-pointer">
                 <div className="aspect-4/5 overflow-hidden mb-5">
                   <img

@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import useFetchSeries from "@/hooks/Categories/useFetchSeries";
 import useFetchVariants from "@/hooks/useFetchVariants";
 import useFetchColors from "@/hooks/useFetchColors";
-import useFetchCategoriesBySeriesIds from "@/hooks/Categories/useFetchCategoriesBySeriesIds";
+import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCategoriesBySeriesIds";
 import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCategoriesByCategoryIds";
 import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
@@ -167,7 +167,7 @@ const ProductAddLBL = () => {
 
       formData.selectedColors.forEach((colorId) => {
         if (!newSizeSelections[colorId]) {
-          newSizeSelections[colorId] = availableSizes.map((size) => ({
+          newSizeSelections[colorId] = availableSizes?.map((size) => ({
             sizeId: size.id,
             sku: "",
             price: formData.basePrice || undefined,
@@ -212,7 +212,7 @@ const ProductAddLBL = () => {
       // Clear categories that don't belong to selected series
       const validCategoryIds = categoryList
         .filter((c) => newSeriesIds.includes(c.seriesId))
-        .map((c) => c.id);
+        ?.map((c) => c.id);
       const newCategoryIds = prev.selectedCategoryIds.filter((id) =>
         validCategoryIds.includes(id),
       );
@@ -235,7 +235,7 @@ const ProductAddLBL = () => {
       // Clear subcategories that don't belong to selected categories
       const validSubCategoryIds = subCategoryList
         .filter((sc) => newCategoryIds.includes(sc.categoryId))
-        .map((sc) => sc.id);
+        ?.map((sc) => sc.id);
       const newSubCategoryIds = prev.selectedSubCategoryIds.filter((id) =>
         validSubCategoryIds.includes(id),
       );
@@ -412,7 +412,7 @@ const ProductAddLBL = () => {
       // Upload images first and get URLs
       const uploadPromises = [
         // Upload default images
-        ...defaultImages.map(async (img) => {
+        ...defaultImages?.map(async (img) => {
           if (img.file) {
             const url = await uploadImageToCloudinary(img.file);
             return { url, serialNo: img.serialNo };
@@ -422,7 +422,7 @@ const ProductAddLBL = () => {
         // Upload color-specific images
         ...formData.selectedColors.flatMap((colorId) =>
           !colorUseDefault[colorId]
-            ? (colorImages[colorId] || []).map(async (img) => {
+            ? (colorImages[colorId] || [])?.map(async (img) => {
                 if (img.file) {
                   const url = await uploadImageToCloudinary(img.file);
                   return { url, colorId };
@@ -443,7 +443,7 @@ const ProductAddLBL = () => {
           (img): img is Extract<UploadedImage, { serialNo: number }> =>
             "serialNo" in img,
         )
-        .map((img) => ({
+        ?.map((img) => ({
           image: img.url,
           serialNo: img.serialNo,
         }));
@@ -461,7 +461,7 @@ const ProductAddLBL = () => {
 
       // Prepare color variants with sizes
       const colorVariants: ProductColorCreateInput[] =
-        formData.selectedColors.map((colorId) => {
+        formData.selectedColors?.map((colorId) => {
           const colorData: ProductColorCreateInput = {
             colorId,
           };
@@ -704,7 +704,7 @@ const ProductAddLBL = () => {
                   Series (select multiple)
                 </label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {seriesList.map((s) => (
+                  {seriesList?.map((s) => (
                     <button
                       key={s.id}
                       type="button"
@@ -735,7 +735,7 @@ const ProductAddLBL = () => {
                     </div>
                   ) : categoryList.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {categoryList.map((c) => (
+                      {categoryList?.map((c) => (
                         <button
                           key={c.id}
                           type="button"
@@ -773,7 +773,7 @@ const ProductAddLBL = () => {
                     </div>
                   ) : subCategoryList.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {subCategoryList.map((sc) => (
+                      {subCategoryList?.map((sc) => (
                         <button
                           key={sc.id}
                           type="button"
@@ -806,7 +806,7 @@ const ProductAddLBL = () => {
                     Selected subcategories:
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {formData.selectedSubCategoryIds.map((id) => {
+                    {formData.selectedSubCategoryIds?.map((id) => {
                       const sc = subCategoryList.find((s) => s.id === id);
                       const cat = categoryList.find(
                         (c) => c.id === sc?.categoryId,
@@ -842,7 +842,7 @@ const ProductAddLBL = () => {
               <div className="text-muted-foreground">Loading colors...</div>
             ) : (
               <div className="flex flex-wrap gap-3">
-                {colors.map((color) => (
+                {colors?.map((color) => (
                   <button
                     key={color.id}
                     type="button"
@@ -882,7 +882,7 @@ const ProductAddLBL = () => {
                   <h4 className="text-sm font-medium text-foreground">
                     Color-specific Images
                   </h4>
-                  {formData.selectedColors.map((colorId) => {
+                  {formData.selectedColors?.map((colorId) => {
                     const color = colors.find((c) => c.id === colorId);
                     if (!color) return null;
                     return (
@@ -927,7 +927,7 @@ const ProductAddLBL = () => {
                   disabled={variantsLoading}
                 >
                   <option value="">-- Select Variant --</option>
-                  {variants.map((v) => (
+                  {variants?.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.name}
                     </option>
@@ -941,7 +941,7 @@ const ProductAddLBL = () => {
                     Available Sizes
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {availableSizes.map((size) => (
+                    {availableSizes?.map((size) => (
                       <button
                         key={size.id}
                         type="button"
@@ -991,7 +991,7 @@ const ProductAddLBL = () => {
                   required={formData.hasColorVariants}
                 >
                   <option value="">-- Select Variant --</option>
-                  {variants.map((v) => (
+                  {variants?.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.name}
                     </option>
@@ -1004,7 +1004,7 @@ const ProductAddLBL = () => {
                   <h4 className="text-sm font-medium text-gray-700">
                     Size Management per Color
                   </h4>
-                  {formData.selectedColors.map((colorId) => {
+                  {formData.selectedColors?.map((colorId) => {
                     const color = colors.find((c) => c.id === colorId);
                     const colorSizes = sizeSelections[colorId] || [];
 
@@ -1023,7 +1023,7 @@ const ProductAddLBL = () => {
 
                         {colorSizes.length > 0 ? (
                           <div className="space-y-3">
-                            {colorSizes.map((sizeDetail, index) => {
+                            {colorSizes?.map((sizeDetail, index) => {
                               const size = availableSizes.find(
                                 (s) => s.id === sizeDetail.sizeId,
                               );

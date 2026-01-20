@@ -35,7 +35,7 @@ import { MdDashboard } from "react-icons/md";
 // Desktop MegaMenu Component (Unchanged)
 const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
   const [seriesImage, setSeriesImage] = useState<string | null | undefined>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -52,7 +52,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
   return (
     <div className="absolute left-0 right-0 top-full z-40 bg-white border-t border-gray-200 shadow-lg pt-8 pb-12">
       <div className="max-w-7xl mx-auto px-4 flex gap-12">
-        {data.map((column, colIndex) => (
+        {data?.map((column, colIndex) => (
           <div
             key={colIndex}
             className={`
@@ -67,7 +67,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
             <ul className="space-y-2 pt-3">
               {" "}
               {/* Added pt-3 for spacing after the line */}
-              {column.links.map((link, linkIndex) => (
+              {column.links?.map((link, linkIndex) => (
                 <li key={linkIndex}>
                   <a
                     href="#"
@@ -204,7 +204,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               )}
             </div>
 
-            {navItems.map((item) => (
+            {navItems?.map((item) => (
               <Link
                 key={item.id}
                 href={hasDrillDown(item.slug) ? "#" : `/shop/${item.slug}`}
@@ -276,7 +276,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                     </button>
                     {isExpanded && (
                       <ul className="pl-4 pb-2 space-y-1">
-                        {item.links.map((link, linkIndex) => (
+                        {item.links?.map((link, linkIndex) => (
                           <li key={linkIndex}>
                             <a
                               href="#"
@@ -319,7 +319,7 @@ const Header = () => {
 
   const { navItems, isLoading } = useFetchNavitems();
   // console.log(navItems);
-  // const navItems = useMemo(() => navbarDetails.map((s) => s?.name), [navbarDetails]);
+  // const navItems = useMemo(() => navbarDetails?.map((s) => s?.name), [navbarDetails]);
 
   const { token, logout, loading, setLoading } = useAuth();
   // console.log(token,'tokennn');
@@ -328,14 +328,14 @@ const Header = () => {
   const mobileMenuContent = useMemo(() => {
     const content: MobileMenuContent = {};
     navItems.forEach((series) => {
-      content[series.slug] = series.categories.map((cat) => ({
+      content[series.slug] = series.categories?.map((cat) => ({
         type: "collapsible",
         label: cat.name,
         // cat.slug
         //   .split("-")
-        //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        //   ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         //   .join(" ")
-        links: cat.subCategories.map((sub) => sub.name),
+        links: cat.subCategories?.map((sub) => sub.name),
         expanded: false,
       }));
     });
@@ -347,9 +347,9 @@ const Header = () => {
     const activeSeries = navItems.find((s) => s.slug === activeNavItem);
     if (!activeSeries) return null;
 
-    return activeSeries.categories.map((cat) => ({
+    return activeSeries.categories?.map((cat) => ({
       title: cat?.name,
-      links: cat.subCategories.map((sub) => sub.name),
+      links: cat.subCategories?.map((sub) => sub.name),
     }));
   }, [activeNavItem, navItems]);
 
@@ -398,7 +398,10 @@ const Header = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col lg:flex-row items-center justify-between mb-4">
             {/* Logo */}
-            <Link href={'/'} className="text-2xl font-serif font-bold text-gray-900 tracking-wider">
+            <Link
+              href={"/"}
+              className="text-2xl font-serif font-bold text-gray-900 tracking-wider"
+            >
               SAKIGAI
             </Link>
 
@@ -462,7 +465,7 @@ const Header = () => {
           <nav className="hidden lg:flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
             {!isLoading &&
               navItems.length > 0 &&
-              navItems.map((item) => (
+              navItems?.map((item) => (
                 <Link
                   key={item.id}
                   href={`/series/${item.slug}`}
@@ -504,7 +507,7 @@ const Header = () => {
           />
         </div>
       </div>
-      {<AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
+      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </header>
   );
 };
