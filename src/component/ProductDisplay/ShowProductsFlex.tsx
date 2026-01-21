@@ -51,10 +51,12 @@ const ShowProductsFlex = ({ maxWidth, products }: ShowProductType) => {
         {[1, 2, 3, 4, 5, 6, 7, 8]?.map((i) => (
           <SwiperSlide key={i}>
             <div className="group cursor-pointer">
-              <div className="aspect-3/4 bg-gray-100 mb-3 overflow-hidden">
+              <div className="aspect-3/4 bg-gray-100 mb-3 overflow-hidden w-[260px] h-[350px] relative">
                 <Image
                   alt="Product Image"
-                  fill
+                  width={260}
+                  height={350}
+                  // fill
                   src={"/images/260X350/260X350.jpeg"}
                 />
                 {/* <div className="w-full h-full bg-gray-200 group-hover:bg-gray-300 transition-colors" /> */}
