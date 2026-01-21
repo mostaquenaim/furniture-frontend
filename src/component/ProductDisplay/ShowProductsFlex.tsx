@@ -54,8 +54,7 @@ const ShowProductsFlex = ({ maxWidth, products }: ShowProductType) => {
               <div className="aspect-3/4 bg-gray-100 mb-3 overflow-hidden">
                 <Image
                   alt="Product Image"
-                  width={260}
-                  height={350}
+                  fill
                   src={"/images/260X350/260X350.jpeg"}
                 />
                 {/* <div className="w-full h-full bg-gray-200 group-hover:bg-gray-300 transition-colors" /> */}
