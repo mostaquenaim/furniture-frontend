@@ -148,13 +148,13 @@ export default function Homepage() {
         {/* More to Explore */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">
           <Title title="More to Explore" />
-          <ShowProductsFlex />
+          <ShowProductsFlex id="explore" />
         </div>
 
         {/* Recently viewed products */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">
           <Title title="Recently Viewed" />
-          <ShowProductsFlex />
+          <ShowProductsFlex id="recent" />
         </div>
       </div>
     </div>

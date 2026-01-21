@@ -8,31 +8,31 @@ const products = [
   {
     id: 1,
     name: "Summer Dress",
-    image: "/images/products/p5.jpg",
+    image: "/images/products/p1.webp",
     slug: "summer-dress-1",
   },
   {
     id: 2,
     name: "Winter Jacket",
-    image: "/images/products/p5.jpg",
+    image: "/images/products/p2.webp",
     slug: "winter-jacket",
   },
   {
     id: 3,
     name: "Casual Shirt",
-    image: "/images/products/p5.jpg",
+    image: "/images/products/p3.webp",
     slug: "casual-shirt",
   },
   {
     id: 4,
     name: "Formal Pants",
-    image: "/images/products/p5.jpg",
+    image: "/images/products/p4.webp",
     slug: "formal-pants",
   },
   {
     id: 5,
     name: "Eid Kurta",
-    image: "/images/products/p5.jpg",
+    image: "/images/products/p5.webp",
     slug: "eid-kurta",
   },
 ];
