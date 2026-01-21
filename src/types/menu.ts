@@ -69,9 +69,9 @@ export interface Series {
   slug: string;
   image: string | null;
   notice: string | null;
-  isActive: boolean;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  categories: Category[];
+  // isActive: boolean;
+  // sortOrder: number;
+  // createdAt: string;
+  // updatedAt: string;
+  categories?: Category[];
 }

@@ -127,12 +127,12 @@ export default function Homepage() {
         <SeasonalCategory />
 
         {/* larger device gallery */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block pb-8">
           <HomepageGallery />
         </div>
 
         {/* larger device gif */}
-        <div className="hidden lg:block py-5">
+        <div className="hidden lg:block pb-8">
           <img
             src={"/images/home/homepage-large-image.jpg"}
             alt={"Gallery Heading"}
@@ -141,18 +141,18 @@ export default function Homepage() {
         </div>
 
         {/* small device category navigation */}
-        <div className="px-4 md:px-12 lg:px-40 py-8">
+        <div className="px-4 md:px-12 lg:px-40 pb-8">
           <CategoryNavigation />
         </div>
 
         {/* More to Explore */}
-        <div className="px-4 md:px-12 lg:px-40 py-8">
+        <div className="px-4 md:px-12 lg:px-40 pb-8">
           <Title title="More to Explore" />
           <ShowProductsFlex />
         </div>
 
         {/* Recently viewed products */}
-        <div className="px-4 md:px-12 lg:px-40 py-8">
+        <div className="px-4 md:px-12 lg:px-40 pb-8">
           <Title title="Recently Viewed" />
           <ShowProductsFlex />
         </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import useAxiosPublic from "../Axios/useAxiosPublic";
 import { Series } from "@/types/menu";
+import { series } from "@/data/Categories";
 
 const useFetchSeries = () => {
   const axiosPublic = useAxiosPublic();
@@ -15,7 +16,8 @@ const useFetchSeries = () => {
         console.log(res.data, "serieees");
         setSeries(res.data);
       } catch {
-        toast.error("Failed to load series");
+        setSeries(series);
+        // toast.error("Failed to load series");
       } finally {
         setIsLoading(false);
       }
