@@ -6,6 +6,8 @@ import { Bodoni_Moda, Cinzel } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import RoleBasedHeader from "@/component/Headers/RoleBasedHeader";
 import RoleBasedFooter from "@/component/Headers/RoleBasedFooter";
+import Header from "@/component/Headers/Header";
+import Footer from "@/component/Footer/Footer";
 
 const avenir = localFont({
   src: "../../public/fonts/avenir/AvenirNext-Regular.woff",
@@ -39,10 +41,11 @@ export default function RootLayout({
     <html lang="en" className={`${bodoni.variable} ${cinzel.variable} regular`}>
       <Providers>
         <body>
-          {/* <HeaderDS></HeaderDS> */}
-          <RoleBasedHeader></RoleBasedHeader>
+          {/* <RoleBasedHeader></RoleBasedHeader> */}
+          <Header></Header>
           {children}
-          <RoleBasedFooter></RoleBasedFooter>
+          <Footer></Footer>
+          {/* <RoleBasedFooter></RoleBasedFooter> */}
           <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         </body>
       </Providers>

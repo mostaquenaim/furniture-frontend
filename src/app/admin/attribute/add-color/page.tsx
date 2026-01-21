@@ -1,6 +1,7 @@
 "use client";
 
 import LoadingDots from "@/component/Loading/LoadingDS";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import axios from "axios";
 import React, { useState, ChangeEvent, FormEvent } from "react";
@@ -23,7 +24,7 @@ const AddColor: React.FC = () => {
     sortOrder: 0,
     isActive: true,
   });
-  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
 
   //   handle change
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +54,7 @@ const AddColor: React.FC = () => {
     setSuccess("");
 
     try {
-      const response = await axiosSecure.post("/color", {
+      const response = await axiosPublic.post("/color", {
         name: formData.name,
         hexCode: formData.hexCode,
         sortOrder: formData.sortOrder,
