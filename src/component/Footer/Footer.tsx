@@ -246,7 +246,7 @@ const Footer: React.FC = () => {
             <div className="hidden lg:grid grid-cols-4 gap-8 justify-around">
               {footerData?.map((section, index) => (
                 <div key={index}>
-                  <h4 className="heading text-gray-900 mb-4 text-sm">
+                  <h4 className="heading text-gray-900 mb-4 text-sm font-semibold">
                     {section.title}
                   </h4>
                   <ul className="space-y-2 text-sm text-gray-600">
