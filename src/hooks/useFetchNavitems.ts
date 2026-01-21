@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import useAxiosPublic from './Axios/useAxiosPublic';
 import axios from 'axios';
-import { Series } from '@/types/menu';
+import { SeriesWithRelations } from '@/types/menu';
 
 const useFetchNavitems = () => {
-  const [navItems, setNavItems] = useState<Series[]>([]);
+  const [navItems, setNavItems] = useState<SeriesWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,7 +15,7 @@ const useFetchNavitems = () => {
       try {
         setIsLoading(true);
 
-        const response = await axiosPublic.get<Series[]>(
+        const response = await axiosPublic.get<SeriesWithRelations[]>(
           '/series/with-relations'
         );
 

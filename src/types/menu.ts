@@ -73,5 +73,18 @@ export interface Series {
   // sortOrder: number;
   // createdAt: string;
   // updatedAt: string;
-  categories?: Category[];
+  // categories: Category[];
+}
+
+export interface SeriesWithRelations {
+  id: number;
+  name: string;
+  slug: string;
+  image: string | null;
+  notice: string | null;
+  // isActive: boolean;
+  sortOrder: number;
+  // createdAt: string;
+  // updatedAt: string;
+  categories: Category[];
 }

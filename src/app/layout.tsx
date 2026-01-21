@@ -41,11 +41,11 @@ export default function RootLayout({
     <html lang="en" className={`${bodoni.variable} ${cinzel.variable} regular`}>
       <Providers>
         <body>
-          {/* <RoleBasedHeader></RoleBasedHeader> */}
-          <Header></Header>
+          <RoleBasedHeader></RoleBasedHeader>
+          {/* <Header></Header> */}
           {children}
-          <Footer></Footer>
-          {/* <RoleBasedFooter></RoleBasedFooter> */}
+          {/* <Footer></Footer> */}
+          <RoleBasedFooter></RoleBasedFooter>
           <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         </body>
       </Providers>
