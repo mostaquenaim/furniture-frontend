@@ -27,7 +27,7 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
 import { useRouter } from "next/navigation";
 import sampleData from "@/data/sampleData";
-import useFetchNavitems from "@/hooks/useFetchNavitems";
+import useFetchNavItems from "@/hooks/useFetchNavitems";
 import Link from "next/link";
 import Image from "next/image";
 import { MdDashboard } from "react-icons/md";
@@ -317,7 +317,7 @@ const Header = () => {
   const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
   // Generate dynamic Navigation Items (Series names)
 
-  const { navItems, isLoading } = useFetchNavitems();
+  const { navItems, isLoading } = useFetchNavItems();
   // console.log(navItems);
   // const navItems = useMemo(() => navbarDetails?.map((s) => s?.name), [navbarDetails]);
 

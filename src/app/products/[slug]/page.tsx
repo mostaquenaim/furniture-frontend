@@ -4,7 +4,7 @@ import React from 'react';
 const ProductById = () => {
     return (
         <div>
-            <ProductPageComponent></ProductPageComponent>
+            <ProductPageComponent />
         </div>
     );
 };

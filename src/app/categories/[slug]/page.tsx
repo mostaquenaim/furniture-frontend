@@ -1,11 +1,11 @@
-import CategoryWiseProduct from "@/component/ProductDisplay/CategoryWiseProductGM";
+import CategoryWiseProduct from "@/component/ProductDisplay/CategoryWiseProduct";
 
 const CategoryWiseProductPage = () => {
-    return (
-        <div>
-            <CategoryWiseProduct></CategoryWiseProduct>
-        </div>
-    );
+  return (
+    <div>
+      <CategoryWiseProduct />
+    </div>
+  );
 };
 
 export default CategoryWiseProductPage;

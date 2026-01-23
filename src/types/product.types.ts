@@ -7,6 +7,7 @@ export interface Product {
   sku: string | null;
   description: string | null;
   basePrice: number;
+  price: number;
   hasColorVariants: boolean;
   showColor: boolean;
   discountType?: "PERCENT" | "FIXED";

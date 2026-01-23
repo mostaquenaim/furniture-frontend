@@ -176,6 +176,7 @@ const AdminDrawerTS = () => {
       tasks: [
         { href: "/admin/attribute/add-color", label: "Add Color" },
         { href: "/admin/attribute/add-variant", label: "Add Variant" },
+        { href: "/admin/attribute/add-material", label: "Add Materials" },
         { href: "/admin/attribute/add-size", label: "Add Size" },
         { href: "/admin/attribute/manage", label: "Manage Attributes" },
       ],

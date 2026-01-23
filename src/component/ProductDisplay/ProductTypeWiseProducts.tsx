@@ -5,6 +5,7 @@ import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchMaterials from "@/hooks/useFetchMaterials";
+import useFetchSubcategoryWiseProducts from "@/hooks/Products/useFetchSubcategoryWiseProducts";
 import { Product, ProductImage } from "@/types/product.types";
 import {
   ChevronDown,
@@ -14,13 +15,9 @@ import {
   Heart,
   X,
 } from "lucide-react";
-import Head from "next/head";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import useFetchSeriesWiseProducts from "@/hooks/Products/useFetchSeriesWiseProducts";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useRef, useState } from "react";
 import DisplayHeading from "./Heading/DisplayHeading";
 import BottomPagination from "../Pagination/BottomPagination";
 import EachProductShow from "./EachProductShow";
@@ -69,9 +66,8 @@ function FilterDropdown({
   );
 }
 
-export default function SeriesWiseProducts() {
+export default function ProductTypeWiseProducts() {
   const { slug } = useParams<{ slug: string }>();
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -81,37 +77,34 @@ export default function SeriesWiseProducts() {
   );
   const [activeFilterTab, setActiveFilterTab] = useState<string | null>(null);
   const [hoveredFilter, setHoveredFilter] = useState<string | null>(null);
-  const [productImage, setProductImage] = useState("");
-  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const {
-    products,
-    subcategories,
-    blog,
-    seriesName,
-    meta,
-    isLoading,
-    isFetching,
-  } = useFetchSeriesWiseProducts(slug, {
-    page: currentPage,
-    limit: PRODUCTS_PER_PAGE,
-  });
+  const handleMouseEnter = (filter: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setHoveredFilter(filter);
+  };
 
-  // console.log("useFetchSeriesWiseProducts", "products", products);
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setHoveredFilter(null);
+    }, 150);
+  };
+
+  const { products, meta, isLoading, isFetching, blog, subCategory } =
+    useFetchSubcategoryWiseProducts(slug, {
+      page: currentPage,
+      limit: PRODUCTS_PER_PAGE,
+    });
+
+  console.log(products, "products");
 
   const { colors: colorsData, isLoading: isColorLoading } = useFetchColors();
   const { materials, isLoading: isMaterialLoading } = useFetchMaterials();
 
+  // console.log(products, "sortedImages");
+
   const totalPages = meta?.totalPages || 1;
   const totalProducts = meta?.total || 0;
-
-  useEffect(() => {
-    if (isLoading) {
-      document.title = `Sakigai - Series`;
-    } else if (seriesName) {
-      document.title = `Sakigai - ${seriesName}`;
-    }
-  }, [isLoading, seriesName]);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -144,16 +137,8 @@ export default function SeriesWiseProducts() {
     // });
   };
 
-  const handleMouseEnter = (filter: string) => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setHoveredFilter(filter);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setHoveredFilter(null);
-    }, 150);
-  };
+  const [productImage, setProductImage] = useState("");
+  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
 
   const handleImageChange = (images: ProductImage[]) => {
     // console.log(images, "imageeeeeees");
@@ -169,20 +154,26 @@ export default function SeriesWiseProducts() {
   return (
     <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-6 font-sans text-[#222222]">
       {/* <Head>
-        <title>Sakigai - {seriesName}</title>
+        <title>Sakigai - {slug}</title>
       </Head> */}
       {/* Breadcrumbs */}
-      {/* <nav className="text-xs mb-8 flex items-center gap-2 text-gray-500">
-          <span className="hover:underline cursor-pointer">Décor & Pillows</span>
-          <span>/</span>
-          <span className="text-black font-medium capitalize">
-            {slug?.replace(/-/g, " ")}
-          </span>
-        </nav> */}
+      <nav className="text-xs mb-8 flex items-center gap-2 text-gray-500">
+        <span className="hover:underline cursor-pointer capitalize">
+          {subCategory?.category?.series && (
+            <Link href={`/series/${subCategory?.category?.series?.slug}`}>
+              {subCategory?.category?.series?.name}
+            </Link>
+          )}
+        </span>
+        <span>/</span>
+        <span className="text-black font-medium capitalize">
+          {subCategory?.name || slug?.replace(/-/g, " ")}
+        </span>
+      </nav>
 
       {/* Header Section */}
       <DisplayHeading
-        name={seriesName || slug?.replace(/-/g, " ")}
+        name={subCategory?.name || slug?.replace(/-/g, " ")}
         isLoading={isLoading}
         totalProducts={totalProducts}
         isSortOpen={isSortOpen}
@@ -261,6 +252,13 @@ export default function SeriesWiseProducts() {
         </div>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      )}
+
       {/* Product Cards from API */}
       {!isLoading && products && products.length > 0 ? (
         <EachProductShow
@@ -272,40 +270,9 @@ export default function SeriesWiseProducts() {
           setProductImage={setProductImage}
           setHoveredProduct={setHoveredProduct}
         />
-      ) : !isLoading ? (
+      ) : (
         <div className="col-span-2 md:col-span-3 text-center py-20 text-gray-500">
-          No products found in this series
-        </div>
-      ) : null}
-
-      {/* Pagination - Mobile */}
-      {!isLoading && totalPages > 1 && (
-        <div className="md:hidden flex justify-center items-center gap-4 mt-12">
-          <button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            className={`p-2 ${
-              currentPage === 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-black"
-            }`}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <span className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className={`p-2 ${
-              currentPage === totalPages
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-black"
-            }`}
-          >
-            <ChevronRight size={20} />
-          </button>
+          No products found
         </div>
       )}
 
@@ -520,33 +487,6 @@ export default function SeriesWiseProducts() {
                 View Results ({totalProducts})
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Blog Section - Only show if blog exists */}
-      {blog && (
-        <div className="my-10 p-6 bg-linear-to-r from-blue-50 to-gray-50 border border-blue-100 rounded-lg">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <h4 className="text-xl font-light mb-3">{blog.title}</h4>
-              <div className="text-sm text-gray-600 mb-4 line-clamp-3 prose prose-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {blog?.content?.slice(0, 400)}
-                </ReactMarkdown>
-              </div>
-
-              <Link
-                href={`/blogs/${blog.slug}`}
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Read full article
-                <ChevronRight className="ml-1 w-4 h-4" />
-              </Link>
-            </div>
-            {/* <div className="text-xs text-gray-500 bg-white px-3 py-2 rounded border">
-              From our blog
-            </div> */}
           </div>
         </div>
       )}

@@ -19,11 +19,6 @@ export interface ProductsResponse {
       id: number;
       name: string;
       slug: string;
-      series: {
-        id: number;
-        name: string;
-        slug: string;
-      } | null;
     } | null;
     categoryId: number;
   } | null;
@@ -35,7 +30,7 @@ export interface ProductsResponse {
   };
 }
 
-const useFetchSubcategoryWiseProducts = (
+const useFetchCategoryWiseProducts = (
   subCategorySlug: string,
   params?: FetchProductsParams,
 ) => {
@@ -57,7 +52,7 @@ const useFetchSubcategoryWiseProducts = (
       { params: cleanParams },
     );
 
-    console.log(data, "subCategorySlug products");
+    // console.log(data, "subCategorySlug products ");
 
     return data;
   };
@@ -106,4 +101,4 @@ const useFetchSubcategoryWiseProducts = (
   };
 };
 
-export default useFetchSubcategoryWiseProducts;
+export default useFetchCategoryWiseProducts;
