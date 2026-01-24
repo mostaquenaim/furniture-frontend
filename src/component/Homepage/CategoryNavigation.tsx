@@ -9,7 +9,7 @@ const CategoryNavigation = () => {
   const { seriesList = [], isLoading } = useFetchSeries();
 
   const handleCategoryClick = (slug: string) => {
-    router.push(`/product-type/${slug}`);
+    router.push(`/series/${slug}`);
   };
 
   // Skeleton items (fixed count for layout stability)
