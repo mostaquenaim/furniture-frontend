@@ -172,7 +172,7 @@ export default function CategoryWiseProduct() {
 
       {/* Header Section */}
       <DisplayHeading
-        slug={slug}
+        name={subCategory?.name || slug?.replace(/-/g, " ")}
         isLoading={isLoading}
         totalProducts={totalProducts}
         isSortOpen={isSortOpen}

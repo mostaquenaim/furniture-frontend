@@ -486,11 +486,13 @@ export default function ShowEachProduct() {
                focus:outline-none focus:border-black
                disabled:bg-gray-100 disabled:text-gray-400"
             >
-              {Array.from({ length: maxQuantity }, (_, i) => i + 1)?.map((q) => (
-                <option key={q} value={q}>
-                  {q}
-                </option>
-              ))}
+              {Array.from({ length: maxQuantity }, (_, i) => i + 1)?.map(
+                (q) => (
+                  <option key={q} value={q}>
+                    {q}
+                  </option>
+                ),
+              )}
             </select>
           </div>
 
