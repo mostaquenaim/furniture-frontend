@@ -19,27 +19,17 @@ const ShowProductsFlex = ({ maxWidth, id, products }: ShowProductType) => {
   return (
     <div className={`${maxWidth || ""} relative`}>
       <Swiper
-        modules={[Navigation, Pagination]}
+       modules={[Navigation, Pagination]}
         spaceBetween={16}
         slidesPerView={1.5}
-        onBeforeInit={(swiper) => {
-          if (
-            swiper.params.navigation &&
-            typeof swiper.params.navigation !== "boolean"
-          ) {
-            swiper.params.navigation.prevEl = prevRef.current;
-            swiper.params.navigation.nextEl = nextRef.current;
-          }
+        navigation={{
+          nextEl: `.swiper-button-next-${id}`,
+          prevEl: `.swiper-button-prev-${id}`,
         }}
-        navigation={true}
-        // navigation={{
-        //   nextEl: `.swiper-button-next-custom-${id}`,
-        //   prevEl: `.swiper-button-prev-custom-${id}`,
+        // pagination={{
+        //   clickable: true,
+        //   dynamicBullets: true,
         // }}
-        pagination={{
-          clickable: true,
-          dynamicBullets: true,
-        }}
         breakpoints={{
           640: {
             slidesPerView: 2.5,
@@ -59,8 +49,7 @@ const ShowProductsFlex = ({ maxWidth, id, products }: ShowProductType) => {
           },
         }}
         loop={true}
-        className="pb-12!"
-      >
+        className="pb-12" >
         {[1, 2, 3, 4, 5, 6, 7, 8]?.map((i) => (
           <SwiperSlide key={i}>
             <div className="group cursor-pointer">
@@ -84,8 +73,8 @@ const ShowProductsFlex = ({ maxWidth, id, products }: ShowProductType) => {
       {/* Custom Navigation Buttons */}
       <div className="absolute bottom-4 right-4 z-10 hidden md:flex gap-3">
         <button
-          ref={prevRef}
-          className={`swiper-button-prev-custom-${id} w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center cursor-pointer`}
+          className={`swiper-button-prev-${id} w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors`}
+          aria-label="Previous slide"
         >
           <svg
             width="20"
@@ -100,8 +89,8 @@ const ShowProductsFlex = ({ maxWidth, id, products }: ShowProductType) => {
         </button>
 
         <button
-          ref={nextRef}
-          className={`swiper-button-next-custom-${id} w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center cursor-pointer`}
+          className={`swiper-button-next-${id} w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors`}
+          aria-label="Next slide"
         >
           <svg
             width="20"

@@ -2,16 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Star,
-  ChevronRight,
-  ChevronLeft,
-  Truck,
-  Facebook,
-  Twitter,
-  Instagram,
-  Plus,
-} from "lucide-react";
+import { Star, ChevronRight, ChevronLeft, Truck, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
@@ -19,16 +10,10 @@ import { Review } from "@/types/product.types";
 import Title from "../Headers/Title";
 import ShowProductsFlex from "./ShowProductsFlex";
 import LikeItShareIt from "./LikeItShareIt";
-import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import { isAuthenticated } from "@/utils/auth";
 import AuthModal from "../Auth/AuthModal";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
-
-interface ReviewsData {
-  reviews?: Review[];
-  averageRating: number;
-  ratingCount: number;
-}
+import Link from "next/link";
 
 interface ReviewsSectionProps {
   data: {
@@ -40,21 +25,22 @@ interface ReviewsSectionProps {
 
 const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
   const { reviews, averageRating, ratingCount } = data;
-  // console.log(reviewsData, "reviewsData");
+
   return (
-    <section className="py-12 text-[#262626]">
+    <section id="review" className="py-14 text-[#262626]">
       {/* Header */}
-      <Title title="Ratings & Reviews" />
+      <div className="mb-10">
+        <Title title="Ratings & Reviews" />
+      </div>
 
       {/* Summary Box */}
-      <div className="flex flex-col items-center gap-3 py-8 px-4 md:py-10 bg-[#f9f8f6] mb-10 text-center">
-        <p className="text-[13px] mb-2 font-light">
+      <div className="flex flex-col items-center justify-center gap-2 py-10 px-6 bg-[#f9f8f6] mb-14 text-center">
+        <p className="text-[13px] font-light">
           {averageRating || 0} stars <span className="mx-1">|</span>{" "}
-          {ratingCount || 0}
-          Reviews
+          {ratingCount || 0} Reviews
         </p>
         <div className="flex gap-0.5 text-[#eeb012]">
-          {[...Array(5)]?.map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <Star
               key={i}
               size={16}
@@ -65,50 +51,54 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* Filters Row */}
-      <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <h3 className="text-[13px] font-medium mb-3">Filter Reviews</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="text-[11px] block mb-1">Star Rating</label>
-            <select className="border border-gray-300 rounded-sm px-3 py-2 text-[13px] w-64 outline-none focus:border-gray-500">
-              <option>5 Star</option>
+      {/* Filters */}
+      <div className="mb-14 grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div>
+          <h3 className="text-[13px] font-medium mb-4">Filter Reviews</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[11px] block mb-1">Star Rating</label>
+              <select className="border border-gray-300 rounded-sm px-3 py-2 text-[13px] w-64 outline-none focus:border-gray-500">
+                <option>5 Star</option>
+              </select>
+            </div>
+            <button className="text-[11px] underline text-teal-700">
+              Reset All Filters
+            </button>
+          </div>
+        </div>
+
+        {/* Sort */}
+        <div className="flex md:justify-end items-start">
+          <div className="flex items-center gap-4 text-gray-400 mt-6">
+            <label className="text-[11px] uppercase tracking-wider">Sort</label>
+            <select className="border border-gray-300 rounded-sm px-3 py-2 text-[13px] w-40 outline-none">
+              <option>Lowest Rated</option>
             </select>
           </div>
-          <button className="text-[11px] underline text-teal-700 block">
-            Reset All Filters
-          </button>
         </div>
       </div>
 
-      {/* Sort and Pagination Header */}
-      <div className="flex flex-col md:flex-row md:justify-end md:items-center gap-4 mb-8">
-        <div className="flex items-center gap-4 text-gray-400 mt-6">
-          <label className="text-[11px] uppercase tracking-wider">Sort</label>
-          <select className="border border-gray-300 rounded-sm px-3 py-2 text-[13px] w-40 outline-none">
-            <option>Lowest Rated</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-3 text-gray-400">
-          <ChevronLeft size={20} className="cursor-not-allowed opacity-30" />
-          <span className="text-[12px] text-gray-600">1 / 1</span>
-          <ChevronRight size={20} className="cursor-not-allowed opacity-30" />
-        </div>
+      {/* Pagination Header */}
+      <div className="flex justify-end items-center gap-3 mb-10 text-gray-400">
+        <ChevronLeft size={20} className="cursor-not-allowed opacity-30" />
+        <span className="text-[12px] text-gray-600">1 / 1</span>
+        <ChevronRight size={20} className="cursor-not-allowed opacity-30" />
       </div>
 
-      {/* Individual Review */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 border-t border-gray-100 pt-10 pb-16">
-        {/* User Info Sidebar */}
-        <div className="md:col-span-3 space-y-1 text-sm">
+      {/* Review Item */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-10 border-t border-gray-100 pt-12 pb-16">
+        {/* User Info */}
+        <div className="md:col-span-3 space-y-2">
           <p className="text-[13px] font-medium">EAnthroInsider1</p>
           <p className="text-[12px] text-gray-600 font-light">
             <span className="font-normal text-gray-800">Location:</span> Merion,
             PA
           </p>
           <p className="text-[12px] text-gray-600 font-light">
-            <span className="font-normal text-gray-800">Age:</span> 35-39
+            <span className="font-normal text-gray-800">Age:</span> 35–39
           </p>
-          <div className="pt-4">
+          <div className="pt-5">
             <span className="bg-gray-100 px-3 py-2 text-[11px] text-gray-600 uppercase tracking-tight">
               Anthro Insider
             </span>
@@ -117,9 +107,9 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
 
         {/* Review Content */}
         <div className="md:col-span-9">
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-center mb-3">
             <div className="flex gap-0.5 text-[#eeb012]">
-              {[...Array(5)]?.map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <Star key={i} size={14} fill="currentColor" stroke="none" />
               ))}
             </div>
@@ -127,22 +117,23 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
               Dec 8, 2025
             </span>
           </div>
-          <h4 className="text-sm md:text-[15px] font-medium mb-2">
+          <h4 className="text-[15px] font-medium mb-2">
             Perfect Personalization
           </h4>
-          <p className="text-xs md:text-[13px] text-gray-600 leading-relaxed">
+          <p className="text-[13px] text-gray-600 leading-relaxed max-w-2xl">
             Looks like a family heirloom and completes any gallery wall. Makes a
             great gift!
           </p>
         </div>
       </div>
 
-      {/* Footer Write Review Button */}
-      <div className="border-t border-gray-100 pt-10 flex flex-col items-center">
+      {/* Footer */}
+      <div className="border-t border-gray-100 pt-12 flex flex-col items-center">
         <button className="border border-[#262626] px-24 py-3 text-[12px] uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-colors">
           Write a Review
         </button>
-        <div className="flex items-center gap-3 text-gray-400 mt-8">
+
+        <div className="flex items-center gap-3 text-gray-400 mt-10">
           <ChevronLeft size={20} className="opacity-30" />
           <span className="text-[12px] text-gray-600">1 / 1</span>
           <ChevronRight size={20} className="opacity-30" />
@@ -155,9 +146,29 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
 export default function ShowEachProduct() {
   const { slug } = useParams<{ slug: string }>();
   const { product, isLoading } = useFetchAProduct(slug);
+
+  const productTabs = [
+    {
+      id: 1,
+      label: "Product Details",
+      content: product?.productDetails ?? "",
+    },
+    {
+      id: 2,
+      label: "Material / Dimension",
+      content: product?.dimension ? `Dimensions: ${product.dimension}` : "",
+    },
+    {
+      id: 3,
+      label: "Shipping & Returns",
+      content: product?.shippingReturn ?? "",
+    },
+  ];
+
   // console.log(product, "productproduct");
 
   // State for selections
+  const [selectedProductTab, setSelectedProductTab] = useState<string>("");
   const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
   const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
@@ -265,6 +276,11 @@ export default function ShowEachProduct() {
     }
   };
 
+  const handleSelectProductTab = (label: string) => {
+    console.log(label);
+    setSelectedProductTab(label);
+  };
+
   if (isLoading)
     return (
       <div className="p-20 text-center animate-pulse">Loading {slug}...</div>
@@ -297,13 +313,16 @@ export default function ShowEachProduct() {
     <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-8 font-sans text-[#222222]">
       {/* Breadcrumbs */}
       <nav className="text-[10px] uppercase tracking-widest text-gray-400 mb-6 flex flex-wrap gap-2">
-        <span className="hover:text-black cursor-pointer">
+        <Link
+          href={`/series/${product.subCategories[0]?.subCategory?.category?.series?.slug}`}
+          className="hover:text-black cursor-pointer"
+        >
           {product.subCategories[0]?.subCategory?.category?.series?.name}
-        </span>
-        <span>/</span>
+        </Link>
+        {/* <span>/</span>
         <span className="hover:text-black cursor-pointer">
           {product.subCategories[0]?.subCategory?.category?.name}
-        </span>
+        </span> */}
         <span>/</span>
         <span className="text-black font-semibold">
           {product.subCategories[0]?.subCategory?.name}
@@ -374,7 +393,7 @@ export default function ShowEachProduct() {
                 </button>
               ))}
           </div>
-          <div className="flex-1 relative aspect-[4/5] bg-gray-100 overflow-hidden">
+          <div className="flex-1 relative aspect-4/5 bg-gray-100 overflow-hidden">
             <img
               src={
                 (displayImages &&
@@ -405,7 +424,16 @@ export default function ShowEachProduct() {
                 <Star key={i} size={14} fill="currentColor" />
               ))}
             </div>
-            <span className="text-xs text-blue-600 underline cursor-pointer">
+            <span
+              // href="#review"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("review")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="text-xs text-blue-600 underline cursor-pointer"
+            >
               0 Reviews
             </span>
           </div>
@@ -517,7 +545,7 @@ export default function ShowEachProduct() {
                 "Add to Basket"}
           </button>
           {/* Logistics from Object */}
-          <div className="space-y-6 my-10 border-t pt-10">
+          <div className="space-y-6 my-10">
             <div className="flex gap-4">
               <Truck size={20} className="text-gray-400 shrink-0" />
               <div>
@@ -531,30 +559,37 @@ export default function ShowEachProduct() {
             </div>
           </div>
           {/* Accordions mapped to JSON keys */}
-          <div className="border-t">
-            {[
-              { label: "Product Details", content: product.productDetails },
-              {
-                label: "Material/Dimension",
-                content: `Dimensions: ${product.dimension}`,
-              },
-              { label: "Shipping & Returns", content: product.shippingReturn },
-            ]?.map((item) => (
-              <div key={item.label} className="border-b py-4 group">
-                <div className="flex justify-between items-center cursor-pointer">
-                  <span className="text-xs font-bold uppercase tracking-widest">
-                    {item.label}
-                  </span>
-                  <Plus
-                    size={16}
-                    className="text-gray-400 group-hover:text-black"
-                  />
+          <div className="border-t border-gray-200">
+            {productTabs.map((item) => {
+              const isOpen = selectedProductTab === item.label;
+
+              return (
+                <div key={item.label} className="border-b border-gray-200 py-4">
+                  <div
+                    onClick={() =>
+                      setSelectedProductTab(isOpen ? "" : item.label)
+                    }
+                    className="flex justify-between items-center cursor-pointer"
+                  >
+                    <span className="text-xs font-bold uppercase tracking-widest">
+                      {item.label}
+                    </span>
+                    <Plus
+                      size={16}
+                      className={`transition-transform ${
+                        isOpen ? "rotate-45" : ""
+                      }`}
+                    />
+                  </div>
+
+                  {isOpen && (
+                    <div className="mt-4 text-xs text-gray-600 leading-relaxed whitespace-pre-line">
+                      {item.content || "Information not available."}
+                    </div>
+                  )}
                 </div>
-                <div className="hidden group-hover:block mt-4 text-xs text-gray-600 leading-relaxed whitespace-pre-line">
-                  {item.content || "Information not available."}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -566,7 +601,9 @@ export default function ShowEachProduct() {
       </section>
 
       {/* Ratings & Reviews Section */}
-      <ReviewsSection data={reviewsData} />
+      <section id="review">
+        <ReviewsSection data={reviewsData} />
+      </section>
       {/* Trending Section */}
       <section>
         <Title title="Trending Now" />
