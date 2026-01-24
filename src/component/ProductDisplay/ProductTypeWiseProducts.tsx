@@ -494,7 +494,7 @@ export default function ProductTypeWiseProducts() {
       {/* Quick Shop Modal */}
       {selectedProduct && (
         <QuickShopModal
-          product={selectedProduct}
+          slug={selectedProduct.slug}
           onClose={() => setSelectedProduct(null)}
         />
       )}

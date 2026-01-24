@@ -1,33 +1,76 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { Product } from "@/types/product.types";
 import { ChevronLeft, ChevronRight, Heart, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import TakaIcon from "../TakaIcon";
 import { useRouter } from "next/navigation";
+import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
+import LoadingDots from "../Loading/LoadingDS";
+import { isAuthenticated } from "@/utils/auth";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 export function QuickShopModal({
-  product,
+  slug,
   onClose,
 }: {
-  product?: Product | null;
+  slug?: string;
   onClose: () => void;
 }) {
-  console.log("modal product", product);
+  const { product, isLoading } = useFetchAProduct(slug);
+
+  console.log(product, "product");
   const router = useRouter();
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const defaultColor = product?.colors[0];
+  const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
+  const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showCartPreview, setShowCartPreview] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const axiosSecure = useAxiosSecure();
 
-  const [selectedColor, setSelectedColor] = useState(defaultColor);
+  // Memoized current variant (follows ShowEachProduct pattern)
+  const currentVariant = useMemo(() => {
+    if (!product) return null;
+    const color = product.colors.find(
+      (c: any) => c.id === (selectedColorId || product.colors[0]?.id),
+    );
+    const size = color?.sizes?.find(
+      (s: any) => s.id === (selectedSizeId || color?.sizes?.[0]?.id),
+    );
+    return { color, size };
+  }, [product, selectedColorId, selectedSizeId]);
+
+  // Display images logic (follows ShowEachProduct pattern)
+  const displayImages = useMemo(() => {
+    if (!currentVariant?.color) return product?.images || [];
+    return currentVariant.color.images?.length
+      ? currentVariant.color.images.length > 0 && currentVariant.color.images
+      : product?.images || [];
+  }, [product, currentVariant]);
+
+  const sortedImages = useMemo(() => {
+    return [...(displayImages || [])].sort((a, b) => a.serialNo - b.serialNo);
+  }, [displayImages]);
+
+  if (isLoading)
+    return (
+      <div>
+        <LoadingDots />
+      </div>
+    );
 
   if (!product) return null;
 
-  const sortedImages = [...product.images].sort(
-    (a, b) => a.serialNo - b.serialNo,
-  );
+  const basePrice = currentVariant?.size?.basePrice || product.basePrice;
+  const discountedPrice = currentVariant?.size?.price || product.price;
 
-  const currentPrice = product.price;
+  console.log(discountedPrice, "discountedPrice");
+
+  const maxQuantity = Math.min(10, currentVariant?.size?.quantity || 0);
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) =>
@@ -41,10 +84,56 @@ export function QuickShopModal({
     );
   };
 
+  // const handleAddToBasket = async () => {
+  //   if (!currentVariant?.size) {
+  //     alert("Please select a size");
+  //     return;
+  //   }
+
+  //   setIsAdding(true);
+
+  //   try {
+  //     const productSizeId =
+  //       selectedSizeId || currentVariant?.color?.sizes?.[0].id;
+
+  //     console.log(productSizeId, "productSizeId");
+
+  //     const payload = {
+  //       productSizeId,
+  //       quantity: 1,
+  //     };
+
+  //     console.log(payload, "payload");
+
+  //     const hasUser = isAuthenticated();
+
+  //     let data = null;
+
+  //     if (!hasUser) {
+  //       data = localStorage.setItem(JSON.stringify(payload), "cart");
+  //     } else {
+  //       const response = await axiosSecure.post("/cart/items", payload);
+  //       data = await response.data;
+  //     }
+
+  //     setCartItemCount((prev) => prev + 1);
+  //     setShowCartPreview(true);
+
+  //     // Hide cart preview after 3 seconds
+  //     setTimeout(() => {
+  //       setShowCartPreview(false);
+  //     }, 3000);
+  //   } catch (error) {
+  //     console.error("Error adding to cart:", error);
+  //     alert("Failed to add to basket");
+  //   } finally {
+  //     setIsAdding(false);
+  //   }
+  // };
+
   const handleAddToBasket = async () => {
     router.push(`/products/${product.slug}`);
     onClose();
-    // Implementation for adding to basket
   };
 
   return (
@@ -105,21 +194,23 @@ export function QuickShopModal({
           </h2>
 
           <div className="mb-6">
-            {product.price != product.basePrice ? (
+            {discountedPrice < basePrice ? (
               <div className="flex items-center gap-3">
                 <p className="text-lg font-medium text-red-600">
-                  <TakaIcon /> {currentPrice / 100}
+                  <TakaIcon /> {discountedPrice}
                 </p>
                 <p className="text-sm text-gray-400 line-through">
-                  <TakaIcon /> {product.basePrice / 100}
+                  <TakaIcon /> {basePrice}
                 </p>
-                <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
-                  ৳{product.basePrice - product.price} OFF`
-                </span>
+                {basePrice - discountedPrice >= 1 && (
+                  <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
+                    ৳{basePrice - discountedPrice} OFF
+                  </span>
+                )}
               </div>
             ) : (
               <p className="text-lg font-medium">
-                <TakaIcon /> {product.basePrice / 100}
+                <TakaIcon /> {basePrice}
               </p>
             )}
           </div>
@@ -132,34 +223,67 @@ export function QuickShopModal({
               <p className="text-xs mb-3 text-gray-500 uppercase tracking-widest font-semibold">
                 Color:{" "}
                 <span className="text-black ml-1">
-                  {product.colors.length} available
+                  {currentVariant?.color?.color?.name ||
+                    product.colors[0]?.color?.name}
                 </span>
               </p>
               <div className="flex gap-3">
-                {product.colors?.map((color, i) => (
+                {product.colors?.map((c: any) => (
                   <button
-                    key={color.id}
-                    className={`w-10 h-10 rounded-full border-2 p-0.5 transition ${
-                      selectedColor?.id === color.id
+                    key={c.id}
+                    className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${
+                      (selectedColorId || product.colors[0].id) === c.id
                         ? "border-black scale-110"
                         : "border-gray-200"
                     }`}
-                    title={`Color option ${i + 1}`}
                     onClick={() => {
-                      setSelectedColor(color);
-                      setCurrentImageIndex(0); // reset gallery
+                      setSelectedColorId(c.id);
+                      setCurrentImageIndex(0);
+                      setSelectedSizeId(null); // Reset size selection
                     }}
                   >
                     <div
                       className="w-full h-full rounded-full"
-                      style={{ backgroundColor: color.color.hexCode }}
-                      title={color.color.name}
+                      style={{ backgroundColor: c.color.hexCode }}
+                      title={c.color.name}
                     />
                   </button>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Size Selection */}
+          {currentVariant?.color?.sizes &&
+            currentVariant.color.sizes.length > 0 && (
+              <div className="mb-6">
+                <p className="text-xs mb-3 text-gray-500 uppercase tracking-widest font-semibold">
+                  Size:{" "}
+                  <span className="text-black ml-1">
+                    {currentVariant?.size?.size?.name || "Select"}
+                  </span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {currentVariant.color.sizes.map((s: any) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedSizeId(s.id)}
+                      disabled={s.quantity === 0}
+                      className={`px-4 py-2 text-xs border transition-colors ${
+                        (selectedSizeId ||
+                          currentVariant?.color?.sizes?.[0].id) === s.id
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300 hover:border-black"
+                      } ${
+                        s.quantity === 0 ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {s.size.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
           {/* Product Details */}
           {product.productDetails && (
@@ -189,44 +313,40 @@ export function QuickShopModal({
             </div>
           )}
 
+          {/* Stock Info */}
+          <p className="text-[10px] uppercase font-bold text-gray-500 mb-4">
+            Availability:{" "}
+            {currentVariant?.size?.quantity
+              ? `${currentVariant.size.quantity} In Stock`
+              : "Out of Stock"}
+          </p>
+
           {/* Qty & Add to Cart */}
           <div className="flex gap-2 mb-4">
             <select
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="border border-gray-300 px-4 py-3 text-xs appearance-none bg-white min-w-[60px]"
+              disabled={!currentVariant?.size?.quantity}
+              className="border border-gray-300 px-4 py-3 text-xs appearance-none bg-white min-w-[60px] disabled:bg-gray-100 disabled:text-gray-400"
             >
-              {[1, 2, 3, 4, 5]?.map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
+              {Array.from({ length: maxQuantity }, (_, i) => i + 1)?.map(
+                (num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ),
+              )}
             </select>
-            {/* <button
-              onClick={handleAddToBasket}
-              disabled={isAdding || !currentVariant?.size?.quantity}
-              className="w-full bg-[#4E5B6D] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#3d4857] transition mb-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {isAdding ? "Adding..." : "Add to Basket"}
-            </button> */}
             <button
               onClick={handleAddToBasket}
-              className="flex-1 bg-[#4E5B6D] text-white text-[11px] font-bold uppercase tracking-[0.2em] py-4 hover:bg-[#3d4857] transition"
+              disabled={!currentVariant?.size?.quantity}
+              className="flex-1 bg-[#4E5B6D] text-white text-[11px] font-bold uppercase tracking-[0.2em] py-4 hover:bg-[#3d4857] transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Add to Basket
+              {currentVariant?.size?.quantity === 0
+                ? "Out of Stock"
+                : "View Full Details"}
             </button>
           </div>
-
-          {/* Payment Badges */}
-          <p className="text-[10px] text-gray-500 text-center mb-8 italic">
-            4 interest-free installments of ${(currentPrice / 400).toFixed(2)}{" "}
-            with <span className="font-bold text-black">Klarna</span> or{" "}
-            <span className="bg-black text-white px-1">Pay</span>
-          </p>
-
-          <button className="w-full py-4 border border-gray-300 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-50 transition">
-            View Full Details
-          </button>
 
           {/* Note */}
           {product.note && (

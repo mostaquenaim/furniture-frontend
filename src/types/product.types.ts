@@ -59,6 +59,7 @@ export interface ProductColorImage {
 export interface ProductSize {
   id: number;
   sku?: string;
+  basePrice?: number;
   price: number;
   quantity?: number;
   sizeId?: number;

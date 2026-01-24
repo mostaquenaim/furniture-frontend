@@ -80,7 +80,7 @@ const EachProductShow = ({
                 }}
                 className="absolute bottom-0 left-0 w-full bg-white/90 py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out hover:bg-black hover:text-white"
               >
-                Quick Shop
+                Quick View
               </button>
             </div>
 
@@ -92,16 +92,14 @@ const EachProductShow = ({
               {product.discount ? (
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-red-600 font-medium">
-                    ${(displayPrice / 100).toFixed(2)}
+                    ${displayPrice}
                   </p>
                   <p className="text-[10px] text-gray-400 line-through">
-                    ${(product.basePrice / 100).toFixed(2)}
+                    ${product.basePrice}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-gray-600">
-                  ${(product.basePrice / 100).toFixed(2)}
-                </p>
+                <p className="text-xs text-gray-600">${product.basePrice}</p>
               )}
             </div>
 
