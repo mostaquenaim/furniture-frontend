@@ -3,7 +3,15 @@ import { JSX } from "react";
 // Mobile Menu Item Types
 export type MobileMenuItem =
   | { type: "link"; label: string }
-  | { type: "collapsible"; label: string; links: string[]; expanded: boolean }
+  | {
+      type: "collapsible";
+      label: string;
+      links: {
+        label: string;
+        href: string;
+      }[];
+      expanded: boolean;
+    }
   | { type: "banner"; label: string };
 
 // Mobile Menu Content mapping
@@ -13,7 +21,10 @@ export type MobileMenuContent = Record<string, MobileMenuItem[]>;
 export interface MegaMenuColumn {
   title: string;
   // image?: string;
-  links: string[];
+  links: {
+    label: string;
+    href: string;
+  }[];
 }
 
 // Props for MegaMenu

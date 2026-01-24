@@ -70,10 +70,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
               {column.links?.map((link, linkIndex) => (
                 <li key={linkIndex}>
                   <a
-                    href="#"
+                    href={`${link.href}`}
                     className="text-gray-600 hover:text-amber-700 transition-colors text-sm"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 </li>
               ))}
@@ -279,10 +279,10 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                         {item.links?.map((link, linkIndex) => (
                           <li key={linkIndex}>
                             <a
-                              href="#"
+                              href={link.href}
                               className="block py-1 text-gray-600 text-sm"
                             >
-                              {link}
+                              {link.label}
                             </a>
                           </li>
                         ))}
@@ -335,7 +335,11 @@ const Header = () => {
         //   .split("-")
         //   ?.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         //   .join(" ")
-        links: cat.subCategories?.map((sub) => sub.name),
+        links:
+          cat.subCategories?.map((sub) => ({
+            label: sub.name,
+            href: `/product-type/${sub.slug}`,
+          })) ?? [],
         expanded: false,
       }));
     });
@@ -349,7 +353,10 @@ const Header = () => {
 
     return activeSeries.categories?.map((cat) => ({
       title: cat?.name,
-      links: cat.subCategories?.map((sub) => sub.name),
+      links: cat.subCategories?.map((sub) => ({
+        label: sub.name,
+        href: `/product-type/${sub.slug}`,
+      })),
     }));
   }, [activeNavItem, navItems]);
 
