@@ -3,7 +3,7 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { Star, ChevronRight, ChevronLeft, Truck, Plus } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
 import { Review } from "@/types/product.types";
@@ -14,6 +14,7 @@ import { isAuthenticated } from "@/utils/auth";
 import AuthModal from "../Auth/AuthModal";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import Link from "next/link";
+import useCartCount from "@/hooks/Cart/useCartCount";
 
 interface ReviewsSectionProps {
   data: {
@@ -146,6 +147,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
 export default function ShowEachProduct() {
   const { slug } = useParams<{ slug: string }>();
   const { product, isLoading } = useFetchAProduct(slug);
+  const { refetch } = useCartCount();
+  const router = useRouter();
 
   const productTabs = [
     {
@@ -253,13 +256,31 @@ export default function ShowEachProduct() {
       const hasUser = isAuthenticated();
 
       let data = null;
-
       if (!hasUser) {
-        data = localStorage.setItem(JSON.stringify(payload), "cart");
+        // Get existing cart
+        const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+        // Check if product already exists
+        const existingItemIndex = existingCart.findIndex(
+          (item: any) => item.productSizeId === productSizeId,
+        );
+
+        if (existingItemIndex !== -1) {
+          // Increase quantity
+          existingCart[existingItemIndex].quantity += 1;
+        } else {
+          // Add new item
+          existingCart.push(payload);
+        }
+
+        // Save back to localStorage
+        localStorage.setItem("cart", JSON.stringify(existingCart));
       } else {
         const response = await axiosSecure.post("/cart/items", payload);
         data = await response.data;
       }
+
+      refetch(); // Update cart count in header
 
       setCartItemCount((prev) => prev + 1);
       setShowCartPreview(true);
@@ -279,6 +300,10 @@ export default function ShowEachProduct() {
   const handleSelectProductTab = (label: string) => {
     console.log(label);
     setSelectedProductTab(label);
+  };
+
+  const handleCheckOut = () => {
+    router.push("/cart");
   };
 
   if (isLoading)
@@ -363,7 +388,10 @@ export default function ShowEachProduct() {
               </div>
             </div>
           </div>
-          <button className="w-full bg-[#4E5B6D] text-white py-3 text-xs uppercase tracking-wider hover:bg-[#3d4857] transition">
+          <button
+            onClick={handleCheckOut}
+            className="w-full bg-[#4E5B6D] text-white py-3 text-xs uppercase tracking-wider hover:bg-[#3d4857] transition"
+          >
             Checkout
           </button>
         </div>

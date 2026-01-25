@@ -31,6 +31,7 @@ import useFetchNavItems from "@/hooks/useFetchNavitems";
 import Link from "next/link";
 import Image from "next/image";
 import { MdDashboard } from "react-icons/md";
+import useCartCount from "@/hooks/Cart/useCartCount";
 
 // Desktop MegaMenu Component (Unchanged)
 const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
@@ -361,6 +362,8 @@ const Header = () => {
   }, [activeNavItem, navItems]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { cartCount } = useCartCount();
+
   const router = useRouter();
 
   const handleAuthModal = () => {
@@ -395,11 +398,11 @@ const Header = () => {
   };
 
   return (
-    <header className="">
+    <header className="sticky top-0 z-50 w-full shadow-sm bg-white">
       <PromoBannerContainer />
 
       <div
-        className="border-b border-gray-200 relative"
+        className="border-b border-gray-200 sticky top-0 z-50 bg-white"
         onMouseLeave={() => setActiveNavItem(null)}
       >
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -453,8 +456,18 @@ const Header = () => {
                     </>
                   )}
                 </div>
-                <button className="text-gray-700 hover:text-amber-700 transition-colors">
+                <button className="relative text-gray-700 hover:text-amber-700 transition-colors">
                   <ShoppingBag size={20} />
+
+                  {cartCount > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 
+      flex items-center justify-center rounded-full 
+      bg-red-600 text-white text-[10px] font-medium"
+                    >
+                      {cartCount}
+                    </span>
+                  )}
                 </button>
 
                 {/* Mobile Menu Button */}
