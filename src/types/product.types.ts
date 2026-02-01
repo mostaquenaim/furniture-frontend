@@ -154,12 +154,12 @@ export interface FetchProductsParams {
 
 export interface CartItem {
   id: number;
-  cartId: number;
+  cartId?: number;
   quantity: number;
   priceAtAdd: number;
   subtotal: number;
-  color: string;
-  size: string;
+  color?: string;
+  size?: string;
   cart?: Cart;
   productSizeId: number;
   productSize?: ProductSize;
@@ -171,7 +171,7 @@ export interface Cart {
   id: number;
   userId: number;
   status: CartStatus;
-  createdAt: string; // DateTime in Prisma is usually serialized as ISO string
+  createdAt: string; 
   updatedAt: string;
 
   // Relations

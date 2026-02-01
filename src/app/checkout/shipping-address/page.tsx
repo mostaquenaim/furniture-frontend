@@ -1,4 +1,4 @@
-import CheckoutPageComponent from '@/component/Cart/CheckoutPageComponent';
+import CheckoutPageComponent from '@/component/Checkout/CheckoutPageComponent';
 import React from 'react';
 
 const ShippingAddress = () => {

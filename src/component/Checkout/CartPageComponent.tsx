@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -6,12 +8,11 @@ import Title from "../Headers/Title";
 import TakaIcon from "../TakaIcon";
 import ShowProductsFlex from "../ProductDisplay/ShowProductsFlex";
 import { CartItem, Product } from "@/types/product.types";
-
-interface OrderSummaryProps {
-  subtotal: number;
-  total: number;
-  surcharge: number;
-}
+import useFetchCarts from "@/hooks/Cart/useCarts";
+import { devLog } from "@/utils/devlog";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import Link from "next/link";
+import OrderSummary from "./OrderSummary";
 
 // Mock Data - In a real app, this might come from a Context or API
 const cartData: CartItem[] = [
@@ -43,13 +44,22 @@ const recommendedProducts: Product[] = [
 ];
 
 const CartPageComponent = () => {
-  // Logic to calculate totals dynamically
-  const subtotal = cartData.reduce(
-    (acc, item) => acc + item.priceAtAdd * item.quantity,
-    0,
-  );
+  const { cart, isLoading, refetch } = useFetchCarts();
+
+  !isLoading && devLog(cart, "cartslocal");
+
+  // const cart = cart as Cart | null;
+  const cartItems = cart?.items ?? [];
+  const subtotal = Number(cart?.subtotalAtAdd ?? 0);
+
   const handlingSurcharge = 20.0;
   const total = subtotal + handlingSurcharge;
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[1500px] mx-auto p-4 lg:p-8">Loading cart...</div>
+    );
+  }
 
   return (
     <div className="max-w-[1500px] mx-auto p-4 lg:p-8 font-sans overflow-x-hidden">
@@ -74,10 +84,21 @@ const CartPageComponent = () => {
             <div className="flex-1 text-right">Total Price</div>
           </header>
 
+          {/* Map actual cart items */}
+          {cartItems.length > 0 ? (
+            cartItems.map((item: any) => (
+              <CartItemComponent key={item.id} item={item} refetch={refetch} />
+            ))
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              Your cart is empty
+            </div>
+          )}
+
           {/* Dynamic Mapping of Cart Items */}
-          {cartData?.map((item) => (
+          {/* {cartData?.map((item) => (
             <CartItemComponent key={item.id} item={item} />
-          ))}
+          ))} */}
 
           {/* Favorites Section */}
           <div className="mt-16 max-w-full overflow-hidden">
@@ -95,9 +116,11 @@ const CartPageComponent = () => {
         {/* RIGHT: Order Summary */}
         <aside className="w-full lg:w-96 shrink-0">
           <OrderSummary
+            cartId={cart.id}
             subtotal={subtotal}
             total={total}
             surcharge={handlingSurcharge}
+            refetch={refetch}
           />
         </aside>
       </div>
@@ -106,36 +129,66 @@ const CartPageComponent = () => {
 };
 
 type CartItemComponentProps = {
-  item: CartItem;
+  item: any;
+  refetch: () => void;
 };
 
-const CartItemComponent = ({ item }: CartItemComponentProps) => {
-  const itemTotal = item.priceAtAdd * item.quantity;
+const CartItemComponent = ({ item, refetch }: CartItemComponentProps) => {
+  const itemTotal = Number(item.subtotalAtAdd);
+
+  const maxQuantity = Math.max(
+    1,
+    Math.min(10, item.productSize?.quantity ?? 10),
+  );
+
+  const axiosSecure = useAxiosSecure();
+
+  const updateQuantity = async (quantity: number) => {
+    await axiosSecure.patch(`/cart/items/${item.id}`, {
+      quantity,
+    });
+    refetch();
+  };
+
+  const handleRemoveItem = async () => {
+    await axiosSecure.delete(`/cart/items/${item.id}`);
+    refetch();
+  };
 
   return (
     <div className="flex flex-col md:flex-row py-6 border-b border-gray-200 gap-4 items-start md:items-center">
       {/* Product Image & Info */}
       <div className="flex flex-2 gap-4 w-full">
-        <div className="w-24 h-32 bg-gray-100 shrink-0">
+        <Link
+          href={`products/${item?.productSize?.color?.product?.slug}`}
+          className="w-24 h-32 bg-gray-100 shrink-0 overflow-hidden
+             transition-all duration-300
+             hover:shadow-md hover:-translate-y-0.5"
+        >
           <img
-            src={item?.productSize?.color?.product?.images?.[0].image || ""}
-            alt={item?.productSize?.color?.product?.title}
-            className="object-cover w-full h-full"
+            src={item?.productSize?.color?.images?.[0]?.image || ""}
+            alt={item?.productSize?.color?.product?.title || "Product"}
+            className="object-cover w-full h-full
+               transition-transform duration-300
+               hover:scale-110"
             onError={(e) =>
               (e.currentTarget.src = "/images/categories/fallback.jpg")
             }
           />
-        </div>
+        </Link>
         <div className="text-sm space-y-1 flex-1">
-          <h3 className="font-medium">
+          <Link
+            href={`products/${item?.productSize?.color?.product?.slug}`}
+            className="font-medium transition-colors duration-200
+               hover:text-primary hover:underline"
+          >
             {item?.productSize?.color?.product?.title}
-          </h3>
-          {/* <p className="text-gray-600">Style #{item.style}</p> */}
+          </Link>
           <p className="text-gray-600">Color: {item.color}</p>
           <p className="text-gray-600">Size: {item.size}</p>
           <div className="flex gap-4 mt-4 text-xs underline cursor-pointer">
-            <span>Remove</span>
-            <span>Save for Later</span>
+            <span onClick={handleRemoveItem}>Remove</span>
+            {/* <span>Save for Later</span> */}
           </div>
         </div>
       </div>
@@ -144,7 +197,7 @@ const CartItemComponent = ({ item }: CartItemComponentProps) => {
       <div className="flex flex-1 w-full justify-between md:justify-center items-center text-sm">
         <span className="md:hidden font-semibold">Price:</span>
         <span className="flex items-center">
-          <TakaIcon /> {item.priceAtAdd?.toLocaleString()}
+          <TakaIcon /> {Number(item.priceAtAdd).toLocaleString()}
         </span>
       </div>
 
@@ -152,10 +205,11 @@ const CartItemComponent = ({ item }: CartItemComponentProps) => {
       <div className="flex flex-1 w-full justify-between md:justify-center items-center">
         <span className="md:hidden text-sm">Qty:</span>
         <select
-          className="border p-1 text-sm w-16 bg-transparent"
-          defaultValue={item.quantity}
+          className="border border-gray-300 p-1 text-sm w-16 bg-transparent"
+          value={item.quantity}
+          onChange={(e) => updateQuantity(Number(e.target.value))}
         >
-          {[1, 2, 3, 4, 5]?.map((n) => (
+          {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>
               {n}
             </option>
@@ -167,78 +221,11 @@ const CartItemComponent = ({ item }: CartItemComponentProps) => {
       <div className="flex flex-1 w-full justify-between md:justify-end items-center font-medium">
         <span className="md:hidden text-sm">Total:</span>
         <span className="flex items-center">
-          <TakaIcon /> {itemTotal.toLocaleString()}
+          <TakaIcon /> {Number(itemTotal).toLocaleString()}
         </span>
       </div>
     </div>
   );
 };
-
-const OrderSummary = ({ subtotal, total, surcharge }: OrderSummaryProps) => (
-  <div className="w-full">
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-lg">Order Summary</h2>
-      <span className="text-xs underline cursor-pointer">
-        {process.env.NEXT_PUBLIC_PHONE_NUMBER || "Contact Us"}
-      </span>
-    </div>
-    <div className="bg-gray-50 p-6 sticky top-8 border">
-      <div className="space-y-3 text-sm border-b pb-4 mb-4">
-        <div className="flex justify-between">
-          <span>Subtotal</span>
-          <span className="flex items-center gap-1">
-            <TakaIcon /> {subtotal.toLocaleString()}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Shipping</span>
-          <span className="text-gray-500 italic">TBD</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Handling Surcharge</span>
-          <span className="flex items-center gap-1">
-            <TakaIcon /> {surcharge.toLocaleString()}
-          </span>
-        </div>
-        <div className="flex justify-between font-bold text-base pt-2">
-          <span>Total</span>
-          <span className="flex items-center gap-1">
-            <TakaIcon /> {total.toLocaleString()}
-          </span>
-        </div>
-      </div>
-
-      <button className="w-full bg-[#4a5568] text-white py-3 uppercase tracking-widest text-xs font-bold hover:bg-black transition mb-3">
-        Proceed to Checkout
-      </button>
-
-      <button className="w-full border border-gray-300 py-3 flex justify-center items-center hover:bg-white transition bg-white">
-        <span className="text-blue-800 font-extrabold italic">Pay</span>
-        <span className="text-blue-500 font-extrabold italic">Pal</span>
-      </button>
-
-      <div className="mt-6 border-t pt-4">
-        <details className="cursor-pointer group">
-          <summary className="text-sm font-medium flex justify-between items-center list-none outline-none">
-            Promo Code{" "}
-            <span className="group-open:rotate-45 transition-transform text-lg">
-              +
-            </span>
-          </summary>
-          <div className="mt-3 flex gap-2">
-            <input
-              type="text"
-              className="border flex-1 p-2 text-sm outline-none"
-              placeholder="Enter code"
-            />
-            <button className="border border-black px-4 py-2 text-xs uppercase font-bold hover:bg-black hover:text-white">
-              Apply
-            </button>
-          </div>
-        </details>
-      </div>
-    </div>
-  </div>
-);
 
 export default CartPageComponent;

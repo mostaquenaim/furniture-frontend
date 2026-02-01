@@ -56,6 +56,7 @@ export default function AuthModal({
   const router = useRouter();
   const { setUser, setToken } = useAuth();
 
+  // validate password
   const validatePassword = (password: string) => {
     const minLength = /.{8,}/;
     const uppercase = /[A-Z]/;
@@ -76,6 +77,7 @@ export default function AuthModal({
     return errorMessages.length > 0 ? errorMessages.join(", ") : null; // valid
   };
 
+  // validate phone Number
   const validatePhoneNumber = (mobileNumber: string) => {
     // +8801XXXXXXXXX (13 chars total)
     const bdPhoneRegex = /^\+8801[3-9]\d{8}$/;
@@ -87,6 +89,7 @@ export default function AuthModal({
     return null; // valid
   };
 
+  // handle mobile / email toggle
   const handleMobileSignIn = () => {
     useMobileForSignin ? setMobileNumber("") : setEmail("");
 
@@ -94,6 +97,7 @@ export default function AuthModal({
     // window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
+  // handle change password
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -140,6 +144,7 @@ export default function AuthModal({
     }
   };
 
+  // handle sign in
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -222,6 +227,7 @@ export default function AuthModal({
     }
   };
 
+  // handle sign up
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -378,6 +384,7 @@ export default function AuthModal({
     }
   };
 
+  // hanlde view change
   const handleView = (option: ModalView) => {
     setPassword("");
     setCustomerName("");
@@ -387,6 +394,7 @@ export default function AuthModal({
     setView(option);
   };
 
+  // mobile number field
   const mobileNumberField = () => {
     return (
       <input
@@ -410,6 +418,7 @@ export default function AuthModal({
     );
   };
 
+  // password field
   const passWordField = () => {
     return (
       <div className="mb-4">
@@ -443,6 +452,7 @@ export default function AuthModal({
     );
   };
 
+  // keep sign signed info tooltip
   const keepMeSignedInInfo = () => {
     return (
       <div className="relative inline-block ml-1">

@@ -14,7 +14,7 @@ const MOCK_POST = {
   title: "Gifts for Health and Wellness Lovers",
   content:
     "# Self Care Essentials\n\nFeel your best - inside & out - with these tips.\n\n## Why Wellness Matters\nInvesting in yourself isn't selfish; it's essential for longevity and happiness.",
-  image: "https://images.urbndata.com/is/image/Anthropologie/86403562_000_b",
+  image: "https://images.urbndata.com/is/image/Sakigai/86403562_000_b",
   createdAt: new Date().toISOString(),
   category: { name: "Beauty & Wellness" },
   subCategories: [
@@ -23,7 +23,7 @@ const MOCK_POST = {
   ],
 };
 
-// Markdown Parser (Refined for Anthropologie styling)
+// Markdown Parser (Refined for Sakigai styling)
 const parseMarkdown = (text: string) => {
   let html = text;
   html = html.replace(

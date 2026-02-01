@@ -15,7 +15,14 @@ import { getCustomerInfo } from "@/utils/guestCustomer";
 
 type User = {
   id: string;
-  role: "CUSTOMER" | "SUPPORT" | "ORDERMANAGER" | "PRODUCTMANAGER" | "SUPERADMIN";
+  name?: string;
+  phone?: string;
+  role:
+    | "CUSTOMER"
+    | "SUPPORT"
+    | "ORDERMANAGER"
+    | "PRODUCTMANAGER"
+    | "SUPERADMIN";
 };
 
 type AuthContextType = {
@@ -45,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const userInfo = customerInfo();
     // console.log(userInfo, "userInfo");
-    
+
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
@@ -65,25 +72,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("user", JSON.stringify(user));
     setToken(token);
     setUser(user);
+    setLoading(false);
   };
 
   const logout = () => {
     localStorage.clear();
     setUser(null);
     setToken(null);
+    setLoading(false);
     // router.push('/');
   };
+
+  // if (loading) return <LoadingDots />;
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
         login,
         logout,
         loading,
         setLoading,
         setUser,
+        token,
         setToken,
       }}
     >

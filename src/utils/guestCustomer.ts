@@ -1,54 +1,66 @@
 import axios from "axios";
 
-export const getCustomerInfo = async () => {
+export interface AuthUser {
+  id?: number;
+  name?: string;
+  email: string;
+  phone?: string;
+  role: "CUSTOMER" | "ADMIN" | "guest";
+}
+
+interface GuestUser {
+  email: string;
+  password: string;
+  role: "guest";
+}
+
+export const getCustomerInfo = async (): Promise<AuthUser> => {
   const token = localStorage.getItem("token");
 
-  // If token exists, verify with backend
+  // Logged-in user
   if (token) {
     try {
-      const res = await axios.get(
+      const res = await axios.get<AuthUser>(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
-      //   console.log(res.data,'res.data');
-
-      // ✅ Logged-in user
       localStorage.setItem("user", JSON.stringify(res.data));
       return res.data;
-    } catch (error) {
-      // Token invalid or expired
+    } catch {
+      // invalid / expired token
       localStorage.removeItem("token");
       localStorage.removeItem("user");
     }
   }
 
-  // Guest user fallback
-  let guestCustomerInfo = JSON.parse(
-    localStorage.getItem("guestCustomerInfo") || "null"
+  // Guest fallback
+  let guestCustomerInfo: GuestUser | null = JSON.parse(
+    localStorage.getItem("guestCustomerInfo") || "null",
   );
 
   if (!guestCustomerInfo) {
-    const randomNumber = Math.floor(Math.random() * 1000);
+    const random = Math.floor(Math.random() * 1000);
 
     guestCustomerInfo = {
-      password: `guest_${Date.now()}_${randomNumber}`,
-      email: `guest_${Date.now()}_${randomNumber}@sakigai.com`,
+      email: `guest_${Date.now()}_${random}@sakigai.com`,
+      password: `guest_${Date.now()}_${random}`,
       role: "guest",
     };
 
     localStorage.setItem(
       "guestCustomerInfo",
-      JSON.stringify(guestCustomerInfo)
+      JSON.stringify(guestCustomerInfo),
     );
   }
 
-  localStorage.setItem("user", JSON.stringify(guestCustomerInfo));
-  const { password, ...guestInfoWithoutPassword } = guestCustomerInfo;
-  console.log(guestInfoWithoutPassword);
-  return guestInfoWithoutPassword;
+  // never store password in user object
+  const { password, ...safeGuestInfo } = guestCustomerInfo;
+
+  localStorage.setItem("user", JSON.stringify(safeGuestInfo));
+  return safeGuestInfo;
 };

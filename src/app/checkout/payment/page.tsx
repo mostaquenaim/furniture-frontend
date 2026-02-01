@@ -1,4 +1,4 @@
-import PaymentPageComponent from '@/component/Cart/Payment';
+import PaymentPageComponent from '@/component/Checkout/Payment';
 import React from 'react';
 
 const CheckPaymentPage = () => {

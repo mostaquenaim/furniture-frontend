@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/preserve-manual-memoization */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
@@ -316,6 +317,11 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { cartCount, isLoading: isCartLoading } = useCartCount();
+
+  const router = useRouter();
   // Generate dynamic Navigation Items (Series names)
 
   const { navItems, isLoading } = useFetchNavItems();
@@ -324,6 +330,9 @@ const Header = () => {
 
   const { token, logout, loading, setLoading } = useAuth();
   // console.log(token,'tokennn');
+
+  // const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   //   Generate dynamic Mobile Content
   const mobileMenuContent = useMemo(() => {
@@ -361,17 +370,9 @@ const Header = () => {
     }));
   }, [activeNavItem, navItems]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { cartCount } = useCartCount();
-
-  const router = useRouter();
-
   const handleAuthModal = () => {
     token ? router.push("/dashboard") : setIsModalOpen(true);
   };
-
-  // const axiosPublic = useAxiosPublic();
-  const axiosSecure = useAxiosSecure();
 
   const handleLogout = async () => {
     try {
@@ -406,13 +407,17 @@ const Header = () => {
         onMouseLeave={() => setActiveNavItem(null)}
       >
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col lg:flex-row items-center justify-between mb-4">
+          <div className="flex flex-col gap-3 lg:flex-row items-center justify-between mb-4">
             {/* Logo */}
             <Link
               href={"/"}
               className="text-2xl font-serif font-bold text-gray-900 tracking-wider"
             >
-              SAKIGAI
+              <img
+                src="/logo/sakigai logo.png"
+                alt="Company Logo"
+                className="h-8 w-auto"
+              />
             </Link>
 
             {/* Right Side Actions (unchanged for brevity) */}
@@ -456,19 +461,24 @@ const Header = () => {
                     </>
                   )}
                 </div>
-                <button className="relative text-gray-700 hover:text-amber-700 transition-colors">
-                  <ShoppingBag size={20} />
+                <Link
+                  href={"/cart"}
+                  className="relative text-gray-700 hover:text-amber-700 transition-colors"
+                >
+                  {isCartLoading ? (
+                    <ShoppingBag size={20} />
+                  ) : (
+                    <>
+                      <ShoppingBag size={20} />
 
-                  {cartCount > 0 && (
-                    <span
-                      className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 
-      flex items-center justify-center rounded-full 
-      bg-red-600 text-white text-[10px] font-medium"
-                    >
-                      {cartCount}
-                    </span>
+                      {cartCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-[10px] font-medium">
+                          {cartCount}
+                        </span>
+                      )}
+                    </>
                   )}
-                </button>
+                </Link>
 
                 {/* Mobile Menu Button */}
                 <button

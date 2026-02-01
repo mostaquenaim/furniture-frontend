@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
@@ -6,7 +8,7 @@ import { Star, ChevronRight, ChevronLeft, Truck, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
-import { Review } from "@/types/product.types";
+import { Cart, CartItem, Review } from "@/types/product.types";
 import Title from "../Headers/Title";
 import ShowProductsFlex from "./ShowProductsFlex";
 import LikeItShareIt from "./LikeItShareIt";
@@ -15,6 +17,10 @@ import AuthModal from "../Auth/AuthModal";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import Link from "next/link";
 import useCartCount from "@/hooks/Cart/useCartCount";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
+import useFetchCarts from "@/hooks/Cart/useCarts";
 
 interface ReviewsSectionProps {
   data: {
@@ -146,9 +152,29 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
 
 export default function ShowEachProduct() {
   const { slug } = useParams<{ slug: string }>();
-  const { product, isLoading } = useFetchAProduct(slug);
   const { refetch } = useCartCount();
+  const { product, isLoading } = useFetchAProduct(slug);
+  const { cart: cartObject, refetch: refetchCart } = useFetchCarts({
+    productSlug: slug,
+  });
+
+  // console.log(carts, "all cart items");
+  // console.log(product, "productproduct");
+
   const router = useRouter();
+  // State for selections
+  const [selectedProductTab, setSelectedProductTab] = useState<string>("");
+  const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
+  const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showCartPreview, setShowCartPreview] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
 
   const productTabs = [
     {
@@ -168,22 +194,14 @@ export default function ShowEachProduct() {
     },
   ];
 
-  // console.log(product, "productproduct");
+  // refetch cart on loading over and slug change
+  useEffect(() => {
+    if (!isLoading) {
+      refetchCart();
+    }
+  }, [slug]);
 
-  // State for selections
-  const [selectedProductTab, setSelectedProductTab] = useState<string>("");
-  const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
-  const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
-  const [activeImgIndex, setActiveImgIndex] = useState(0);
-  const [isAdding, setIsAdding] = useState(false);
-  const [showCartPreview, setShowCartPreview] = useState(false);
-  const [cartItemCount, setCartItemCount] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [quantity, setQuantity] = useState(1);
-
-  // const axiosPublic = useAxiosPublic();
-  const axiosSecure = useAxiosSecure();
-
+  // set quantity to 1 when size changes
   useEffect(() => {
     setQuantity(1);
   }, [selectedSizeId]);
@@ -197,8 +215,41 @@ export default function ShowEachProduct() {
     const size = color?.sizes?.find(
       (s: any) => s.id === (selectedSizeId || color?.sizes?.[0]?.id),
     );
+
+    // console.log(color, size, "currentVariant");
     return { color, size };
   }, [product, selectedColorId, selectedSizeId]);
+
+  const cartItems = (
+    Array.isArray(cartObject.items) ? cartObject.items : []
+  ) as CartItem[];
+
+  // calculate remaining quantity
+  const remainingQuantity = useMemo(() => {
+    if (!currentVariant?.size?.quantity) return 0;
+
+    const productSizeId =
+      selectedSizeId || currentVariant?.color?.sizes?.[0]?.id;
+
+    // Find cart item for this product size
+    const cartItem = cartItems.find(
+      (item: any) => item.productSizeId === productSizeId,
+    );
+
+    // Subtract cart quantity from available stock
+    const inCartQuantity = cartItem?.quantity || 0;
+    console.log(
+      cartItem,
+      "cartItem",
+      cartItem,
+      "inCartQuantity",
+      inCartQuantity,
+      currentVariant.size.quantity,
+    );
+    return currentVariant.size.quantity - inCartQuantity;
+  }, [currentVariant, selectedSizeId, cartItems]);
+
+  const maxQuantity = Math.min(10, remainingQuantity || 0);
 
   // Handle image logic: If color has specific images, use them; otherwise use default product images
   const displayImages = useMemo(() => {
@@ -234,7 +285,12 @@ export default function ShowEachProduct() {
   // Add to basket handler function
   const handleAddToBasket = async () => {
     if (!currentVariant?.size) {
-      alert("Please select a size");
+      toast.error("Please select a size");
+      return;
+    }
+
+    if (quantity < 1) {
+      toast.error("Please select a quantity");
       return;
     }
 
@@ -244,19 +300,22 @@ export default function ShowEachProduct() {
       const productSizeId =
         selectedSizeId || currentVariant?.color?.sizes?.[0].id;
 
-      console.log(productSizeId, "productSizeId");
+      // console.log("Adding productSizeId:", productSizeId);
+      // console.log("Adding quantity:", quantity);
 
       const payload = {
         productSizeId,
-        quantity: 1,
+        quantity: quantity,
       };
 
-      console.log(payload, "payload");
+      // console.log("Payload:", payload);
 
       const hasUser = isAuthenticated();
 
       let data = null;
+
       if (!hasUser) {
+        console.log("user nai");
         // Get existing cart
         const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
@@ -276,23 +335,56 @@ export default function ShowEachProduct() {
         // Save back to localStorage
         localStorage.setItem("cart", JSON.stringify(existingCart));
       } else {
+        console.log("user ache");
+        // Authenticated user - send to server
         const response = await axiosSecure.post("/cart/items", payload);
         data = await response.data;
       }
 
       refetch(); // Update cart count in header
 
+      // Show success message
+      toast.success(`Added ${quantity} item${quantity > 1 ? "s" : ""} to cart`);
+
       setCartItemCount((prev) => prev + 1);
       setShowCartPreview(true);
+
+      // Reset quantity to 1 after adding to cart
+      setQuantity(1);
 
       // Hide cart preview after 3 seconds
       setTimeout(() => {
         setShowCartPreview(false);
       }, 3000);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      alert("Failed to add to basket");
+    } catch (err: unknown) {
+      process.env.NODE_ENV === "development" &&
+        console.error("Error adding to basket:", err);
+      if (axios.isAxiosError(err)) {
+        const errorMessage = (err.response?.data as { message?: string })
+          ?.message;
+
+        // Check if it's a stock limit error
+        if (
+          errorMessage?.includes("Stock limit exceeded") ||
+          errorMessage?.includes("Not enough stock")
+        ) {
+          toast.error("Not enough stock available for the selected quantity");
+
+          // Update max quantity if needed
+          const availableStock = currentVariant?.size?.quantity || 0;
+          if (quantity > availableStock) {
+            setQuantity(availableStock);
+          }
+        } else {
+          toast.error(errorMessage || "Failed to add to basket");
+        }
+      } else if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to add to basket");
+      }
     } finally {
+      refetchCart();
       setIsAdding(false);
     }
   };
@@ -314,14 +406,9 @@ export default function ShowEachProduct() {
     return <div className="p-20 text-center">Product Not Found</div>;
 
   // Price Calculation
-  const basePrice = currentVariant?.size?.price || product.basePrice;
+  const basePrice = product.basePrice || currentVariant?.size?.price;
 
-  const discountedPrice =
-    product.discountType === "PERCENT"
-      ? basePrice * (1 - product.discount / 100)
-      : basePrice - product.discount;
-
-  const maxQuantity = Math.min(10, currentVariant?.size?.quantity || 0);
+  const discountedPrice = product.price;
 
   if (isLoading) {
     return (
@@ -492,6 +579,7 @@ export default function ShowEachProduct() {
                     }`}
                     onClick={() => {
                       setSelectedColorId(c.id);
+                      setSelectedSizeId(null); // Reset size selection
                       setActiveImgIndex(0); // Reset image to first of new color
                     }}
                   >
@@ -536,30 +624,52 @@ export default function ShowEachProduct() {
 
             <select
               value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              disabled={!currentVariant?.size?.quantity}
+              onChange={(e) => {
+                const newQuantity = Number(e.target.value);
+                setQuantity(newQuantity);
+              }}
+              disabled={remainingQuantity <= 0}
               className="w-24 border border-gray-300 px-3 py-2 text-xs
-               focus:outline-none focus:border-black
-               disabled:bg-gray-100 disabled:text-gray-400"
+      focus:outline-none focus:border-black
+      disabled:bg-gray-100 disabled:text-gray-400"
             >
-              {Array.from({ length: maxQuantity }, (_, i) => i + 1)?.map(
-                (q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ),
-              )}
+              {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
             </select>
+
+            {remainingQuantity > 0 ? (
+              <p className="text-xs text-gray-500 mt-2">
+                Max: {maxQuantity} units (
+                {cartItems?.find(
+                  (item: any) =>
+                    item.productSizeId ===
+                    (selectedSizeId || currentVariant?.color?.sizes?.[0]?.id),
+                )?.quantity || 0}{" "}
+                already in cart)
+              </p>
+            ) : cartItems.length > 0 ? (
+              <p className="text-xs text-red-500 mt-2">
+                All available units are in your cart
+              </p>
+            ) : (
+              <p className="text-xs text-red-500 mt-2">Out of Stock</p>
+            )}
           </div>
 
           {/* Stock Info */}
           <p className="text-[10px] uppercase font-bold text-gray-500 mb-4">
             Availability:{" "}
-            {currentVariant?.size?.quantity
-              ? currentVariant?.size?.quantity > 0 &&
-                `${currentVariant.size.quantity} In Stock`
-              : "Out of Stock"}
+            {remainingQuantity > 0
+              ? `${remainingQuantity} Available`
+              : currentVariant?.size?.quantity &&
+                  currentVariant.size.quantity > 0
+                ? "All in Cart"
+                : "Out of Stock"}
           </p>
+
           {/* action buttons */}
           <button
             onClick={handleAddToBasket}
@@ -572,6 +682,7 @@ export default function ShowEachProduct() {
                 // ? "Added to Basket"
                 "Add to Basket"}
           </button>
+
           {/* Logistics from Object */}
           <div className="space-y-6 my-10">
             <div className="flex gap-4">

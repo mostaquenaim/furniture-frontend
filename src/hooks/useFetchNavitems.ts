@@ -19,7 +19,7 @@ const useFetchNavItems = () => {
           "/series/with-relations",
         );
 
-        console.log(response.data, "series/with-relations");
+        // console.log(response.data, "series/with-relations");
 
         const data = response.data;
 

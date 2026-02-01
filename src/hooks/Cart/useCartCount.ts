@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../Axios/useAxiosSecure";
+import { useAuth } from "@/context/AuthContext";
 
 const getLocalCartCount = () => {
   try {
@@ -12,6 +13,7 @@ const getLocalCartCount = () => {
 };
 
 const useCartCount = () => {
+  const { loading } = useAuth();
   const axiosSecure = useAxiosSecure();
 
   const {
@@ -30,6 +32,7 @@ const useCartCount = () => {
         return getLocalCartCount();
       }
     },
+    enabled: !loading,
     staleTime: 30 * 1000, // 30s cache — sane default
     refetchOnWindowFocus: false,
   });
