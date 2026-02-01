@@ -558,7 +558,7 @@ export default function ShowEachProduct() {
             </p>
             {product.discount > 0 && (
               <p className="text-gray-400 line-through text-lg">
-                ৳{basePrice.toLocaleString()}
+                ৳{basePrice}
               </p>
             )}
           </div>
