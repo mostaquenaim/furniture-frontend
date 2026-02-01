@@ -13,30 +13,9 @@ import { devLog } from "@/utils/devlog";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import Link from "next/link";
 import OrderSummary from "./OrderSummary";
-
-// Mock Data - In a real app, this might come from a Context or API
-const cartData: CartItem[] = [
-  {
-    id: 1,
-    cartId: 1, // required
-    quantity: 1,
-    priceAtAdd: 3598.0,
-    subtotal: 3598.0, // price * quantity
-    color: "Fransois",
-    size: '90"',
-    productSizeId: 1, // just example, replace with actual ID
-  },
-  {
-    id: 2,
-    cartId: 1,
-    quantity: 2,
-    priceAtAdd: 1200.0,
-    subtotal: 2400.0, // 1200 * 2
-    color: "Emerald",
-    size: "Standard",
-    productSizeId: 2,
-  },
-];
+import useCartCount from "@/hooks/Cart/useCartCount";
+import { useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 // Mock for "You may also like" section
 const recommendedProducts: Product[] = [
@@ -44,22 +23,37 @@ const recommendedProducts: Product[] = [
 ];
 
 const CartPageComponent = () => {
-  const { cart, isLoading, refetch } = useFetchCarts();
+  const { cart, isLoading, isFetching, refetch } = useFetchCarts();
+  const { refetch: refetchCount } = useCartCount();
 
-  !isLoading && devLog(cart, "cartslocal");
+  // devLog(cart, "cartslocal");
 
-  // const cart = cart as Cart | null;
-  const cartItems = cart?.items ?? [];
-  const subtotal = Number(cart?.subtotalAtAdd ?? 0);
+  useEffect(() => {
+    refetch();
+  }, []);
 
-  const handlingSurcharge = 20.0;
-  const total = subtotal + handlingSurcharge;
-
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="max-w-[1500px] mx-auto p-4 lg:p-8">Loading cart...</div>
     );
   }
+
+  // Handle case when cart is undefined or null
+  if (!cart) {
+    return (
+      <div className="max-w-[1500px] mx-auto p-4 lg:p-8">
+        <div className="text-center py-12 text-gray-500">
+          Failed to load cart. Please try again.
+        </div>
+      </div>
+    );
+  }
+
+  const cartItems = cart?.items ?? [];
+  const subtotal = Number(cart?.subtotalAtAdd ?? 0);
+
+  const handlingSurcharge = 0;
+  const total = subtotal + handlingSurcharge;
 
   return (
     <div className="max-w-[1500px] mx-auto p-4 lg:p-8 font-sans overflow-x-hidden">
@@ -87,7 +81,12 @@ const CartPageComponent = () => {
           {/* Map actual cart items */}
           {cartItems.length > 0 ? (
             cartItems.map((item: any) => (
-              <CartItemComponent key={item.id} item={item} refetch={refetch} />
+              <CartItemComponent
+                key={item.id}
+                item={item}
+                refetch={refetch}
+                refetchCount={refetchCount}
+              />
             ))
           ) : (
             <div className="text-center py-12 text-gray-500">
@@ -95,16 +94,10 @@ const CartPageComponent = () => {
             </div>
           )}
 
-          {/* Dynamic Mapping of Cart Items */}
-          {/* {cartData?.map((item) => (
-            <CartItemComponent key={item.id} item={item} />
-          ))} */}
-
           {/* Favorites Section */}
           <div className="mt-16 max-w-full overflow-hidden">
             <Title title="You may also like" />
             <div className="w-full">
-              {/* Sending products as parameter */}
               <ShowProductsFlex
                 products={recommendedProducts}
                 maxWidth="100%"
@@ -116,11 +109,12 @@ const CartPageComponent = () => {
         {/* RIGHT: Order Summary */}
         <aside className="w-full lg:w-96 shrink-0">
           <OrderSummary
-            cartId={cart.id}
+            cartId={cart?.id ?? null} // Safely access id
             subtotal={subtotal}
             total={total}
             surcharge={handlingSurcharge}
             refetch={refetch}
+            coupon={cart.coupon?.code}
           />
         </aside>
       </div>
@@ -131,9 +125,14 @@ const CartPageComponent = () => {
 type CartItemComponentProps = {
   item: any;
   refetch: () => void;
+  refetchCount: () => void;
 };
 
-const CartItemComponent = ({ item, refetch }: CartItemComponentProps) => {
+const CartItemComponent = ({
+  item,
+  refetch,
+  refetchCount,
+}: CartItemComponentProps) => {
   const itemTotal = Number(item.subtotalAtAdd);
 
   const maxQuantity = Math.max(
@@ -153,6 +152,7 @@ const CartItemComponent = ({ item, refetch }: CartItemComponentProps) => {
   const handleRemoveItem = async () => {
     await axiosSecure.delete(`/cart/items/${item.id}`);
     refetch();
+    refetchCount();
   };
 
   return (

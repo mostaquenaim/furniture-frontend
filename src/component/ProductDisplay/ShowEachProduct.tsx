@@ -154,7 +154,11 @@ export default function ShowEachProduct() {
   const { slug } = useParams<{ slug: string }>();
   const { refetch } = useCartCount();
   const { product, isLoading } = useFetchAProduct(slug);
-  const { cart: cartObject, refetch: refetchCart } = useFetchCarts({
+  const {
+    cart: cartObject,
+    isLoading: isCartLoading,
+    refetch: refetchCart,
+  } = useFetchCarts({
     productSlug: slug,
   });
 
@@ -221,7 +225,7 @@ export default function ShowEachProduct() {
   }, [product, selectedColorId, selectedSizeId]);
 
   const cartItems = (
-    Array.isArray(cartObject.items) ? cartObject.items : []
+    Array.isArray(cartObject?.items) ? cartObject.items : []
   ) as CartItem[];
 
   // calculate remaining quantity
@@ -557,9 +561,7 @@ export default function ShowEachProduct() {
               ৳{discountedPrice.toLocaleString()}
             </p>
             {product.discount > 0 && (
-              <p className="text-gray-400 line-through text-lg">
-                ৳{basePrice}
-              </p>
+              <p className="text-gray-400 line-through text-lg">৳{basePrice}</p>
             )}
           </div>
           {/* Color Selection with HexCodes */}
@@ -640,7 +642,9 @@ export default function ShowEachProduct() {
               ))}
             </select>
 
-            {remainingQuantity > 0 ? (
+            {isCartLoading ? (
+              <p className="text-xs text-gray-500 mt-2">Checking stock...</p>
+            ) : remainingQuantity > 0 ? (
               <p className="text-xs text-gray-500 mt-2">
                 Max: {maxQuantity} units (
                 {cartItems?.find(
@@ -673,14 +677,16 @@ export default function ShowEachProduct() {
           {/* action buttons */}
           <button
             onClick={handleAddToBasket}
-            disabled={isAdding || !currentVariant?.size?.quantity}
+            disabled={
+              isAdding || isCartLoading || !currentVariant?.size?.quantity
+            }
             className="w-full bg-[#4E5B6D] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#3d4857] transition mb-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isAdding
               ? "Adding..."
-              : // : showCartPreview
-                // ? "Added to Basket"
-                "Add to Basket"}
+              : isCartLoading
+                ? "Loading..."
+                : "Add to Basket"}
           </button>
 
           {/* Logistics from Object */}

@@ -30,7 +30,7 @@ const CheckoutPageComponent = () => {
   } = useFetchCarts({ isSummary: true });
 
   const subtotal = Number(cart?.subtotalAtAdd ?? 0);
-  const handlingSurcharge = 20.0;
+  const handlingSurcharge = 0;
   const total = subtotal + handlingSurcharge;
 
   const [name, setName] = useState("");
@@ -160,15 +160,18 @@ const CheckoutPageComponent = () => {
         </div>
 
         {/* RIGHT: Order Summary */}
-        <aside className="w-full lg:w-[400px] xl:w-[440px] shrink-0">
-          <OrderSummary
-            cartId={cart.id}
-            subtotal={subtotal}
-            total={total}
-            surcharge={handlingSurcharge}
-            refetch={refetch}
-          />
-        </aside>
+        {cart && (
+          <aside className="w-full lg:w-[400px] xl:w-[440px] shrink-0">
+            <OrderSummary
+              cartId={cart?.id}
+              subtotal={subtotal}
+              total={total}
+              surcharge={handlingSurcharge}
+              refetch={refetch}
+              coupon={cart.coupon?.code}
+            />
+          </aside>
+        )}
       </div>
     </div>
   );
