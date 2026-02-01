@@ -163,6 +163,8 @@ export interface CartItem {
   cart?: Cart;
   productSizeId: number;
   productSize?: ProductSize;
+  subtotalAtAdd?: number;
+  baseSubtotalAtAdd?: number;
 }
 
 export type CartStatus = "ACTIVE" | "COMPLETED" | "CANCELLED"; // adjust if you have more
@@ -171,7 +173,7 @@ export interface Cart {
   id: number;
   userId: number;
   status: CartStatus;
-  createdAt: string; 
+  createdAt: string;
   updatedAt: string;
 
   // Relations

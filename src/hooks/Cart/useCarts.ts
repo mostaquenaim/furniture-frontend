@@ -83,6 +83,13 @@ const createEmptyCart = (): CartResponse => ({
   baseSubtotalAtAdd: 0,
 });
 
+const calculateSubtotal = (
+  items: CartItem[],
+  field: "subtotalAtAdd" | "baseSubtotalAtAdd"
+): number => {
+  return items.reduce((sum, item) => sum + (item[field] ?? 0), 0);
+};
+
 // ============================================================================
 // Main Hook
 // ============================================================================
