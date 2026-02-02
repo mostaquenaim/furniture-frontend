@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
@@ -25,53 +27,86 @@ import DisplayHeading from "./Heading/DisplayHeading";
 import BottomPagination from "../Pagination/BottomPagination";
 import EachProductShow from "./EachProductShow";
 import { QuickShopModal } from "./QuickShopModal";
+import { devLog } from "@/utils/devlog";
+import useFetchSeriesWiseSubcategories from "@/hooks/Categories/useFetchSeriesWiseSubcategories";
 
 const PRODUCTS_PER_PAGE = 18;
 
-function FilterDropdown({
-  type,
-  data,
-  onClose,
-}: {
+type FilterDropdownProps = {
   type: string;
   data: any[];
+  selectedIds?: number[];
+  onToggleSelect?: (id: number) => void;
+  onPriceSelect?: (min: number, max: number) => void;
   onClose: () => void;
-}) {
+};
+
+const FilterDropdown = ({
+  type,
+  data,
+  selectedIds = [],
+  onToggleSelect,
+  onPriceSelect,
+  onClose,
+}: any) => {
   return (
-    <div
-      className="absolute top-full left-0 mt-2 w-64 bg-white shadow-xl border border-gray-100 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
-      onMouseLeave={onClose}
-    >
-      <div className="max-h-80 overflow-y-auto p-4 custom-scrollbar">
-        {data?.map((item: any) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between py-2 px-1 hover:bg-gray-50 cursor-pointer group"
-          >
-            <div className="flex items-center gap-3">
-              {/* Conditional rendering for Color circles */}
-              {type === "Color" && (
-                <div
-                  className="w-4 h-4 rounded-full border border-black"
-                  style={{ backgroundColor: item.hexCode }}
-                />
-              )}
-              <span className="text-sm text-gray-700 group-hover:text-black">
+    <div className="absolute top-full left-0 mt-2 w-64 bg-white border shadow-xl z-50">
+      {/* PRICE */}
+      {type === "Price" && (
+        <div className="p-3 space-y-2">
+          {data.map((price: any) => (
+            <button
+              key={price.id}
+              onClick={() => onPriceSelect?.(price.min, price.max)}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+            >
+              {price.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* COLOR / MATERIAL */}
+      {type !== "Price" && (
+        <div className="p-3 space-y-2">
+          {data.map((item: any) => {
+            const active = selectedIds.includes(item.id);
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => onToggleSelect?.(item.id)}
+                className={`flex justify-between w-full px-3 py-2 text-sm rounded
+                  ${active ? "bg-gray-100" : "hover:bg-gray-50"}`}
+              >
                 {item.name}
-              </span>
-            </div>
-            {/* Mock count as seen in your screenshot */}
-            <span className="text-xs text-gray-400">(24)</span>
-          </div>
-        ))}
-      </div>
+                {active && "✓"}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default function SeriesWiseProducts() {
   const { slug } = useParams<{ slug: string }>();
+  const { subCategoryList: seriesWiseSubcategories } =
+    useFetchSeriesWiseSubcategories(slug);
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [filters, setFilters] = useState<{
+    colorIds?: number[];
+    materialIds?: number[];
+    subCategoryIds?: number[];
+    minPrice?: number;
+    maxPrice?: number;
+  }>({});
+
+  const [activeDesktopFilter, setActiveDesktopFilter] = useState<string | null>(
+    null,
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -83,6 +118,10 @@ export default function SeriesWiseProducts() {
   const [hoveredFilter, setHoveredFilter] = useState<string | null>(null);
   const [productImage, setProductImage] = useState("");
   const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+  const [sortParams, setSortParams] = useState<{
+    sortBy?: string;
+    order?: "asc" | "desc";
+  }>({});
 
   const {
     products,
@@ -92,9 +131,18 @@ export default function SeriesWiseProducts() {
     meta,
     isLoading,
     isFetching,
+    refetch,
   } = useFetchSeriesWiseProducts(slug, {
     page: currentPage,
     limit: PRODUCTS_PER_PAGE,
+
+    colorIds: filters.colorIds,
+    materialIds: filters.materialIds,
+    subCategoryIds: filters.subCategoryIds,
+    minPrice: filters.minPrice,
+    maxPrice: filters.maxPrice,
+    sortBy: sortParams.sortBy,
+    order: sortParams.order,
   });
 
   // console.log("useFetchSeriesWiseProducts", "products", products);
@@ -104,6 +152,19 @@ export default function SeriesWiseProducts() {
 
   const totalPages = meta?.totalPages || 1;
   const totalProducts = meta?.total || 0;
+
+  useEffect(() => {
+    setCurrentPage(1);
+    devLog(filters, "filters");
+    // refetch();
+  }, [
+    filters.colorIds,
+    filters.materialIds,
+    filters.subCategoryIds,
+    filters.minPrice,
+    filters.maxPrice,
+    // refetch,
+  ]);
 
   useEffect(() => {
     if (isLoading) {
@@ -137,11 +198,37 @@ export default function SeriesWiseProducts() {
   };
 
   const handleSortChange = (sortValue: string) => {
-    // Example: refetch products
-    // fetchProducts({
-    //   page: currentPage,
-    //   sort: sortValue,
-    // });
+    setSelectedSort(sortValue);
+    setCurrentPage(1);
+
+    switch (sortValue) {
+      case "Price: Low to High":
+        setSortParams({ sortBy: "price", order: "asc" });
+        break;
+      case "Price: High to Low":
+        setSortParams({ sortBy: "price", order: "desc" });
+        break;
+      case "Newest":
+        setSortParams({ sortBy: "createdAt", order: "desc" });
+        break;
+      case "Featured":
+        setSortParams({ sortBy: "featured", order: "desc" });
+        break;
+      case "Bestselling":
+        setSortParams({ sortBy: "sold", order: "desc" });
+        break;
+      case "Ratings":
+        setSortParams({ sortBy: "rating", order: "desc" });
+        break;
+      case "A–Z":
+        setSortParams({ sortBy: "name", order: "asc" });
+        break;
+      case "Z–A":
+        setSortParams({ sortBy: "name", order: "desc" });
+        break;
+      default:
+        setSortParams({});
+    }
   };
 
   const handleMouseEnter = (filter: string) => {
@@ -179,7 +266,6 @@ export default function SeriesWiseProducts() {
             {slug?.replace(/-/g, " ")}
           </span>
         </nav> */}
-
       {/* Header Section */}
       <DisplayHeading
         name={seriesName || slug?.replace(/-/g, " ")}
@@ -196,46 +282,73 @@ export default function SeriesWiseProducts() {
         currentPage={currentPage}
         totalPages={totalPages}
       />
-
       {/* Filter Bar */}
       <div className="mb-10">
         {/* Desktop Filters with Hover functionality */}
         <div className="hidden md:flex items-center gap-8 border-t border-gray-100 pt-4">
           {[
             { name: "Price", data: priceData.priceRanges },
-            // { name: "Rooms", data: [] },
-            // { name: "In Stock", data: [] },
             { name: "Color", data: colorsData },
             { name: "Material", data: materials },
-          ]?.map((filter) => (
-            <div
-              key={filter.name}
-              className="relative"
-              onMouseEnter={() => handleMouseEnter(filter.name)}
-              onMouseLeave={handleMouseLeave}
-            >
+          ].map((filter) => (
+            <div key={filter.name} className="relative">
               <button
-                className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                  hoveredFilter === filter.name
-                    ? "text-gray-400"
-                    : "hover:opacity-60"
-                }`}
+                onClick={() =>
+                  setActiveDesktopFilter(
+                    activeDesktopFilter === filter.name ? null : filter.name,
+                  )
+                }
+                className="flex items-center gap-2 text-sm font-medium hover:opacity-60"
               >
                 {filter.name}
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-200 ${
-                    hoveredFilter === filter.name ? "rotate-180" : ""
+                  className={`transition-transform ${
+                    activeDesktopFilter === filter.name ? "rotate-180" : ""
                   }`}
                 />
               </button>
 
-              {/* Show dropdown on hover */}
-              {hoveredFilter === filter.name && filter.data.length > 0 && (
+              {activeDesktopFilter === filter.name && (
                 <FilterDropdown
-                  type={filter.name}
-                  data={filter.data || []}
-                  onClose={() => setHoveredFilter(null)}
+                  type={filter.name as any}
+                  data={filter.data}
+                  selectedIds={
+                    filter.name === "Color"
+                      ? (filters.colorIds ?? [])
+                      : filter.name === "Material"
+                        ? (filters.materialIds ?? [])
+                        : []
+                  }
+                  onToggleSelect={(id: number) => {
+                    setCurrentPage(1);
+
+                    setFilters((prev) => {
+                      if (filter.name === "Color") {
+                        const s = new Set(prev.colorIds ?? []);
+                        s.has(id) ? s.delete(id) : s.add(id);
+                        return { ...prev, colorIds: [...s] };
+                      }
+
+                      if (filter.name === "Material") {
+                        const s = new Set(prev.materialIds ?? []);
+                        s.has(id) ? s.delete(id) : s.add(id);
+                        return { ...prev, materialIds: [...s] };
+                      }
+
+                      return prev;
+                    });
+                  }}
+                  onPriceSelect={(min: number, max: number) => {
+                    setCurrentPage(1);
+                    setFilters((prev) => ({
+                      ...prev,
+                      minPrice: min,
+                      maxPrice: max,
+                    }));
+                    setActiveDesktopFilter(null);
+                  }}
+                  onClose={() => setActiveDesktopFilter(null)}
                 />
               )}
             </div>
@@ -261,6 +374,115 @@ export default function SeriesWiseProducts() {
         </div>
       </div>
 
+      {/* Applied Filters Bar */}
+      {(filters.colorIds?.length ||
+        filters.materialIds?.length ||
+        filters.subCategoryIds?.length ||
+        filters.minPrice ||
+        filters.maxPrice) && (
+        <div className="flex flex-wrap items-center gap-2 mb-6 text-sm">
+          {/* Color chips */}
+          {filters.colorIds?.map((id) => {
+            const color = colorsData?.find((c: any) => c.id === id);
+            if (!color) return null;
+
+            return (
+              <button
+                key={`color-${id}`}
+                onClick={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    colorIds: prev.colorIds?.filter((c) => c !== id),
+                  }))
+                }
+                className="flex items-center gap-2 px-3 py-1 border rounded-full bg-white hover:bg-gray-50"
+              >
+                <span
+                  className="w-3 h-3 rounded-full border"
+                  style={{ backgroundColor: color.hexCode }}
+                />
+                {color.name}
+                <X size={14} />
+              </button>
+            );
+          })}
+
+          {/* Material chips */}
+          {filters.materialIds?.map((id) => {
+            const material = materials?.find((m: any) => m.id === id);
+            if (!material) return null;
+
+            return (
+              <button
+                key={`material-${id}`}
+                onClick={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    materialIds: prev.materialIds?.filter((m) => m !== id),
+                  }))
+                }
+                className="flex items-center gap-2 px-3 py-1 border rounded-full bg-white hover:bg-gray-50"
+              >
+                {material.name}
+                <X size={14} />
+              </button>
+            );
+          })}
+
+          {/* Material chips */}
+          {filters.subCategoryIds?.map((id) => {
+            const subcat = subcategories?.find((m: any) => m.id === id);
+            if (!subcat) return null;
+
+            return (
+              <button
+                key={`subcat-${id}`}
+                onClick={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    subCategoryIds: prev.subCategoryIds?.filter(
+                      (m) => m !== id,
+                    ),
+                  }))
+                }
+                className="flex items-center gap-2 px-3 py-1 border rounded-full bg-white hover:bg-gray-50"
+              >
+                {subcat.name}
+                <X size={14} />
+              </button>
+            );
+          })}
+
+          {/* Price chip */}
+          {(filters.minPrice || filters.maxPrice) && (
+            <button
+              onClick={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  minPrice: undefined,
+                  maxPrice: undefined,
+                }))
+              }
+              className="flex items-center gap-2 px-3 py-1 border rounded-full bg-white hover:bg-gray-50"
+            >
+              ৳{filters.minPrice ?? 0} – ৳{filters.maxPrice ?? "∞"}
+              <X size={14} />
+            </button>
+          )}
+
+          {/* Clear all */}
+          <button
+            onClick={() => {
+              setFilters({});
+              setCurrentPage(1);
+            }}
+            className="ml-2 text-xs underline text-gray-500 hover:text-black"
+          >
+            Clear All
+          </button>
+        </div>
+      )}
+
       {/* Product Cards from API */}
       {!isLoading && products && products.length > 0 ? (
         <EachProductShow
@@ -277,7 +499,6 @@ export default function SeriesWiseProducts() {
           No products found in this series
         </div>
       ) : null}
-
       {/* Pagination - Mobile */}
       {!isLoading && totalPages > 1 && (
         <div className="md:hidden flex justify-center items-center gap-4 mt-12">
@@ -308,7 +529,6 @@ export default function SeriesWiseProducts() {
           </button>
         </div>
       )}
-
       {/* Pagination bottom */}
       {!isLoading && totalPages > 1 && (
         <BottomPagination
@@ -318,14 +538,12 @@ export default function SeriesWiseProducts() {
           handleNextPage={handleNextPage}
         />
       )}
-
       {/* Loading overlay during fetching */}
       {isFetching && !isLoading && (
         <div className="fixed inset-0 bg-white/50 z-40 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
       )}
-
       {isFilterOpen && (
         <div className="fixed inset-0 z-50">
           <div
@@ -374,7 +592,7 @@ export default function SeriesWiseProducts() {
                         <button
                           key={s.id}
                           onClick={() => {
-                            setSelectedSort(s.name);
+                            // setSelectedSort(s.name);
                             // setIsSortOpen(false);
                             handleSortChange(s.name);
                           }}
@@ -394,8 +612,8 @@ export default function SeriesWiseProducts() {
                   <div className="divide-y divide-gray-100">
                     {[
                       "Product Type",
-                      "Rooms",
-                      "In Stock",
+                      // "Rooms",
+                      // "In Stock",
                       "Color",
                       "Price",
                       "Material",
@@ -423,8 +641,22 @@ export default function SeriesWiseProducts() {
                         >
                           <input
                             type="checkbox"
-                            className="w-4 h-4 border-gray-300 rounded accent-black"
+                            checked={
+                              filters.colorIds?.includes(color.id) ?? false
+                            }
+                            onChange={(e) => {
+                              setFilters((prev) => {
+                                const ids = new Set(prev.colorIds ?? []);
+                                e.target.checked
+                                  ? ids.add(color.id)
+                                  : ids.delete(color.id);
+                                return { ...prev, colorIds: Array.from(ids) };
+                              });
+                              // setCurrentPage(1);
+                            }}
+                            className="w-4 h-4 accent-black"
                           />
+
                           <div
                             className="w-5 h-5 rounded-full border border-gray-200"
                             style={{ backgroundColor: color.hexCode }}
@@ -447,12 +679,26 @@ export default function SeriesWiseProducts() {
                         >
                           <input
                             type="checkbox"
-                            className="w-4 h-4 border-gray-300 rounded accent-black"
+                            checked={
+                              filters.materialIds?.includes(material.id) ??
+                              false
+                            }
+                            onChange={(e) => {
+                              setFilters((prev) => {
+                                const ids = new Set(prev.materialIds ?? []);
+                                e.target.checked
+                                  ? ids.add(material.id)
+                                  : ids.delete(material.id);
+                                return {
+                                  ...prev,
+                                  materialIds: Array.from(ids),
+                                };
+                              });
+                              // setCurrentPage(1);
+                            }}
+                            className="w-4 h-4 accent-black"
                           />
-                          {/* <div
-                            className="w-5 h-5 rounded-full border border-gray-200"
-                            style={{ backgroundColor: material.hexCode }}
-                          /> */}
+
                           <span className="text-xs text-gray-700 group-hover:text-black">
                             {material.name}
                           </span>
@@ -464,6 +710,7 @@ export default function SeriesWiseProducts() {
                   {/* PRICE VIEW */}
                   {activeFilterTab === "Price" && (
                     <div className="space-y-4">
+                      {/* price data select radio */}
                       {priceData.priceRanges?.map((price) => (
                         <label
                           key={price.id}
@@ -472,13 +719,23 @@ export default function SeriesWiseProducts() {
                           <input
                             type="radio"
                             name="price"
+                            onChange={() => {
+                              setFilters((prev) => ({
+                                ...prev,
+                                minPrice: price.min,
+                                maxPrice: price.max,
+                              }));
+                              // setCurrentPage(1);
+                            }}
                             className="w-4 h-4 accent-black"
                           />
+
                           <span className="text-sm text-gray-700">
                             {price.name}
                           </span>
                         </label>
                       ))}
+                      {/* custom range  */}
                       <div className="pt-6">
                         <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-4 font-bold">
                           Custom Range
@@ -487,43 +744,102 @@ export default function SeriesWiseProducts() {
                           <input
                             type="number"
                             placeholder="Min"
-                            className="w-full border p-2 text-xs"
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                minPrice: Number(e.target.value),
+                              }))
+                            }
                           />
-                          <span className="text-gray-400">-</span>
+
                           <input
                             type="number"
                             placeholder="Max"
-                            className="w-full border p-2 text-xs"
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                maxPrice: Number(e.target.value),
+                              }))
+                            }
                           />
                         </div>
                       </div>
                     </div>
                   )}
 
+                  {activeFilterTab === "Product Type" && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {seriesWiseSubcategories?.map((subCat: any) => (
+                        <label
+                          key={subCat.id}
+                          className="flex items-center gap-3 cursor-pointer group"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={
+                              filters.subCategoryIds?.includes(subCat.id) ??
+                              false
+                            }
+                            onChange={(e) => {
+                              setFilters((prev) => {
+                                const ids = new Set(prev.subCategoryIds ?? []);
+                                e.target.checked
+                                  ? ids.add(subCat.id)
+                                  : ids.delete(subCat.id);
+                                return {
+                                  ...prev,
+                                  subCategoryIds: Array.from(ids),
+                                };
+                              });
+                              // setCurrentPage(1);
+                            }}
+                            className="w-4 h-4 accent-black"
+                          />
+
+                          <span className="text-xs text-gray-700 group-hover:text-black">
+                            {subCat.name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Default for other tabs */}
-                  {activeFilterTab !== "Color" &&
+                  {/* {activeFilterTab !== "Color" &&
                     activeFilterTab !== "Price" && (
                       <p className="text-sm text-gray-400 italic">
                         No options available for {activeFilterTab} yet.
                       </p>
-                    )}
+                    )} */}
                 </div>
               )}
             </div>
 
             {/* Footer */}
             <div className="p-4 bg-white border-t flex gap-3 mt-auto">
-              <button className="flex-1 py-4 border border-gray-200 text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-black hover:border-black transition">
+              <button
+                onClick={() => {
+                  setFilters({});
+                  // setCurrentPage(1);
+                }}
+                className="flex-1 py-4 border border-gray-200 text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-black hover:border-black transition"
+              >
                 Clear All
               </button>
-              <button className="flex-1 py-4 bg-[#4E5B6D] text-white text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-[#3d4857] transition">
+              <button
+                onClick={() => {
+                  setIsFilterOpen(false);
+                  setActiveFilterTab(null);
+                  // setCurrentPage(1);
+                }}
+                className="flex-1 py-4 bg-[#4E5B6D] text-white text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-[#3d4857] transition"
+              >
                 View Results ({totalProducts})
               </button>
             </div>
           </div>
         </div>
       )}
-
       {/* Blog Section - Only show if blog exists */}
       {blog && (
         <div className="my-10 p-6 bg-linear-to-r from-blue-50 to-gray-50 border border-blue-100 rounded-lg">
@@ -550,7 +866,6 @@ export default function SeriesWiseProducts() {
           </div>
         </div>
       )}
-
       {/* Quick Shop Modal */}
       {selectedProduct && (
         <QuickShopModal

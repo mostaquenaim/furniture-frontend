@@ -149,7 +149,15 @@ export interface FetchProductsParams {
   page?: number;
   limit?: number;
   search?: string;
-  isActive?: boolean | null;
+  isActive?: boolean;
+
+  colorIds?: number[];
+  materialIds?: number[];
+  subCategoryIds?: number[];
+  minPrice?: number;
+  maxPrice?: number;
+  order?: string;
+  sortBy?: string;
 }
 
 export interface CartItem {

@@ -1,10 +1,10 @@
 const priceData = {
   priceRanges: [
-    { id: 1, name: "Under ৳50", value: "0-50" },
-    { id: 2, name: "৳50 - ৳100", value: "50-100" },
-    { id: 3, name: "৳100 - ৳250", value: "100-250" },
-    { id: 4, name: "৳250 - ৳500", value: "250-500" },
-    { id: 5, name: "Over ৳500", value: "500-999999" }, 
+    { id: 1, name: "Under ৳50", min: 0, max: 50 },
+    { id: 2, name: "৳50 - ৳100", min: 50, max: 10 },
+    { id: 3, name: "৳100 - ৳250", min: 100, max: 250 },
+    { id: 4, name: "৳250 - ৳500", min: 250, max: 500 },
+    { id: 5, name: "Over ৳500", min: 500, max: 50000000 },
   ],
 };
 

@@ -93,7 +93,6 @@ const calculateSubtotal = (
 // ============================================================================
 // Main Hook
 // ============================================================================
-
 const useFetchCarts = (options?: UseFetchCartsOptions): UseFetchCartsReturn => {
   const { user, loading: authLoading } = useAuth();
   const axiosSecure = useAxiosSecure();

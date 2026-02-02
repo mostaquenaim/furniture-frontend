@@ -22,10 +22,12 @@ interface SeriesProductResponse {
 
 const useFetchSeriesWiseProducts = (
   seriesSlug: string,
-  params?: FetchProductsParams
+  params?: FetchProductsParams,
 ) => {
+  // console.log(params,'params');
   const axiosPublic = useAxiosPublic();
 
+  // hooks/useFetchSeriesWiseProducts.ts - Update the fetchProducts function
   const fetchProducts = async (): Promise<SeriesProductResponse> => {
     const cleanParams: Record<string, any> = {};
 
@@ -33,18 +35,35 @@ const useFetchSeriesWiseProducts = (
     if (params?.limit) cleanParams.limit = params.limit;
     if (params?.search) cleanParams.search = params.search;
 
+    // Fix: Use plural parameter names as expected by backend
+    if (params?.colorIds?.length)
+      cleanParams.colorIds = params.colorIds.join(",");
+    if (params?.materialIds?.length)
+      cleanParams.materialIds = params.materialIds.join(",");
+    if (params?.subCategoryIds?.length)
+      cleanParams.subCategoryIds = params.subCategoryIds.join(",");
+
+    if (params?.minPrice !== undefined) cleanParams.minPrice = params.minPrice;
+
+    if (params?.maxPrice !== undefined) cleanParams.maxPrice = params.maxPrice;
+
+    if (params?.sortBy) cleanParams.sortBy = params.sortBy;
+    if (params?.order) cleanParams.order = params.order;
+
     if (typeof params?.isActive === "boolean") {
       cleanParams.isActive = params.isActive;
     }
 
+    console.log(cleanParams, "cleanParams");
+
     const response = await axiosPublic.get<SeriesProductResponse>(
       `/series/${seriesSlug}/products`,
-      { params: cleanParams }
+      { params: cleanParams },
     );
 
-    console.log(response.data, "series data");
+    console.log("series", response.data);
 
-    return response.data; // Directly return response.data, not response.data.data
+    return response.data;
   };
 
   const queryKey = [
@@ -54,6 +73,13 @@ const useFetchSeriesWiseProducts = (
     params?.limit,
     params?.search,
     params?.isActive,
+    params?.colorIds?.join(","),
+    params?.materialIds?.join(","),
+    params?.subCategoryIds?.join(","),
+    params?.minPrice,
+    params?.maxPrice,
+    params?.sortBy,
+    params?.order,
   ];
 
   const { data, isLoading, isError, error, refetch, isFetching } =
