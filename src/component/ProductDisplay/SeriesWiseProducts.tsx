@@ -221,10 +221,10 @@ export default function SeriesWiseProducts() {
         setSortParams({ sortBy: "rating", order: "desc" });
         break;
       case "A–Z":
-        setSortParams({ sortBy: "name", order: "asc" });
+        setSortParams({ sortBy: "title", order: "asc" });
         break;
       case "Z–A":
-        setSortParams({ sortBy: "name", order: "desc" });
+        setSortParams({ sortBy: "title", order: "desc" });
         break;
       default:
         setSortParams({});
