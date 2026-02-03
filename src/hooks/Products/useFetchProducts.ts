@@ -1,5 +1,9 @@
 // hooks/useFetchProducts.ts
-import { keepPreviousData, useQuery, UseQueryResult } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import { Product } from "@/types/product.types";
 import useAxiosPublic from "../Axios/useAxiosPublic";
 import { AxiosError } from "axios";
@@ -12,6 +16,8 @@ interface FetchProductsParams {
   limit?: number;
   search?: string;
   isActive?: boolean | null;
+  order?: string;
+  sortBy?: string;
 }
 
 /**
@@ -46,7 +52,7 @@ interface UseFetchProductsReturn {
 }
 
 const useFetchProducts = (
-  params: FetchProductsParams = {}
+  params: FetchProductsParams = {},
 ): UseFetchProductsReturn => {
   const axiosPublic = useAxiosPublic();
 
@@ -74,6 +80,9 @@ const useFetchProducts = (
       queryParams.isActive = params.isActive;
     }
 
+    if (params?.sortBy) queryParams.sortBy = params.sortBy;
+    if (params?.order) queryParams.order = params.order;
+
     const response = await axiosPublic.get<ProductsResponse>("/product/all", {
       params: queryParams,
     });
@@ -92,6 +101,8 @@ const useFetchProducts = (
     params.limit ?? 10,
     params.search ?? "",
     params.isActive ?? null,
+    params?.order,
+    params?.sortBy,
   ] as const;
 
   const {

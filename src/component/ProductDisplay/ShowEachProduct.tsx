@@ -21,18 +21,22 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import useFetchCarts from "@/hooks/Cart/useCarts";
+import useFetchRelatedProducts from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
+import useFetchProducts from "@/hooks/Products/useFetchProducts";
+import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview";
+import { devLog } from "@/utils/devlog";
 
 interface ReviewsSectionProps {
-  data: {
-    reviews: Review[];
-    averageRating: number;
-    ratingCount: number;
-  };
+  reviews: Review[];
+  averageRating: number;
+  ratingCount: number;
 }
 
-const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
-  const { reviews, averageRating, ratingCount } = data;
-
+const ReviewsSection: React.FC<ReviewsSectionProps> = ({
+  reviews,
+  averageRating,
+  ratingCount,
+}) => {
   return (
     <section id="review" className="py-14 text-[#262626]">
       {/* Header */}
@@ -43,8 +47,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
       {/* Summary Box */}
       <div className="flex flex-col items-center justify-center gap-2 py-10 px-6 bg-[#f9f8f6] mb-14 text-center">
         <p className="text-[13px] font-light">
-          {averageRating || 0} stars <span className="mx-1">|</span>{" "}
-          {ratingCount || 0} Reviews
+          {averageRating.toFixed(1)} stars <span className="mx-1">|</span>{" "}
+          {ratingCount} Review{ratingCount > 1 ? "s" : ""}
         </p>
         <div className="flex gap-0.5 text-[#eeb012]">
           {[...Array(5)].map((_, i) => (
@@ -58,93 +62,51 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="mb-14 grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div>
-          <h3 className="text-[13px] font-medium mb-4">Filter Reviews</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="text-[11px] block mb-1">Star Rating</label>
-              <select className="border border-gray-300 rounded-sm px-3 py-2 text-[13px] w-64 outline-none focus:border-gray-500">
-                <option>5 Star</option>
-              </select>
+      {/* Reviews List */}
+      <div className="space-y-10">
+        {reviews.length === 0 && (
+          <p className="text-center text-gray-500">No reviews yet.</p>
+        )}
+
+        {reviews.map((review) => (
+          <div
+            key={review.id}
+            className="grid grid-cols-1 md:grid-cols-12 gap-10 border-t border-gray-100 pt-12"
+          >
+            {/* User Info */}
+            <div className="md:col-span-3 space-y-2">
+              <p className="text-[13px] font-medium">{review.user.name}</p>
+              {/* <p className="text-[12px] text-gray-600 font-light">
+                <span className="font-normal text-gray-800">Reviewed on:</span>{" "}
+                {new Date(review.createdAt).toLocaleDateString()}
+              </p> */}
             </div>
-            <button className="text-[11px] underline text-teal-700">
-              Reset All Filters
-            </button>
-          </div>
-        </div>
 
-        {/* Sort */}
-        <div className="flex md:justify-end items-start">
-          <div className="flex items-center gap-4 text-gray-400 mt-6">
-            <label className="text-[11px] uppercase tracking-wider">Sort</label>
-            <select className="border border-gray-300 rounded-sm px-3 py-2 text-[13px] w-40 outline-none">
-              <option>Lowest Rated</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Pagination Header */}
-      <div className="flex justify-end items-center gap-3 mb-10 text-gray-400">
-        <ChevronLeft size={20} className="cursor-not-allowed opacity-30" />
-        <span className="text-[12px] text-gray-600">1 / 1</span>
-        <ChevronRight size={20} className="cursor-not-allowed opacity-30" />
-      </div>
-
-      {/* Review Item */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-10 border-t border-gray-100 pt-12 pb-16">
-        {/* User Info */}
-        <div className="md:col-span-3 space-y-2">
-          <p className="text-[13px] font-medium">EAnthroInsider1</p>
-          <p className="text-[12px] text-gray-600 font-light">
-            <span className="font-normal text-gray-800">Location:</span> Merion,
-            PA
-          </p>
-          <p className="text-[12px] text-gray-600 font-light">
-            <span className="font-normal text-gray-800">Age:</span> 35–39
-          </p>
-          <div className="pt-5">
-            <span className="bg-gray-100 px-3 py-2 text-[11px] text-gray-600 uppercase tracking-tight">
-              Anthro Insider
-            </span>
-          </div>
-        </div>
-
-        {/* Review Content */}
-        <div className="md:col-span-9">
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex gap-0.5 text-[#eeb012]">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={14} fill="currentColor" stroke="none" />
-              ))}
+            {/* Review Content */}
+            <div className="md:col-span-9">
+              <div className="flex gap-0.5 text-[#eeb012] mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={14}
+                    fill={i < review.rating ? "currentColor" : "none"}
+                    stroke="currentColor"
+                  />
+                ))}
+              </div>
+              <p className="text-[13px] text-gray-600 leading-relaxed">
+                {review.comment}
+              </p>
             </div>
-            <span className="text-[12px] text-gray-500 font-light">
-              Dec 8, 2025
-            </span>
           </div>
-          <h4 className="text-[15px] font-medium mb-2">
-            Perfect Personalization
-          </h4>
-          <p className="text-[13px] text-gray-600 leading-relaxed max-w-2xl">
-            Looks like a family heirloom and completes any gallery wall. Makes a
-            great gift!
-          </p>
-        </div>
+        ))}
       </div>
 
-      {/* Footer */}
+      {/* Write Review Button */}
       <div className="border-t border-gray-100 pt-12 flex flex-col items-center">
         <button className="border border-[#262626] px-24 py-3 text-[12px] uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-colors">
           Write a Review
         </button>
-
-        <div className="flex items-center gap-3 text-gray-400 mt-10">
-          <ChevronLeft size={20} className="opacity-30" />
-          <span className="text-[12px] text-gray-600">1 / 1</span>
-          <ChevronRight size={20} className="opacity-30" />
-        </div>
       </div>
     </section>
   );
@@ -161,6 +123,26 @@ export default function ShowEachProduct() {
   } = useFetchCarts({
     productSlug: slug,
   });
+  const { relatedProducts, isLoading: isRelatedLoading } =
+    useFetchRelatedProducts(slug);
+  const { products: trendingProducts, isLoading: isTrendingLoading } =
+    useFetchProducts({
+      limit: 8,
+      sortBy: "trendScore",
+      order: "desc",
+    });
+
+  const {
+    reviews: reviewsData,
+    averageRating,
+    ratingCount,
+    refetch: reviewsRefetch,
+    isLoading: isReviewLoading,
+  } = useFetchProductReview({
+    slug: slug,
+  });
+
+  // devLog(reviewsData, "reviews");
 
   // console.log(carts, "all cart items");
   // console.log(product, "productproduct");
@@ -242,14 +224,14 @@ export default function ShowEachProduct() {
 
     // Subtract cart quantity from available stock
     const inCartQuantity = cartItem?.quantity || 0;
-    console.log(
-      cartItem,
-      "cartItem",
-      cartItem,
-      "inCartQuantity",
-      inCartQuantity,
-      currentVariant.size.quantity,
-    );
+    // console.log(
+    //   cartItem,
+    //   "cartItem",
+    //   cartItem,
+    //   "inCartQuantity",
+    //   inCartQuantity,
+    //   currentVariant.size.quantity,
+    // );
     return currentVariant.size.quantity - inCartQuantity;
   }, [currentVariant, selectedSizeId, cartItems]);
 
@@ -264,27 +246,27 @@ export default function ShowEachProduct() {
   }, [product, currentVariant]);
 
   // handle reviews
-  const reviewsData = useMemo(() => {
-    if (!product || !product.reviews?.length) {
-      return {
-        reviews: [],
-        averageRating: 0,
-        ratingCount: 0,
-      };
-    }
+  // const reviewsData = useMemo(() => {
+  //   if (!product || !product.reviews?.length) {
+  //     return {
+  //       reviews: [],
+  //       averageRating: 0,
+  //       ratingCount: 0,
+  //     };
+  //   }
 
-    const reviews = product.reviews;
-    const ratingCount = reviews.length;
+  //   const reviews = product.reviews;
+  //   const ratingCount = reviews.length;
 
-    const averageRating =
-      reviews.reduce((sum, review) => sum + review.rating, 0) / ratingCount;
+  //   const averageRating =
+  //     reviews.reduce((sum, review) => sum + review.rating, 0) / ratingCount;
 
-    return {
-      reviews,
-      averageRating: Number(averageRating.toFixed(1)),
-      ratingCount,
-    };
-  }, [product]);
+  //   return {
+  //     reviews,
+  //     averageRating: Number(averageRating.toFixed(1)),
+  //     ratingCount,
+  //   };
+  // }, [product]);
 
   // Add to basket handler function
   const handleAddToBasket = async () => {
@@ -524,7 +506,7 @@ export default function ShowEachProduct() {
               alt={product.title}
               className="w-full h-full object-cover transition-opacity duration-300"
             />
-            {product.discount > 0 && (
+            {product.basePrice - product.price >= 1 && (
               <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase">
                 -{product.discount}% OFF
               </div>
@@ -560,7 +542,7 @@ export default function ShowEachProduct() {
             <p className="text-2xl font-medium">
               ৳{discountedPrice.toLocaleString()}
             </p>
-            {product.discount > 0 && (
+            {product.basePrice - product.price >= 1 && (
               <p className="text-gray-400 line-through text-lg">৳{basePrice}</p>
             )}
           </div>
@@ -740,20 +722,35 @@ export default function ShowEachProduct() {
       </div>
 
       {/* Trending Section */}
-      <section>
-        <Title title={"You may also like"} />
-        <ShowProductsFlex />
-      </section>
+      {relatedProducts && relatedProducts.length > 0 && (
+        <section>
+          <Title title={"You may also like"} />
+          <ShowProductsFlex
+            isLoading={isRelatedLoading}
+            products={relatedProducts}
+          />
+        </section>
+      )}
 
       {/* Ratings & Reviews Section */}
       <section id="review">
-        <ReviewsSection data={reviewsData} />
+        <ReviewsSection
+          reviews={reviewsData}
+          averageRating={averageRating}
+          ratingCount={ratingCount}
+        />
       </section>
+
       {/* Trending Section */}
-      <section>
-        <Title title="Trending Now" />
-        <ShowProductsFlex />
-      </section>
+      {trendingProducts && trendingProducts.length > 0 && (
+        <section>
+          <Title title="Trending Now" />
+          <ShowProductsFlex
+            isLoading={isTrendingLoading}
+            products={trendingProducts}
+          />
+        </section>
+      )}
 
       <LikeItShareIt />
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

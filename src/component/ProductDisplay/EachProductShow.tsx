@@ -64,11 +64,11 @@ const EachProductShow = ({
               )}
 
               {/* Discount Badge */}
-              {product.discount && (
+              {product.basePrice - product.price >= 1 && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">
                   {product.discountType === "PERCENT"
                     ? `${product.discount}% OFF`
-                    : `৳${(product.discount / 100).toFixed(0)} OFF`}
+                    : `৳${product.discount} OFF`}
                 </div>
               )}
 
@@ -89,10 +89,10 @@ const EachProductShow = ({
             </h3>
 
             <div className="mb-3">
-              {product.discount ? (
+              {product.basePrice - product.price >= 1 ? (
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-red-600 font-medium">
-                    ${displayPrice}
+                    ${product.price}
                   </p>
                   <p className="text-[10px] text-gray-400 line-through">
                     ${product.basePrice}

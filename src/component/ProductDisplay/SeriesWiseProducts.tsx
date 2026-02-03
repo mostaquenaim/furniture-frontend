@@ -50,7 +50,7 @@ const FilterDropdown = ({
   onClose,
 }: any) => {
   return (
-    <div className="absolute top-full left-0 mt-2 w-64 bg-white border shadow-xl z-50">
+    <div className="absolute top-full left-0 mt-2 w-64 bg-white border shadow-xl z-40">
       {/* PRICE */}
       {type === "Price" && (
         <div className="p-3 space-y-2">
@@ -232,17 +232,6 @@ export default function SeriesWiseProducts() {
       default:
         setSortParams({});
     }
-  };
-
-  const handleMouseEnter = (filter: string) => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setHoveredFilter(filter);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setHoveredFilter(null);
-    }, 150);
   };
 
   const handleImageChange = (images: ProductImage[]) => {
