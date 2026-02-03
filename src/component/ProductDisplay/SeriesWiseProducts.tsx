@@ -202,6 +202,9 @@ export default function SeriesWiseProducts() {
     setCurrentPage(1);
 
     switch (sortValue) {
+      // case "Relevance":
+      //   setSortParams({ sortBy: "createdAt", order: "asc" });
+      //   break;
       case "Price: Low to High":
         setSortParams({ sortBy: "price", order: "asc" });
         break;
