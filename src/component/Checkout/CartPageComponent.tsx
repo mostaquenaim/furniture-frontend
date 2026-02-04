@@ -14,23 +14,48 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import Link from "next/link";
 import OrderSummary from "./OrderSummary";
 import useCartCount from "@/hooks/Cart/useCartCount";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-
-// Mock for "You may also like" section
-const recommendedProducts: Product[] = [
-  /* ... your product objects ... */
-];
+import useFetchRelatedProducts, {
+  RelatedProduct,
+} from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 
 const CartPageComponent = () => {
   const { cart, isLoading, isFetching, refetch } = useFetchCarts();
   const { refetch: refetchCount } = useCartCount();
+  const axiosPublic = useAxiosPublic();
+
+  const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
+
+  const [isRelatedLoading, setIsRelatedLoading] = useState(true);
 
   // devLog(cart, "cartslocal");
 
   useEffect(() => {
     refetch();
-  }, []);
+  }, [refetch]);
+
+  const cartItems = useMemo(() => {
+    return cart?.items ?? [];
+  }, [cart?.items]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      const response = await axiosPublic.get<RelatedProduct[]>(
+        `/product/you-may-also-like/${cartItems[0].productSize?.color?.product.slug}`,
+      );
+
+      setRelatedProducts(response.data);
+      setIsRelatedLoading(false);
+    };
+
+    if (cartItems) {
+      if (cartItems.length > 0) {
+        fetchRelatedProducts();
+      }
+    }
+  }, [axiosPublic, cartItems]);
 
   if (isLoading || isFetching) {
     return (
@@ -39,17 +64,17 @@ const CartPageComponent = () => {
   }
 
   // Handle case when cart is undefined or null
-  if (!cart) {
-    return (
-      <div className="max-w-[1500px] mx-auto p-4 lg:p-8">
-        <div className="text-center py-12 text-gray-500">
-          Failed to load cart. Please try again.
-        </div>
-      </div>
-    );
-  }
+  // if (!cart) {
+  //   return (
+  //     <div className="max-w-[1500px] mx-auto p-4 lg:p-8">
+  //       <div className="text-center py-12 text-gray-500">
+  //         Failed to load cart. Please try again.
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  const cartItems = cart?.items ?? [];
+  // console.log(cartItems,'cartitems');
   const subtotal = Number(cart?.subtotalAtAdd ?? 0);
 
   const handlingSurcharge = 0;
@@ -95,26 +120,29 @@ const CartPageComponent = () => {
           )}
 
           {/* Favorites Section */}
-          <div className="mt-16 max-w-full overflow-hidden">
-            <Title title="You may also like" />
-            <div className="w-full">
-              <ShowProductsFlex
-                products={recommendedProducts}
-                maxWidth="100%"
-              />
+          {cartItems && cartItems.length > 0 && (
+            <div className="mt-16 max-w-full overflow-hidden">
+              <Title title="You may also like" />
+              <div className="w-full">
+                <ShowProductsFlex
+                  isLoading={isRelatedLoading}
+                  products={relatedProducts}
+                  maxWidth="100%"
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* RIGHT: Order Summary */}
         <aside className="w-full lg:w-96 shrink-0">
           <OrderSummary
-            cartId={cart?.id ?? null} // Safely access id
+            cartId={cart?.id ?? null} 
             subtotal={subtotal}
             total={total}
             surcharge={handlingSurcharge}
             refetch={refetch}
-            coupon={cart.coupon?.code}
+            coupon={cart?.coupon?.code}
           />
         </aside>
       </div>
@@ -166,7 +194,7 @@ const CartItemComponent = ({
              hover:shadow-md hover:-translate-y-0.5"
         >
           <img
-            src={item?.productSize?.color?.images?.[0]?.image || ""}
+            src={item?.productSize?.color?.product?.images?.[0]?.image || ""}
             alt={item?.productSize?.color?.product?.title || "Product"}
             className="object-cover w-full h-full
                transition-transform duration-300

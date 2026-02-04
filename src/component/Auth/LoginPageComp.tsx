@@ -9,7 +9,10 @@ const LoginPageComp = () => {
 
   const handleClose = () => {
     setIsOpen(false);
-    router.push("/");
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get("redirect") || "/";
+
+    router.push(redirect);
   };
 
   return (

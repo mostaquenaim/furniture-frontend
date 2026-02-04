@@ -11,7 +11,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import LoadingDots from "@/component/Loading/LoadingDS";
-import { getCustomerInfo } from "@/utils/guestCustomer";
+import { getCustomerInfo } from "@/utils/customer";
 
 type User = {
   id: string;

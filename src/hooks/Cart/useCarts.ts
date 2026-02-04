@@ -1,15 +1,15 @@
 "use client";
 
-import {
-  keepPreviousData,
-  useQuery,
-  UseQueryOptions,
-} from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosSecure from "../Axios/useAxiosSecure";
+import useAxiosPublic from "../Axios/useAxiosPublic";
 import { CartItem } from "@/types/product.types";
+import { isAuthenticated } from "@/utils/auth";
+import { getVisitorId } from "@/utils/visitor";
 import { devLog } from "@/utils/devlog";
+import { useEffect, useState } from "react";
 
 // ============================================================================
 // Types
@@ -45,130 +45,121 @@ interface UseFetchCartsReturn {
 }
 
 // ============================================================================
-// Local Storage Utilities
+// Hook
 // ============================================================================
 
-const CART_STORAGE_KEY = "cart";
-
-const getLocalCart = (): CartResponse => {
-  if (typeof window === "undefined") {
-    return createEmptyCart();
-  }
-
-  try {
-    const rawCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (!rawCart) {
-      return createEmptyCart();
-    }
-
-    const parsedCart = JSON.parse(rawCart);
-    const items = Array.isArray(parsedCart) ? parsedCart : [];
-
-    return {
-      id: null,
-      items,
-      subtotalAtAdd: calculateSubtotal(items, "subtotalAtAdd"),
-      baseSubtotalAtAdd: calculateSubtotal(items, "baseSubtotalAtAdd"),
-    };
-  } catch (error) {
-    devLog("Error parsing localStorage cart:", error);
-    return createEmptyCart();
-  }
-};
-
-const createEmptyCart = (): CartResponse => ({
-  id: null,
-  items: [],
-  subtotalAtAdd: 0,
-  baseSubtotalAtAdd: 0,
-});
-
-const calculateSubtotal = (
-  items: CartItem[],
-  field: "subtotalAtAdd" | "baseSubtotalAtAdd"
-): number => {
-  return items.reduce((sum, item) => sum + (item[field] ?? 0), 0);
-};
-
-// ============================================================================
-// Main Hook
-// ============================================================================
 const useFetchCarts = (options?: UseFetchCartsOptions): UseFetchCartsReturn => {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading, token } = useAuth(); // Add token
   const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
+  const [isTokenReady, setIsTokenReady] = useState(false); // Add this
 
-  // Determine if we should use server cart or localStorage
-  const shouldFetchFromServer = Boolean(user);
+  // Check if token is ready (non-null or authenticated)
+  useEffect(() => {
+    if (!authLoading) {
+      // Give a small delay to ensure axios interceptor is set up
+      const timer = setTimeout(() => {
+        setIsTokenReady(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, token]);
 
   const fetchCarts = async (): Promise<CartResponse> => {
-    // If no user, return localStorage cart immediately
-    if (!shouldFetchFromServer) {
-      devLog("No user authenticated, using localStorage cart");
-      return getLocalCart();
-    }
+    const params: Record<string, string | number | boolean> = {};
+
+    if (options?.productSlug) params.productSlug = options.productSlug;
+    if (options?.colorId !== undefined) params.colorId = options.colorId;
+    if (options?.sizeId !== undefined) params.sizeId = options.sizeId;
+    if (options?.isSummary !== undefined) params.isSummary = options.isSummary;
 
     try {
-      // Build query parameters
-      const params: Record<string, string | number | boolean> = {};
-      
-      if (options?.productSlug) {
-        params.productSlug = options.productSlug;
-      }
-      if (options?.colorId !== undefined) {
-        params.colorId = options.colorId;
-      }
-      if (options?.sizeId !== undefined) {
-        params.sizeId = options.sizeId;
-      }
-      if (options?.isSummary !== undefined) {
-        params.isSummary = options.isSummary;
+      // Wait a bit if we're still loading auth
+      if (authLoading) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
-      devLog("Fetching cart from server with params:", params);
+      if (isAuthenticated() && token) {
+        // Check for token as well
+        devLog("Fetching user cart with token:", token);
+        const res = await axiosSecure.get<CartResponse>("/cart/items", {
+          params,
+        });
 
-      const response = await axiosSecure.get<CartResponse>("/cart/items", {
-        params,
-      });
+        // console.log(res.data, 'caritems');
+        return res.data;
+      }
 
-      devLog("Server cart response:", response.data);
+      // If authenticated but no token, wait a bit more
+      if (isAuthenticated() && !token) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        if (token) {
+          const res = await axiosSecure.get<CartResponse>("/cart/items", {
+            params,
+          });
+          return res.data;
+        }
+      }
 
-      return response.data;
-    } catch (error) {
-      devLog("Failed to fetch server cart, falling back to localStorage:", error);
-      
-      // Fallback to localStorage on server error
-      return getLocalCart();
+      // Fall back to guest cart
+      const visitorId = await getVisitorId();
+      devLog("Fetching guest cart", visitorId);
+
+      const res = await axiosPublic.get<CartResponse>(
+        `/guest/cart/items/${visitorId}`,
+        { params },
+      );
+
+      return res.data;
+    } catch (error: any) {
+      devLog("Failed to fetch cart", error);
+
+      // If 401 and authenticated, try guest cart
+      if (error.response?.status === 401 && isAuthenticated()) {
+        devLog("401 received, falling back to guest cart");
+        const visitorId = await getVisitorId();
+        const guestRes = await axiosPublic.get<CartResponse>(
+          `/guest/cart/items/${visitorId}`,
+          { params },
+        );
+        return guestRes.data;
+      }
+
+      throw error;
     }
   };
 
-  const queryResult = useQuery<CartResponse, AxiosError>({
-    queryKey: ["carts", options, shouldFetchFromServer],
+  const query = useQuery<CartResponse, AxiosError>({
+    queryKey: ["cart", options, token], // Add token to queryKey
     queryFn: fetchCarts,
-    enabled: !authLoading, // Only wait for auth to complete
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on client errors (4xx)
-      if (error.response && error.response.status >= 400 && error.response.status < 500) {
+    enabled: !authLoading && isTokenReady, // Use isTokenReady
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: (count, error) => {
+      // Don't retry on 401 - we handle it in fetchCarts
+      if (error.response?.status === 401) {
         return false;
       }
-      // Retry up to 2 times for server errors
-      return failureCount < 2;
+      if (
+        error.response &&
+        error.response.status >= 400 &&
+        error.response.status < 500
+      ) {
+        return false;
+      }
+      return count < 2;
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
     placeholderData: keepPreviousData,
   });
 
   return {
-    cart: queryResult.data ?? null,
-    isLoading: authLoading || queryResult.isLoading,
-    isFetching: queryResult.isFetching,
-    isError: queryResult.isError,
-    error: queryResult.error ?? null,
-    refetch: queryResult.refetch,
+    cart: query.data ?? null,
+    isLoading: authLoading || query.isLoading,
+    isFetching: query.isFetching,
+    isError: query.isError,
+    error: query.error ?? null,
+    refetch: query.refetch,
   };
 };
 

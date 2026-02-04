@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
+import { mergeGuestUserWithRealUser } from "@/utils/merge";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 type ModalView =
   | "signin"
@@ -53,6 +55,7 @@ export default function AuthModal({
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const router = useRouter();
   const { setUser, setToken } = useAuth();
 
@@ -199,9 +202,9 @@ export default function AuthModal({
         toast.success(`Welcome to Sakigai`);
         handleView("signin");
         onClose();
-        data.user.role === "CUSTOMER"
-          ? router.push("/")
-          : router.push("/admin/dashboard");
+        // data.user.role === "CUSTOMER"
+        //   ? router.push("/")
+        //   : router.push("/admin/dashboard");
       }
     } catch (err: unknown) {
       let errorMessage = "";
@@ -321,15 +324,19 @@ export default function AuthModal({
 
       const data = res.data;
       // console.log(data,'otpdone');
-      localStorage.setItem("token", data.token);
+      const token = data.token;
+
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      setToken(data.token);
+      setToken(token);
       setUser(data.user);
+
+      await mergeGuestUserWithRealUser(token);
 
       toast.success(`Welcome to Sakigai`);
       handleView("signin");
       onClose();
-      router.push("/");
+      // router.push("/");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(

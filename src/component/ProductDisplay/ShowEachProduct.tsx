@@ -25,6 +25,7 @@ import useFetchRelatedProducts from "@/hooks/Products/RelatedProducts/useFetchRe
 import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview";
 import { devLog } from "@/utils/devlog";
+import { getVisitorId } from "@/utils/visitor";
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -37,6 +38,19 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   averageRating,
   ratingCount,
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleWriteReview = () => {
+    // If you want to check authentication first
+    if (!isAuthenticated()) {
+      // open login/signup modal
+      setIsModalOpen(true);
+      return;
+    }
+    // Otherwise open review form modal
+    setIsModalOpen(true);
+  };
+
   return (
     <section id="review" className="py-14 text-[#262626]">
       {/* Header */}
@@ -104,7 +118,10 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
 
       {/* Write Review Button */}
       <div className="border-t border-gray-100 pt-12 flex flex-col items-center">
-        <button className="border border-[#262626] px-24 py-3 text-[12px] uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-colors">
+        <button
+          onClick={handleWriteReview}
+          className="border border-[#262626] px-24 py-3 text-[12px] uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-colors"
+        >
           Write a Review
         </button>
       </div>
@@ -245,29 +262,6 @@ export default function ShowEachProduct() {
       : product?.images || [];
   }, [product, currentVariant]);
 
-  // handle reviews
-  // const reviewsData = useMemo(() => {
-  //   if (!product || !product.reviews?.length) {
-  //     return {
-  //       reviews: [],
-  //       averageRating: 0,
-  //       ratingCount: 0,
-  //     };
-  //   }
-
-  //   const reviews = product.reviews;
-  //   const ratingCount = reviews.length;
-
-  //   const averageRating =
-  //     reviews.reduce((sum, review) => sum + review.rating, 0) / ratingCount;
-
-  //   return {
-  //     reviews,
-  //     averageRating: Number(averageRating.toFixed(1)),
-  //     ratingCount,
-  //   };
-  // }, [product]);
-
   // Add to basket handler function
   const handleAddToBasket = async () => {
     if (!currentVariant?.size) {
@@ -302,24 +296,14 @@ export default function ShowEachProduct() {
 
       if (!hasUser) {
         console.log("user nai");
-        // Get existing cart
-        const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-        // Check if product already exists
-        const existingItemIndex = existingCart.findIndex(
-          (item: any) => item.productSizeId === productSizeId,
-        );
+        const visitorId = await getVisitorId();
 
-        if (existingItemIndex !== -1) {
-          // Increase quantity
-          existingCart[existingItemIndex].quantity += 1;
-        } else {
-          // Add new item
-          existingCart.push(payload);
-        }
-
-        // Save back to localStorage
-        localStorage.setItem("cart", JSON.stringify(existingCart));
+        await axiosPublic.post("/guest/cart/items", {
+          visitorId,
+          productSizeId,
+          quantity,
+        });
       } else {
         console.log("user ache");
         // Authenticated user - send to server

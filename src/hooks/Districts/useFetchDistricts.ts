@@ -12,6 +12,7 @@ type Districts = {
 interface DistrictsResponse {
   id: number;
   name: string;
+  deliveryFee: number;
 }
 [];
 
@@ -32,7 +33,7 @@ const useFetchDistricts = () => {
         const response =
           await axiosSecure.get<DistrictsResponse[]>("/districts");
 
-        console.log(response.data, "distrits");
+        // console.log(response.data, "distrits");
 
         const data = response.data;
 
