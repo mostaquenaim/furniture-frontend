@@ -286,6 +286,7 @@ export default function AuthModal({
         window.location.reload();
       }
     } catch (err: unknown) {
+      console.log(err);
       if (axios.isAxiosError(err)) {
         setError(
           (err.response?.data as { message?: string })?.message ||

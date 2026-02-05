@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -14,7 +15,6 @@ import { useEffect, useState } from "react";
 // ============================================================================
 // Types
 // ============================================================================
-
 interface CartCoupon {
   code: string;
 }
@@ -81,7 +81,7 @@ const useFetchCarts = (options?: UseFetchCartsOptions): UseFetchCartsReturn => {
 
       if (isAuthenticated() && token) {
         // Check for token as well
-        devLog("Fetching user cart with token:", token);
+        // devLog("Fetching user cart with token:", token);
         const res = await axiosSecure.get<CartResponse>("/cart/items", {
           params,
         });

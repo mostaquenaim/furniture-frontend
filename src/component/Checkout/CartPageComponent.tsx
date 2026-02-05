@@ -7,18 +7,13 @@ import { InfoIcon } from "lucide-react";
 import Title from "../Headers/Title";
 import TakaIcon from "../TakaIcon";
 import ShowProductsFlex from "../ProductDisplay/ShowProductsFlex";
-import { CartItem, Product } from "@/types/product.types";
 import useFetchCarts from "@/hooks/Cart/useCarts";
-import { devLog } from "@/utils/devlog";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import Link from "next/link";
 import OrderSummary from "./OrderSummary";
 import useCartCount from "@/hooks/Cart/useCartCount";
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import useFetchRelatedProducts, {
-  RelatedProduct,
-} from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
+import { RelatedProduct } from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 
 const CartPageComponent = () => {
@@ -40,10 +35,25 @@ const CartPageComponent = () => {
     return cart?.items ?? [];
   }, [cart?.items]);
 
+  const cartItemIds = useMemo(() => {
+    return Array.from(
+      new Set(
+        cartItems
+          .map((item) => item.productSize?.color?.product.id)
+          .filter((id): id is number => typeof id === "number"),
+      ),
+    );
+  }, [cartItems]);
+
   useEffect(() => {
     const fetchRelatedProducts = async () => {
-      const response = await axiosPublic.get<RelatedProduct[]>(
+      const response = await axiosPublic.get(
         `/product/you-may-also-like/${cartItems[0].productSize?.color?.product.slug}`,
+        {
+          params: {
+            productIds: cartItemIds.join(","),
+          },
+        },
       );
 
       setRelatedProducts(response.data);
@@ -55,24 +65,13 @@ const CartPageComponent = () => {
         fetchRelatedProducts();
       }
     }
-  }, [axiosPublic, cartItems]);
+  }, [axiosPublic, cartItemIds, cartItems]);
 
   if (isLoading || isFetching) {
     return (
       <div className="max-w-[1500px] mx-auto p-4 lg:p-8">Loading cart...</div>
     );
   }
-
-  // Handle case when cart is undefined or null
-  // if (!cart) {
-  //   return (
-  //     <div className="max-w-[1500px] mx-auto p-4 lg:p-8">
-  //       <div className="text-center py-12 text-gray-500">
-  //         Failed to load cart. Please try again.
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   // console.log(cartItems,'cartitems');
   const subtotal = Number(cart?.subtotalAtAdd ?? 0);
@@ -137,7 +136,7 @@ const CartPageComponent = () => {
         {/* RIGHT: Order Summary */}
         <aside className="w-full lg:w-96 shrink-0">
           <OrderSummary
-            cartId={cart?.id ?? null} 
+            cartId={cart?.id ?? null}
             subtotal={subtotal}
             total={total}
             surcharge={handlingSurcharge}

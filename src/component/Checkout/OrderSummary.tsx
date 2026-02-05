@@ -19,6 +19,7 @@ interface OrderSummaryProps {
   deliveryFee?: number;
   isAddressGiven?: boolean;
   handleConfirmOrder?: () => void;
+  paymentMethod?: string;
 }
 
 const OrderSummary = ({
@@ -32,6 +33,7 @@ const OrderSummary = ({
   deliveryFee,
   isAddressGiven = false,
   handleConfirmOrder,
+  paymentMethod,
 }: OrderSummaryProps) => {
   const param = usePathname();
   const router = useRouter();
@@ -170,13 +172,22 @@ const OrderSummary = ({
             Proceed to Checkout
           </button>
         ) : (
-          <button
-            onClick={handleConfirmOrder}
-            disabled={!isAddressGiven}
-            className="w-full bg-[#4a5568] text-white py-3 uppercase tracking-widest text-xs font-bold hover:bg-black transition mb-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Confirm Order
-          </button>
+          <div>
+            <button
+              onClick={handleConfirmOrder}
+              disabled={!isAddressGiven}
+              className="w-full bg-[#4a5568] text-white py-3 uppercase tracking-widest text-xs font-bold hover:bg-black transition mb-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {paymentMethod === "online"
+                ? "Continue to Payment"
+                : paymentMethod === "cod" && "Place Order"}
+            </button>
+            {paymentMethod === "online" && (
+              <p className="text-xs text-gray-500 text-center">
+                You’ll be redirected to our secure payment partner
+              </p>
+            )}
+          </div>
         )}
 
         {/* promo code  */}

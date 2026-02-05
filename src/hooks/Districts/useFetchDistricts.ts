@@ -13,6 +13,7 @@ interface DistrictsResponse {
   id: number;
   name: string;
   deliveryFee: number;
+  isCODAvailable: boolean;
 }
 [];
 

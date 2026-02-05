@@ -33,8 +33,13 @@ const CheckoutPageComponent = () => {
   const {
     cart,
     isLoading: isCartLoading,
+    isFetching,
     refetch,
   } = useFetchCarts({ isSummary: true });
+
+  useEffect(()=>{
+    refetch()
+  },[refetch])
 
   const subtotal = Number(cart?.subtotalAtAdd ?? 0);
   const handlingSurcharge = 0;
@@ -47,6 +52,7 @@ const CheckoutPageComponent = () => {
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
   const [showModal, setShowModal] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [isCODAvailable, setIsCODAvailable] = useState(true);
 
   const total = subtotal + deliveryFee;
   const axiosSecure = useAxiosSecure();
@@ -59,6 +65,8 @@ const CheckoutPageComponent = () => {
     fullAddress: "",
   });
 
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+
   // Update useEffect to set user info
   useEffect(() => {
     if (user) {
@@ -70,18 +78,8 @@ const CheckoutPageComponent = () => {
     }
   }, [user]);
 
-  // set user Credentials
-  // useEffect(() => {
-  //   if (user) {
-  //     setName(user.name || "");
-
-  //     const cleanedPhone = user.phone?.replace("+880", "") || "";
-  //     setPhone(cleanedPhone);
-  //   }
-  // }, [user]);
-
   // loading state
-  if (loading || isCartLoading) {
+  if (loading || isCartLoading || isFetching) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingDots />
@@ -101,7 +99,7 @@ const CheckoutPageComponent = () => {
             Checkout is available for registered customers only.
           </p>
           <Link
-            href={`/login?redirect=/cart`}
+            href={`/login?redirect=cart`}
             className="border border-black px-8 py-3 uppercase text-xs font-bold hover:bg-black hover:text-white transition-all duration-200"
           >
             Sign In
@@ -118,13 +116,32 @@ const CheckoutPageComponent = () => {
   const handlePlaceOrder = async () => {
     try {
       setPlacingOrder(true);
-      // Call your API to place order
-      await axiosSecure.post(`/order/place`, { cartId: cart?.id, address });
-      toast.success("Order placed successfully!");
-      setShowModal(false);
-      router.push("/checkout/payment");
+
+      console.log(cart?.id, address, paymentMethod);
+
+      if (paymentMethod === "cod") {
+        // COD → place order directly
+        await axiosSecure.post(`/orders/create`, {
+          cartId: cart?.id,
+          address,
+          paymentMethod: "COD",
+        });
+
+        toast.success("Order placed successfully!");
+        router.push("/checkout/success");
+        return;
+      }
+
+      // ONLINE PAYMENT → create payment session
+      // const { data } = await axiosSecure.post(`/payment/sslcommerz/init`, {
+      //   cartId: cart?.id,
+      //   address,
+      // });
+
+      // // SSLCommerz will return a redirect URL
+      // window.location.href = data.GatewayPageURL;
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to place order");
+      toast.error(error?.response?.data?.message || "Payment failed");
     } finally {
       setPlacingOrder(false);
     }
@@ -133,13 +150,13 @@ const CheckoutPageComponent = () => {
   return (
     <div className="max-w-[1500px] mx-auto px-4 py-8 lg:px-8 lg:py-12 font-sans">
       {/* Checkout Progress Stepper */}
-      <div className="flex justify-center mb-16">
+      {/* <div className="flex justify-center mb-16">
         <div className="flex items-center w-full max-w-2xl relative">
           <Step label="Shipment" active />
           <div className="flex-1 h-[2px] bg-gray-200 mx-4 relative top-[-20px]"></div>
           <Step label="Payment" active={false} />
         </div>
-      </div>
+      </div> */}
 
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
         {/* LEFT: Shipping Form */}
@@ -173,11 +190,19 @@ const CheckoutPageComponent = () => {
                 onChange={(e) => {
                   const id = Number(e.target.value);
                   const district = districts?.find((d) => d.id === id);
+
                   setAddress((prev) => ({
                     ...prev,
                     districtId: id,
                   }));
+
                   setDeliveryFee(district?.deliveryFee ?? 0);
+                  setIsCODAvailable(district?.isCODAvailable ?? true);
+
+                  // auto-switch to online if COD not allowed
+                  if (district && !district.isCODAvailable) {
+                    setPaymentMethod("online");
+                  }
                 }}
               >
                 <option value="">Select District</option>
@@ -232,6 +257,47 @@ const CheckoutPageComponent = () => {
                 />
               </div>
             </div>
+
+            {/* payment method */}
+            <div className="space-y-4 pt-6 border-t border-gray-200">
+              <h4 className="text-sm font-bold uppercase tracking-wide">
+                Payment Method
+              </h4>
+
+              {/* Cash on Delivery */}
+              <label
+                className={`flex items-center gap-3 cursor-pointer ${
+                  !isCODAvailable ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  checked={paymentMethod === "cod"}
+                  disabled={!isCODAvailable}
+                  onChange={() => setPaymentMethod("cod")}
+                />
+                <span className="text-sm">
+                  Cash on Delivery
+                  {!isCODAvailable && (
+                    <span className="block text-xs text-red-500">
+                      Not available in this district
+                    </span>
+                  )}
+                </span>
+              </label>
+
+              {/* Pay Now */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="payment"
+                  checked={paymentMethod === "online"}
+                  onChange={() => setPaymentMethod("online")}
+                />
+                <span className="text-sm">Pay Now</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -256,6 +322,7 @@ const CheckoutPageComponent = () => {
                 )
               }
               handleConfirmOrder={handleConfirmOrder}
+              paymentMethod={paymentMethod}
             />
           </aside>
         )}
@@ -267,13 +334,14 @@ const CheckoutPageComponent = () => {
             <h3 className="text-lg font-bold">Confirm Your Order</h3>
             <div className="space-y-2 text-sm">
               <p>
-                <span className="font-medium">Name:</span> {name}
+                <span className="font-medium">Name:</span> {address.name}
               </p>
               <p>
-                <span className="font-medium">Phone:</span> +880{phone}
+                <span className="font-medium">Phone:</span> +880{address.phone}
               </p>
               <p>
-                <span className="font-medium">Address:</span> {address}
+                <span className="font-medium">Address:</span>{" "}
+                {address.fullAddress}
               </p>
               <p>
                 <span className="font-medium">Subtotal:</span> <TakaIcon />{" "}
@@ -290,16 +358,20 @@ const CheckoutPageComponent = () => {
             <div className="flex justify-end gap-2 mt-4">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100"
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handlePlaceOrder}
                 disabled={placingOrder}
-                className="px-4 py-2 bg-[#4a5568] text-white rounded-lg text-sm hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-[#4a5568] text-white rounded-lg text-sm hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                {placingOrder ? "Placing..." : "Place Order"}
+                {placingOrder
+                  ? "Placing..."
+                  : paymentMethod === "cod"
+                    ? "Place Order"
+                    : "Proceed to payment"}
               </button>
             </div>
           </div>

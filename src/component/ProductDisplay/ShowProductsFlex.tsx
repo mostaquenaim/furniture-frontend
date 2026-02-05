@@ -22,9 +22,10 @@ const ShowProductsFlex = ({
   products,
   isLoading,
 }: ShowProductType) => {
-  console.log("ShowProductsFlex", products);
+  // console.log("ShowProductsFlex", products);
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
+
   return (
     <div className={`${maxWidth || ""} relative`}>
       <Swiper
@@ -113,6 +114,7 @@ const ShowProductsFlex = ({
                 </SwiperSlide>
               ))}
       </Swiper>
+
       {/* Custom Navigation Buttons */}
       <div className="absolute bottom-4 right-4 z-10 hidden md:flex gap-3">
         <button
@@ -147,6 +149,7 @@ const ShowProductsFlex = ({
           </svg>
         </button>
       </div>
+
       <style jsx>{`
         .swiper-pagination {
           bottom: 0 !important;
