@@ -4,7 +4,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
-import { Star, ChevronRight, ChevronLeft, Truck, Plus } from "lucide-react";
+import {
+  Star,
+  ChevronRight,
+  ChevronLeft,
+  Truck,
+  Plus,
+  StarHalf,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
@@ -65,14 +72,36 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           {ratingCount} Review{ratingCount > 1 ? "s" : ""}
         </p>
         <div className="flex gap-0.5 text-[#eeb012]">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              size={16}
-              fill={i < Math.round(averageRating) ? "currentColor" : "none"}
-              stroke="currentColor"
-            />
-          ))}
+          {[...Array(5)].map((_, i) => {
+            const starValue = i + 1;
+
+            if (averageRating >= starValue) {
+              // full star
+              return (
+                <Star
+                  key={i}
+                  size={16}
+                  fill="currentColor"
+                  stroke="currentColor"
+                />
+              );
+            }
+
+            if (averageRating >= starValue - 0.5) {
+              // half star
+              return (
+                <StarHalf
+                  key={i}
+                  size={16}
+                  fill="currentColor"
+                  stroke="currentColor"
+                />
+              );
+            }
+
+            // empty star
+            return <Star key={i} size={16} fill="none" stroke="currentColor" />;
+          })}
         </div>
       </div>
 
@@ -504,10 +533,39 @@ export default function ShowEachProduct() {
             {product.title}
           </h1>
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex text-yellow-500">
-              {[...Array(5)]?.map((_, i) => (
-                <Star key={i} size={14} fill="currentColor" />
-              ))}
+            <div className="flex gap-0.5 text-[#eeb012]">
+              {[...Array(5)].map((_, i) => {
+                const starValue = i + 1;
+
+                if (averageRating >= starValue) {
+                  // full star
+                  return (
+                    <Star
+                      key={i}
+                      size={16}
+                      fill="currentColor"
+                      stroke="currentColor"
+                    />
+                  );
+                }
+
+                if (averageRating >= starValue - 0.5) {
+                  // half star
+                  return (
+                    <StarHalf
+                      key={i}
+                      size={16}
+                      fill="currentColor"
+                      stroke="currentColor"
+                    />
+                  );
+                }
+
+                // empty star
+                return (
+                  <Star key={i} size={16} fill="none" stroke="currentColor" />
+                );
+              })}
             </div>
             <span
               // href="#review"
@@ -519,7 +577,7 @@ export default function ShowEachProduct() {
               }}
               className="text-xs text-blue-600 underline cursor-pointer"
             >
-              0 Reviews
+              {ratingCount || "No"} Review{ratingCount > 1 ? "s" : ""}
             </span>
           </div>
           <div className="flex items-baseline gap-3 mb-8">

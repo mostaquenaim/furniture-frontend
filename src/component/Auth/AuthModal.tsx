@@ -188,7 +188,7 @@ export default function AuthModal({
       // console.log(res.data);
       setReceivedOtp(res.data.otpDetails);
 
-      // console.log(res, "resubhsdfnpp");
+      // console.log(res.data, "resubhsdfnpp");
 
       const data = res.data;
 
@@ -279,7 +279,6 @@ export default function AuthModal({
       });
 
       setReceivedOtp(res.data.otpDetails);
-
       const data = res.data;
 
       if (data.otpSentTo) {
@@ -376,7 +375,7 @@ export default function AuthModal({
       );
 
       // console.log(otpSent,'otpsent');
-      setReceivedOtp(otpSent.data)
+      setReceivedOtp(otpSent.data);
 
       // console.log(otpSent,'otpSent');
       toast.success(
