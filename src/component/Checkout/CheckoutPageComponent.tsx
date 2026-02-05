@@ -37,9 +37,9 @@ const CheckoutPageComponent = () => {
     refetch,
   } = useFetchCarts({ isSummary: true });
 
-  useEffect(()=>{
-    refetch()
-  },[refetch])
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const subtotal = Number(cart?.subtotalAtAdd ?? 0);
   const handlingSurcharge = 0;
@@ -114,34 +114,39 @@ const CheckoutPageComponent = () => {
   };
 
   const handlePlaceOrder = async () => {
+    if (!cart?.id) {
+      toast.error("Cart not found");
+      return;
+    }
+
+    if (!address) {
+      toast.error("Please select a delivery address");
+      return;
+    }
+
     try {
       setPlacingOrder(true);
 
-      console.log(cart?.id, address, paymentMethod);
-
       if (paymentMethod === "cod") {
-        // COD → place order directly
-        await axiosSecure.post(`/orders/create`, {
-          cartId: cart?.id,
+        const { data } = await axiosSecure.post(`/orders/create`, {
+          cartId: cart.id,
           address,
           paymentMethod: "COD",
         });
 
+        // expect backend to return orderId
+        const orderId = data?.orderId;
+
         toast.success("Order placed successfully!");
-        router.push("/checkout/success");
+
+        // pass orderId → SUCCESS PAGE
+        router.replace(`/checkout/success?orderId=${orderId}`);
         return;
       }
 
-      // ONLINE PAYMENT → create payment session
-      // const { data } = await axiosSecure.post(`/payment/sslcommerz/init`, {
-      //   cartId: cart?.id,
-      //   address,
-      // });
-
-      // // SSLCommerz will return a redirect URL
-      // window.location.href = data.GatewayPageURL;
+      // ONLINE PAYMENT FLOW (later)
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Payment failed");
+      toast.error(error?.response?.data?.message || "Order failed");
     } finally {
       setPlacingOrder(false);
     }
