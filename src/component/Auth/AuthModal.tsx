@@ -43,6 +43,8 @@ export default function AuthModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [otp, setOtp] = useState("");
+  const [receivedOtp, setReceivedOtp] = useState("");
+
   const [verificationTarget, setVerificationTarget] = useState<
     "email" | "phone"
   >("email");
@@ -183,6 +185,9 @@ export default function AuthModal({
         withCredentials: true,
       });
 
+      // console.log(res.data);
+      setReceivedOtp(res.data.otpDetails);
+
       // console.log(res, "resubhsdfnpp");
 
       const data = res.data;
@@ -272,6 +277,8 @@ export default function AuthModal({
       const res = await axiosPublic.post("/auth/register", payload, {
         withCredentials: true,
       });
+
+      setReceivedOtp(res.data.otpDetails);
 
       const data = res.data;
 
@@ -367,6 +374,9 @@ export default function AuthModal({
           ? { emailOrPhone: mobileNumber, type: "phone" }
           : { emailOrPhone: email, type: "email" },
       );
+
+      // console.log(otpSent,'otpsent');
+      setReceivedOtp(otpSent.data)
 
       // console.log(otpSent,'otpSent');
       toast.success(
@@ -843,7 +853,7 @@ export default function AuthModal({
                 OTP Verification
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Enter the OTP sent to your{" "}
+                Enter the OTP {receivedOtp && receivedOtp} sent to your{" "}
                 <span className="font-semibold italic">
                   {verificationTarget}
                 </span>
