@@ -46,7 +46,7 @@ export default function CheckoutSuccessPage() {
         {/* Actions */}
         <div className="flex flex-col gap-3">
           <button
-            onClick={() => router.push("/orders")}
+            onClick={() => router.push("/dashboard?activeItem=orders")}
             className="w-full border border-neutral-800 py-2.5 text-sm tracking-wide text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
           >
             VIEW MY ORDERS
