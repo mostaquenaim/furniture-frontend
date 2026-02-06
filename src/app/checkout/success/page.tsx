@@ -1,9 +1,12 @@
 import CheckoutSuccessPage from "@/component/Checkout/CheckoutSuccessComp";
+import { Suspense } from "react";
 
 const CheckoutSuccess = () => {
   return (
     <div>
-      <CheckoutSuccessPage />
+      <Suspense>
+        <CheckoutSuccessPage />
+      </Suspense>
     </div>
   );
 };
