@@ -11,6 +11,7 @@ import {
   Truck,
   Plus,
   StarHalf,
+  Heart,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
@@ -33,6 +34,7 @@ import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview";
 import { devLog } from "@/utils/devlog";
 import { getVisitorId } from "@/utils/visitor";
+import useIsWished from "@/hooks/Wish/useIsWished";
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -188,10 +190,11 @@ export default function ShowEachProduct() {
     slug: slug,
   });
 
-  // devLog(reviewsData, "reviews");
-
-  // console.log(carts, "all cart items");
-  // console.log(product, "productproduct");
+  const {
+    isLoading: isWishLoading,
+    isWished,
+    refetch: wishRefetch,
+  } = useIsWished(slug);
 
   const router = useRouter();
   // State for selections
@@ -397,9 +400,35 @@ export default function ShowEachProduct() {
     router.push("/cart");
   };
 
+  const handleToggleWish = async () => {
+    if (isAuthenticated()) {
+      try {
+        const res = await axiosSecure.patch(`wishlist/toggle/${product?.id}`);
+        wishRefetch();
+        // console.log(res.data);
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          console.error(
+            (err.response?.data as { message?: string })?.message ||
+              "Failed to add wish",
+          );
+        } else if (err instanceof Error) {
+          console.error(err.message);
+        } else {
+          console.error("Failed to add wish");
+        }
+      }
+      // finally {
+      //   setIsLoading(false);
+      // }
+    } else {
+      router.push(`/login?redirect=/products/${slug}`);
+    }
+  };
+
   if (isLoading)
     return (
-      <div className="p-20 text-center animate-pulse">Loading {slug}...</div>
+      <div className="p-20 text-center animate-pulse">Loading Product</div>
     );
   if (!product)
     return <div className="p-20 text-center">Product Not Found</div>;
@@ -502,12 +531,22 @@ export default function ShowEachProduct() {
                   <img
                     src={img.image}
                     alt="thumbnail"
-                    className="w-full aspect-[4/5] object-cover"
+                    className="w-full aspect-4/5 object-cover"
                   />
                 </button>
               ))}
           </div>
           <div className="flex-1 relative aspect-4/5 bg-gray-100 overflow-hidden">
+            <Heart
+              onClick={handleToggleWish}
+              className={`
+    absolute top-10 right-4 z-40 cursor-pointer
+    transition-colors duration-200
+    ${isWished ? "fill-red-500 stroke-red-500" : "fill-black stroke-white hover:fill-red-500"}
+  `}
+              strokeWidth={2}
+            />
+
             <img
               src={
                 (displayImages &&

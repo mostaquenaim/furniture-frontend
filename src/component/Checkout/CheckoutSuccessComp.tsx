@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { CheckCircle } from "lucide-react";
+import { Check } from "lucide-react";
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
@@ -10,36 +10,51 @@ export default function CheckoutSuccessPage() {
   const orderId = searchParams.get("orderId");
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center bg-white p-8 rounded-xl shadow-sm border">
-        <CheckCircle className="mx-auto text-green-600" size={56} />
+    <div className="min-h-[80vh] flex items-center justify-center bg-[#faf8f6] px-4">
+      <div className="w-full max-w-lg bg-white px-10 py-14 text-center shadow-[0_10px_40px_rgba(0,0,0,0.05)]">
+        {/* Icon */}
+        <div className="flex justify-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-neutral-300">
+            <Check size={22} className="text-neutral-800" />
+          </div>
+        </div>
 
-        <h1 className="mt-4 text-xl font-semibold">
-          Order placed successfully
+        {/* Heading */}
+        <h1 className="mt-6 font-serif text-2xl tracking-wide text-neutral-900">
+          Thank you for your order
         </h1>
 
-        <p className="mt-2 text-sm text-gray-600">
-          Thank you for your order. We’ll contact you shortly for confirmation.
+        {/* Subtext */}
+        <p className="mt-3 text-sm leading-relaxed text-neutral-600">
+          Your order has been received and is being reviewed. Our team will
+          contact you shortly to confirm the details.
         </p>
 
+        {/* Order ID */}
         {orderId && (
-          <p className="mt-3 text-sm">
-            <span className="text-gray-500">Order ID:</span>{" "}
-            <span className="font-medium">{orderId}</span>
+          <p className="mt-5 text-xs tracking-wider text-neutral-500">
+            ORDER NUMBER
+            <span className="block mt-1 text-sm font-medium text-neutral-800">
+              {orderId}
+            </span>
           </p>
         )}
 
-        <div className="mt-6 flex flex-col gap-3">
+        {/* Divider */}
+        <div className="my-8 h-px w-full bg-neutral-200" />
+
+        {/* Actions */}
+        <div className="flex flex-col gap-3">
           <button
             onClick={() => router.push("/orders")}
-            className="w-full rounded-md bg-black text-white py-2 text-sm hover:opacity-90"
+            className="w-full border border-neutral-800 py-2.5 text-sm tracking-wide text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
           >
-            View My Orders
+            VIEW MY ORDERS
           </button>
 
           <button
             onClick={() => router.push("/")}
-            className="w-full rounded-md border py-2 text-sm hover:bg-gray-50"
+            className="w-full py-2.5 text-sm tracking-wide text-neutral-600 transition hover:text-neutral-900"
           >
             Continue Shopping
           </button>

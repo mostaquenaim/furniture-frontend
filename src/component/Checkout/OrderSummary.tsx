@@ -77,9 +77,9 @@ const OrderSummary = ({
   // handle checkout
   const handleCheckout = () => {
     if (isAuthenticated()) {
-      router.push(`checkout/shipping-address`);
+      router.push(`/checkout/shipping-address`);
     } else {
-      router.push("login?redirect=/cart");
+      router.push("/login?redirect=/cart");
     }
   };
 
