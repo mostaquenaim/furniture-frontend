@@ -71,6 +71,15 @@ export interface PaginatedOrdersResponse<T = ThumbOrder | FullOrder> {
     limit: number;
     totalPages: number;
   };
+  statusCounts: {
+    CANCELLED: number;
+    CONFIRMED: number;
+    DELIVERED: number;
+    PACKED: number;
+    PENDING: number;
+    RETURNED: number;
+    SHIPPED: number;
+  };
 }
 
 export interface GetAllOrdersOptions {

@@ -491,36 +491,6 @@ export default function SeriesWiseProducts() {
           No products found in this series
         </div>
       ) : null}
-      {/* Pagination - Mobile */}
-      {!isLoading && totalPages > 1 && (
-        <div className="md:hidden flex justify-center items-center gap-4 mt-12">
-          <button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            className={`p-2 ${
-              currentPage === 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-black"
-            }`}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <span className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className={`p-2 ${
-              currentPage === totalPages
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-black"
-            }`}
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-      )}
       {/* Pagination bottom */}
       {!isLoading && totalPages > 1 && (
         <BottomPagination

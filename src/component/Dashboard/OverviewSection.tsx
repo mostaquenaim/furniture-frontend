@@ -62,7 +62,7 @@ const OverviewSection: React.FC<OverviewSectionProps> = ({
           <div className="flex items-center justify-between mb-3">
             <Clock className="w-10 h-10 text-gray-400" />
             <span className="text-3xl font-light">
-              {orders?.data.filter((o) => o.status === "PENDING").length}
+              {orders?.statusCounts.PENDING}
             </span>
           </div>
           <p className="text-sm text-gray-600 font-medium">Processing</p>
@@ -72,7 +72,7 @@ const OverviewSection: React.FC<OverviewSectionProps> = ({
           <div className="flex items-center justify-between mb-3">
             <Truck className="w-10 h-10 text-gray-400" />
             <span className="text-3xl font-light">
-              {orders?.data.filter((o) => o.status === "PACKED").length}
+              {orders?.statusCounts.PACKED}
             </span>
           </div>
           <p className="text-sm text-gray-600 font-medium">In Transit</p>
@@ -124,7 +124,7 @@ const OverviewSection: React.FC<OverviewSectionProps> = ({
                   </div>
                   <div className="flex items-center justify-between mt-4">
                     <p className="text-sm text-gray-600">
-                      {order.itemCount} item{order.itemCount > 1 ? "s" : ""}
+                      {order.itemCount} item{order.itemCount && order.itemCount > 1 ? "s" : ""}
                     </p>
                     <p className="font-medium">
                       ৳{order.total.toLocaleString()}

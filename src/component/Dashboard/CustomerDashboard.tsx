@@ -28,6 +28,7 @@ import { toast } from "react-hot-toast";
 import useOrders, { GetAllOrdersOptions } from "@/hooks/Order/useOrders";
 import OverviewSection from "./OverviewSection";
 import OrdersSection from "./OrderSection";
+import { devLog } from "@/utils/devlog";
 
 interface NavItem {
   id: string;
@@ -123,6 +124,8 @@ const CustomerDashboard = () => {
   });
 
   const { orders, refetch } = useOrders(orderOptions);
+
+  devLog(orders, "orderss");
 
   const [activeItem, setActiveItem] = useState("overview");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
