@@ -32,6 +32,7 @@ import { devLog } from "@/utils/devlog";
 import Link from "next/link";
 import Track from "./Sections/Track";
 import EditProfile from "./Sections/EditProfile";
+import ChangePass from "./Sections/ChangePass";
 
 interface NavItem {
   id: string;
@@ -136,6 +137,7 @@ const CustomerDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [profileData, setProfileData] = useState({ name: "", phone: "" });
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -166,6 +168,7 @@ const CustomerDashboard = () => {
         <LoadingDots />
       </FullScreenCenter>
     );
+
   if (!user) return <FullScreenCenter>User not found</FullScreenCenter>;
 
   const handleLogout = () => {
@@ -333,7 +336,12 @@ const CustomerDashboard = () => {
             />
           )}
           {activeItem === "track" && <Track />}
-          {activeItem === "profile" && <EditProfile />}
+          {activeItem === "profile" && (
+            <EditProfile user={user} loading={loading} />
+          )}
+          {activeItem === "password" && (
+            <ChangePass user={user} loading={loading} />
+          )}
           {/* {activeItem === "profile" && (
             <ProfileSection
               profileData={profileData}

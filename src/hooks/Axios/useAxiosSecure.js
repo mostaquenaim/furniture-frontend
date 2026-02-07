@@ -10,7 +10,7 @@ const axiosSecure = axios.create({
 });
 
 const useAxiosSecure = () => {
-  const { token, logout } = useAuth();
+  const { token, logout, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const useAxiosSecure = () => {
       (config) => {
         // Get fresh token from localStorage in case context hasn't updated yet
         const currentToken = token || localStorage.getItem("token");
-        
+
         if (currentToken) {
           config.headers.Authorization = `Bearer ${currentToken}`;
         }
@@ -40,15 +40,15 @@ const useAxiosSecure = () => {
 
           // IMPORTANT: Only clear auth if the token is actually invalid
           // Check if this is an auth endpoint or token refresh endpoint
-          const isAuthEndpoint = originalRequest.url?.includes('/auth/');
-          
+          const isAuthEndpoint = originalRequest.url?.includes("/auth/");
+
           // If it's NOT an auth endpoint (like /auth/login), then the token is invalid
           if (!isAuthEndpoint) {
             console.warn("Unauthorized request - clearing session");
-            
+
             // Use the logout function from context to properly clear everything
             logout();
-            
+
             // Optionally redirect to login
             // router.push('/login');
           }
@@ -63,7 +63,7 @@ const useAxiosSecure = () => {
       axiosSecure.interceptors.request.eject(requestInterceptor);
       axiosSecure.interceptors.response.eject(responseInterceptor);
     };
-  }, [token, logout, router]);
+  }, [token, logout, router, loading]);
 
   return axiosSecure;
 };
