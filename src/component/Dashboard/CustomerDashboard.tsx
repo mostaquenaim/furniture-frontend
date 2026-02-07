@@ -26,9 +26,12 @@ import { FullScreenCenter } from "../Screen/FullScreenCenter";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { toast } from "react-hot-toast";
 import useOrders, { GetAllOrdersOptions } from "@/hooks/Order/useOrders";
-import OverviewSection from "./OverviewSection";
-import OrdersSection from "./OrderSection";
+import OverviewSection from "./Sections/OverviewSection";
+import OrdersSection from "./Sections/OrderSection";
 import { devLog } from "@/utils/devlog";
+import Link from "next/link";
+import Track from "./Sections/Track";
+import EditProfile from "./Sections/EditProfile";
 
 interface NavItem {
   id: string;
@@ -61,7 +64,7 @@ const getStatusColor = (status: string) => {
   switch (status) {
     case "DELIVERED":
       return "text-green-600 bg-green-50";
-    case "PACKED":
+    case "SHIPPED":
       return "text-blue-600 bg-blue-50";
     case "PENDING":
       return "text-amber-600 bg-amber-50";
@@ -76,7 +79,7 @@ const getStatusIcon = (status: string) => {
   switch (status) {
     case "DELIVERED":
       return <CheckCircle2 className="w-4 h-4" />;
-    case "PACKED":
+    case "SHIPPED":
       return <Truck className="w-4 h-4" />;
     case "PENDING":
       return <Clock className="w-4 h-4" />;
@@ -91,14 +94,15 @@ const getStatusIcon = (status: string) => {
 const SidebarButton = ({
   item,
   activeItem,
-  onClick,
+  // onClick,
 }: {
   item: NavItem;
   activeItem: string;
-  onClick: (id: string) => void;
+  // onClick: (id: string) => void;
 }) => (
-  <button
-    onClick={() => onClick(item.id)}
+  <Link
+    href={`/dashboard?activeItem=${item.id}`}
+    // onClick={() => onClick(item.id)}
     className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition text-sm ${
       activeItem === item.id
         ? "bg-gray-900 text-white"
@@ -106,7 +110,7 @@ const SidebarButton = ({
     }`}
   >
     {item.icon} <span className="font-medium">{item.label}</span>
-  </button>
+  </Link>
 );
 
 const CustomerDashboard = () => {
@@ -245,7 +249,7 @@ const CustomerDashboard = () => {
                 key={item.id}
                 item={item}
                 activeItem={activeItem}
-                onClick={setActiveItem}
+                // onClick={setActiveItem}
               />
             ))}
           </nav>
@@ -293,7 +297,7 @@ const CustomerDashboard = () => {
                   key={item.id}
                   item={item}
                   activeItem={activeItem}
-                  onClick={setActiveItem}
+                  // onClick={setActiveItem}
                 />
               ))}
             </nav>
@@ -328,6 +332,8 @@ const CustomerDashboard = () => {
               setOrderOptions={setOrderOptions}
             />
           )}
+          {activeItem === "track" && <Track />}
+          {activeItem === "profile" && <EditProfile />}
           {/* {activeItem === "profile" && (
             <ProfileSection
               profileData={profileData}

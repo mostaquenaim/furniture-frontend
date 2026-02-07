@@ -6,6 +6,8 @@ import {
   ThumbOrder,
 } from "@/hooks/Order/useOrders";
 import React, { Dispatch, SetStateAction } from "react";
+import ChevronPagination from "../../Pagination/Pagination";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Order {
   orderId: string;
@@ -29,8 +31,8 @@ interface OrderSectionProps {
   options?: any;
   getStatusColor: (status: string) => string;
   getStatusIcon: (status: string) => React.ReactNode;
-  orderOptions: GetAllOrdersOptions,
-  setOrderOptions: Dispatch<SetStateAction<GetAllOrdersOptions>>
+  orderOptions: GetAllOrdersOptions;
+  setOrderOptions: Dispatch<SetStateAction<GetAllOrdersOptions>>;
 }
 
 const OrdersSection: React.FC<OrderSectionProps> = ({
@@ -90,26 +92,11 @@ const OrdersSection: React.FC<OrderSectionProps> = ({
       </div>
 
       {/* Pagination */}
-      {orders?.meta.totalPages && orders.meta.totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: orders.meta.totalPages }).map((_, idx) => {
-            const page = idx + 1;
-            return (
-              <button
-                key={page}
-                onClick={() => setOrderOptions({ ...orderOptions, page })}
-                className={`px-3 py-1 rounded border cursor-pointer ${
-                  orders?.meta.page === page
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-white text-gray-700 border-gray-300"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <ChevronPagination
+        currentPage={orders?.meta.page ?? 1}
+        totalPages={orders?.meta.totalPages ?? 1}
+        onPageChange={(page) => setOrderOptions({ ...orderOptions, page })}
+      />
     </div>
   );
 };

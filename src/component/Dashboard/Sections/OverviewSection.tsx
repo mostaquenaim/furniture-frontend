@@ -72,7 +72,7 @@ const OverviewSection: React.FC<OverviewSectionProps> = ({
           <div className="flex items-center justify-between mb-3">
             <Truck className="w-10 h-10 text-gray-400" />
             <span className="text-3xl font-light">
-              {orders?.statusCounts.PACKED}
+              {orders?.statusCounts.SHIPPED}
             </span>
           </div>
           <p className="text-sm text-gray-600 font-medium">In Transit</p>

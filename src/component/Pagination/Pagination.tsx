@@ -26,7 +26,7 @@ const ChevronPagination: React.FC<ChevronPaginationProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-4 justify-center mt-6">
+    <div className="flex items-center gap-4 justify-center mt-6 font-bold">
       <ChevronLeft
         size={18}
         className={`${
@@ -37,7 +37,7 @@ const ChevronPagination: React.FC<ChevronPaginationProps> = ({
         onClick={handlePrev}
       />
 
-      <span className="text-xs font-medium">
+      <span className="text-xs">
         {currentPage} / {totalPages}
       </span>
 

@@ -1,14 +1,16 @@
+import ChevronPagination from "@/component/Pagination/Pagination";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
 interface DisplayHeadingProps {
   name: string | undefined;
   isLoading: boolean;
   totalProducts: number;
   isSortOpen: boolean;
-  setIsSortOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsSortOpen: Dispatch<SetStateAction<boolean>>;
   selectedSort: string;
   handleSortChange: (sortName: string) => void;
-  setSelectedSort: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedSort: Dispatch<SetStateAction<string>>;
   sortData: {
     sortCategories: { name: string }[];
   };
@@ -16,6 +18,7 @@ interface DisplayHeadingProps {
   handlePrevPage: () => void;
   currentPage: number;
   totalPages: number;
+  setCurrentPage: Dispatch<SetStateAction<number>>;
 }
 
 const DisplayHeading = ({
@@ -31,6 +34,7 @@ const DisplayHeading = ({
   handleNextPage,
   handlePrevPage,
   currentPage,
+  setCurrentPage,
   totalPages,
 }: DisplayHeadingProps) => {
   return (
@@ -105,6 +109,8 @@ const DisplayHeading = ({
             onClick={handleNextPage}
           />
         </div>
+
+        
       </div>
     </div>
   );

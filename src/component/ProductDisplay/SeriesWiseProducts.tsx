@@ -272,6 +272,7 @@ export default function SeriesWiseProducts() {
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
         totalPages={totalPages}
       />
       {/* Filter Bar */}
