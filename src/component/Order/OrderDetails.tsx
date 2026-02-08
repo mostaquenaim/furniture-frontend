@@ -76,7 +76,7 @@ const OrderDetails = () => {
             Order #{order.orderNumber}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Placed on {new Date(order.createdAt).toLocaleDateString("en-GB")}
+            Placed on {order.orderDate}
           </p>
         </header>
 
@@ -110,7 +110,12 @@ const OrderDetails = () => {
                     Quantity: {item.quantity}
                   </p>
 
-                  <p className="text-sm mt-3">৳{item.price}</p>
+                  <p className="text-sm mt-3">
+                    ৳{item.price} × {item.quantity}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Subtotal: ৳{item.subtotal}
+                  </p>
                 </div>
               </div>
             ))}
@@ -127,7 +132,7 @@ const OrderDetails = () => {
             <div className="text-sm text-gray-700 leading-relaxed">
               <p>{order.shippingAddress?.name}</p>
               <p>{order.shippingAddress?.phone}</p>
-              <p>{order.shippingAddress?.fullAddress}</p>
+              <p>{order.shippingAddress?.address}</p>
               <p>{order.shippingAddress?.district}</p>
             </div>
           </div>
