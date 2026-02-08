@@ -25,7 +25,9 @@ const OrderDetails = () => {
 
     const fetchOrder = async () => {
       try {
-        const res = await axiosSecure.get(`orders/track/${orderId}?details=true`);
+        const res = await axiosSecure.get(
+          `orders/track/${orderId}?details=true`,
+        );
         console.log(res.data, "resdata - resdata");
         setOrder(res.data);
       } catch (err) {
@@ -71,7 +73,7 @@ const OrderDetails = () => {
             Order Details
           </p>
           <h1 className="text-2xl md:text-3xl font-serif italic text-[#262626]">
-            Order #{order.orderId}
+            Order #{order.orderNumber}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             Placed on {new Date(order.createdAt).toLocaleDateString("en-GB")}
@@ -102,9 +104,7 @@ const OrderDetails = () => {
                 />
 
                 <div className="flex-1">
-                  <h3 className="font-serif text-[15px]">
-                    {item.name}
-                  </h3>
+                  <h3 className="font-serif text-[15px]">{item.name}</h3>
 
                   <p className="text-xs text-gray-500 mt-1">
                     Quantity: {item.quantity}
@@ -125,12 +125,10 @@ const OrderDetails = () => {
               Shipping Address
             </h3>
             <div className="text-sm text-gray-700 leading-relaxed">
-              <p>{order.address?.name}</p>
-              <p>{order.address?.phone}</p>
-              <p>{order.address?.fullAddress}</p>
-              <p>
-                {order.address?.city}, {order.address?.district}
-              </p>
+              <p>{order.shippingAddress?.name}</p>
+              <p>{order.shippingAddress?.phone}</p>
+              <p>{order.shippingAddress?.fullAddress}</p>
+              <p>{order.shippingAddress?.district}</p>
             </div>
           </div>
 
@@ -148,7 +146,7 @@ const OrderDetails = () => {
 
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>৳{order.shippingFee}</span>
+                <span>৳{order.deliveryCharge}</span>
               </div>
 
               {order.discount > 0 && (
