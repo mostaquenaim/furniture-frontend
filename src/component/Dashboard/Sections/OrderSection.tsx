@@ -8,6 +8,7 @@ import {
 import React, { Dispatch, SetStateAction } from "react";
 import ChevronPagination from "../../Pagination/Pagination";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 interface Order {
   orderId: string;
@@ -58,7 +59,7 @@ const OrdersSection: React.FC<OrderSectionProps> = ({
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-medium mb-1">Order {order.orderId}</p>
+                    <Link href={`/order?orderId=${order.orderId}`} className="font-medium mb-1 hover:text-gray-400">Order {order.orderId}</Link>
                     <p className="text-sm text-gray-500">
                       {new Date(order.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
