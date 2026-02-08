@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronLeft,
   LogOut,
+  Heart,
 } from "lucide-react";
 import PromoBannerContainer from "./PromoBannerContainer";
 import type {
@@ -461,6 +462,16 @@ const Header = () => {
                     </>
                   )}
                 </div>
+
+                {/* wish icon */}
+                <Link
+                  href={"/wishlist"}
+                  className="relative text-gray-700 hover:text-amber-700 transition-colors"
+                >
+                  <Heart size={20} />
+                </Link>
+
+                {/* cart */}
                 <Link
                   href={"/cart"}
                   className="relative text-gray-700 hover:text-amber-700 transition-colors"

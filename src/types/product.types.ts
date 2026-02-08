@@ -19,6 +19,7 @@ export interface Product {
   productDetails: string | null;
   dimension: string | null;
   shippingReturn: string | null;
+  rating: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
