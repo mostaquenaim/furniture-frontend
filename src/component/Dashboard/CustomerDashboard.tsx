@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -17,6 +18,7 @@ import {
   ChevronRight,
   Home,
   HelpingHand,
+  Ticket,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { isAuthenticated } from "@/utils/auth";
@@ -33,6 +35,8 @@ import Link from "next/link";
 import Track from "./Sections/Track";
 import EditProfile from "./Sections/EditProfile";
 import ChangePass from "./Sections/ChangePass";
+import Support from "./Sections/Support";
+import Tickets from "./Sections/Tickets";
 
 interface NavItem {
   id: string;
@@ -58,6 +62,11 @@ const navigationItems: NavItem[] = [
     id: "support",
     label: "Help & Support",
     icon: <HelpingHand className="w-5 h-5" />,
+  },
+  {
+    id: "tickets",
+    label: "Open Tickets",
+    icon: <Ticket className="w-5 h-5" />,
   },
 ];
 
@@ -342,22 +351,8 @@ const CustomerDashboard = () => {
           {activeItem === "password" && (
             <ChangePass user={user} loading={loading} />
           )}
-          {/* {activeItem === "profile" && (
-            <ProfileSection
-              profileData={profileData}
-              setProfileData={setProfileData}
-              handleProfileUpdate={handleProfileUpdate}
-              isLoading={isLoading}
-            />
-          )}
-          {activeItem === "password" && (
-            <PasswordSection
-              passwordData={passwordData}
-              setPasswordData={setPasswordData}
-              handlePasswordChange={handlePasswordChange}
-              isLoading={isLoading}
-            />
-          )} */}
+          {activeItem === "support" && <Support />}
+          {activeItem === "tickets" && <Tickets />}
         </main>
       </div>
     </div>
