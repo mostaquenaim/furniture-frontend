@@ -2,31 +2,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { FetchProductsParams, Product } from "@/types/product.types";
 import useAxiosPublic from "../Axios/useAxiosPublic";
+import { BlogPost } from "@/types/blog";
+import { SubCategory } from "@/types/menu";
 
 export interface ProductsResponse {
   products: Product[];
-  blog: {
-    id: number;
-    title: string;
-    slug: string;
-    content: string;
-  } | null;
-  subCategory: {
-    id: number;
-    name: string;
-    slug: string;
-    category: {
-      id: number;
-      name: string;
-      slug: string;
-      series: {
-        id: number;
-        name: string;
-        slug: string;
-      } | null;
-    } | null;
-    categoryId: number;
-  } | null;
+  blog: BlogPost | null;
+  subCategory: SubCategory;
   meta: {
     total: number;
     page: number;
@@ -48,6 +30,21 @@ const useFetchSubcategoryWiseProducts = (
     if (params?.limit) cleanParams.limit = params.limit;
     if (params?.search) cleanParams.search = params.search;
 
+    // Fix: Use plural parameter names as expected by backend
+    if (params?.colorIds?.length)
+      cleanParams.colorIds = params.colorIds.join(",");
+    if (params?.materialIds?.length)
+      cleanParams.materialIds = params.materialIds.join(",");
+    if (params?.subCategoryIds?.length)
+      cleanParams.subCategoryIds = params.subCategoryIds.join(",");
+
+    if (params?.minPrice !== undefined) cleanParams.minPrice = params.minPrice;
+
+    if (params?.maxPrice !== undefined) cleanParams.maxPrice = params.maxPrice;
+
+    if (params?.sortBy) cleanParams.sortBy = params.sortBy;
+    if (params?.order) cleanParams.order = params.order;
+
     if (typeof params?.isActive === "boolean") {
       cleanParams.isActive = params.isActive;
     }
@@ -65,10 +62,16 @@ const useFetchSubcategoryWiseProducts = (
   const queryKey = [
     "subCatWiseProducts",
     subCategorySlug,
-    params?.page,
+     params?.page,
     params?.limit,
     params?.search,
     params?.isActive,
+    params?.colorIds?.join(","),
+    params?.materialIds?.join(","),
+    params?.minPrice,
+    params?.maxPrice,
+    params?.sortBy,
+    params?.order,
   ];
 
   const {

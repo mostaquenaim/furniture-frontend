@@ -18,9 +18,9 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
-import DisplayHeading from "./Heading/DisplayHeading";
-import EachProductShow from "./EachProductShow";
-import { QuickShopModal } from "./QuickShopModal";
+import DisplayHeading from "../Heading/DisplayHeading";
+import EachProductShow from "../EachProductShow";
+import { QuickShopModal } from "../QuickShopModal";
 
 const PRODUCTS_PER_PAGE = 18;
 

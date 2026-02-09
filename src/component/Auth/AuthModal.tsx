@@ -185,10 +185,9 @@ export default function AuthModal({
         withCredentials: true,
       });
 
-      // console.log(res.data);
       setReceivedOtp(res.data.otpDetails);
 
-      // console.log(res.data, "resubhsdfnpp");
+      console.log(res.data, "resubhsdfnpp");
 
       const data = res.data;
 
@@ -281,7 +280,7 @@ export default function AuthModal({
       setReceivedOtp(res.data.otpDetails);
       const data = res.data;
 
-      if (data.otpSentTo) {
+      if (data.status === 'OTP_REQUIRED') {
         setVerificationTarget(data.otpSentTo);
         toast.success(`OTP sent to your ${mobileNumber ? "phone" : "email"}`);
         handleView("otp-verification");

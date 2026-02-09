@@ -1,4 +1,4 @@
-import ProductTypeWiseProducts from "@/component/ProductDisplay/ProductTypeWiseProducts";
+import ProductTypeWiseProducts from "@/component/ProductDisplay/ByCategory/ProductTypeWiseProducts";
 
 const ProductTypePage = () => {
   return (

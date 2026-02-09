@@ -5,6 +5,7 @@ import { FetchProductsParams, Product } from "@/types/product.types";
 import useAxiosPublic from "../Axios/useAxiosPublic";
 import { SubCategory } from "@/types/menu";
 import { BlogPost } from "@/types/blog";
+import { devLog } from "@/utils/devlog";
 
 // Update or add this type
 interface SeriesProductResponse {
@@ -54,14 +55,14 @@ const useFetchSeriesWiseProducts = (
       cleanParams.isActive = params.isActive;
     }
 
-    console.log(cleanParams, "cleanParams");
+    devLog(cleanParams, "cleanParams");
 
     const response = await axiosPublic.get<SeriesProductResponse>(
       `/series/${seriesSlug}/products`,
       { params: cleanParams },
     );
 
-    console.log("series", response.data);
+    devLog("series", response.data);
 
     return response.data;
   };

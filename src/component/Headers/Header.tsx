@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/preserve-manual-memoization */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
@@ -27,7 +28,7 @@ import AuthModal from "../Auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import sampleData from "@/data/sampleData";
 import useFetchNavItems from "@/hooks/useFetchNavitems";
 import Link from "next/link";
@@ -315,9 +316,17 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
 
 // --- MAIN HEADER COMPONENT ---
 const Header = () => {
+  const pathname = usePathname();
+  const seriesSlugFromUrl = pathname.startsWith("/series/")
+    ? pathname.split("/")[2]
+    : null;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+
+  const derivedActiveNavItem = activeNavItem ?? seriesSlugFromUrl;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { cartCount, isLoading: isCartLoading } = useCartCount();
@@ -334,6 +343,11 @@ const Header = () => {
 
   // const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
+
+  useEffect(() => {
+    setActiveNavItem(null);
+    setHoveredItem(null);
+  }, [pathname]);
 
   //   Generate dynamic Mobile Content
   const mobileMenuContent = useMemo(() => {
@@ -359,7 +373,8 @@ const Header = () => {
 
   //   Generate dynamic Mega Menu Content (Desktop)
   const megaMenuContent = useMemo(() => {
-    const activeSeries = navItems.find((s) => s.slug === activeNavItem);
+    const activeSeries = navItems.find((s) => s.slug === derivedActiveNavItem);
+
     if (!activeSeries) return null;
 
     return activeSeries.categories?.map((cat) => ({
@@ -369,7 +384,7 @@ const Header = () => {
         href: `/product-type/${sub.slug}`,
       })),
     }));
-  }, [activeNavItem, navItems]);
+  }, [derivedActiveNavItem, navItems]);
 
   const handleAuthModal = () => {
     token ? router.push("/dashboard") : setIsModalOpen(true);
@@ -505,20 +520,21 @@ const Header = () => {
           {/* Desktop Full Navigation (unchanged for brevity) */}
           <nav className="hidden lg:flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
             {!isLoading &&
-              navItems.length > 0 &&
-              navItems?.map((item) => (
+              navItems.map((item) => (
                 <Link
                   key={item.id}
                   href={`/series/${item.slug}`}
-                  className={`font-semibold heading text-xs
-                  text-gray-700 transition-colors relative border-b-2 pb-4
-                  ${
-                    activeNavItem === item.slug
-                      ? "text-amber-700 font-semibold  border-amber-700 "
-                      : "hover:text-amber-700 border-transparent"
-                  }
-                `}
-                  onMouseEnter={() => setActiveNavItem(item.slug)}
+                  onMouseEnter={() => {
+                    setActiveNavItem(item.slug);
+                    setHoveredItem(item.slug);
+                  }}
+                  className={`font-semibold heading text-xs relative border-b-2 pb-4
+          ${
+            derivedActiveNavItem === item.slug
+              ? "text-amber-700 border-amber-700"
+              : "text-gray-700 hover:text-amber-700 border-transparent"
+          }
+        `}
                 >
                   {item.name}
                 </Link>
@@ -529,7 +545,7 @@ const Header = () => {
           {megaMenuContent && (
             <MegaMenu
               data={megaMenuContent}
-              image={navItems.find((s) => s.slug === activeNavItem)?.image}
+              image={navItems.find((s) => s.slug === hoveredItem)?.image}
             />
           )}
 

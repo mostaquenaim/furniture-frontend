@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 const DashboardPageComp = () => {

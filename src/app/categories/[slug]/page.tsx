@@ -1,4 +1,4 @@
-import CategoryWiseProduct from "@/component/ProductDisplay/CategoryWiseProduct";
+import CategoryWiseProduct from "@/component/ProductDisplay/ByCategory/CategoryWiseProduct";
 
 const CategoryWiseProductPage = () => {
   return (

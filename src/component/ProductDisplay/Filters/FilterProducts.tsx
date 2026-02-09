@@ -1,36 +1,19 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-img-element */
 "use client";
 import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
+import useFetchSeriesWiseSubcategories from "@/hooks/Categories/useFetchSeriesWiseSubcategories";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchMaterials from "@/hooks/useFetchMaterials";
-import { Product, ProductImage } from "@/types/product.types";
+import { SubCategory } from "@/types/menu";
 import {
   ChevronDown,
-  SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-  Heart,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
-import Head from "next/head";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import useFetchSeriesWiseProducts from "@/hooks/Products/useFetchSeriesWiseProducts";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import DisplayHeading from "./Heading/DisplayHeading";
-import BottomPagination from "../Pagination/BottomPagination";
-import EachProductShow from "./EachProductShow";
-import { QuickShopModal } from "./QuickShopModal";
-import { devLog } from "@/utils/devlog";
-import useFetchSeriesWiseSubcategories from "@/hooks/Categories/useFetchSeriesWiseSubcategories";
-
-const PRODUCTS_PER_PAGE = 18;
+import React, { Dispatch, SetStateAction, useState } from "react";
 
 type FilterDropdownProps = {
   type: string;
@@ -90,199 +73,70 @@ const FilterDropdown = ({
   );
 };
 
-export default function SeriesWiseProducts() {
-  const { slug } = useParams<{ slug: string }>();
-  const { subCategoryList: seriesWiseSubcategories } =
-    useFetchSeriesWiseSubcategories(slug);
-
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [filters, setFilters] = useState<{
+type FilterProps = {
+  slug: string;
+  setCurrentPage: Dispatch<SetStateAction<number>>;
+  filters: {
     colorIds?: number[];
     materialIds?: number[];
     subCategoryIds?: number[];
     minPrice?: number;
     maxPrice?: number;
-  }>({});
+  };
+  setFilters: Dispatch<
+    SetStateAction<{
+      colorIds?: number[];
+      materialIds?: number[];
+      subCategoryIds?: number[];
+      minPrice?: number;
+      maxPrice?: number;
+    }>
+  >;
+  subcategories?: SubCategory[];
+  handleSortChange: (sortValue: string) => void;
+  selectedSort: string;
+  totalProducts: number;
+};
+
+const FILTERS = [
+  "Color",
+  "Price",
+  "Material",
+];
+
+const FilterProducts = ({
+  slug,
+  setCurrentPage,
+  filters,
+  setFilters,
+  subcategories,
+  handleSortChange,
+  selectedSort,
+  totalProducts,
+}: FilterProps) => {
+  const { colors: colorsData, isLoading: isColorLoading } = useFetchColors();
+  const { materials: materialData, isLoading: isMaterialLoading } =
+    useFetchMaterials();
+  const { subCategoryList: seriesWiseSubcategories } =
+    useFetchSeriesWiseSubcategories(slug);
+
+  subcategories && FILTERS.push("Product Type");
 
   const [activeDesktopFilter, setActiveDesktopFilter] = useState<string | null>(
     null,
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isSortOpen, setIsSortOpen] = useState(false);
-  const [selectedSort, setSelectedSort] = useState(
-    sortData.sortCategories[0].name,
-  );
   const [activeFilterTab, setActiveFilterTab] = useState<string | null>(null);
-  const [hoveredFilter, setHoveredFilter] = useState<string | null>(null);
-  const [productImage, setProductImage] = useState("");
-  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
-  const [sortParams, setSortParams] = useState<{
-    sortBy?: string;
-    order?: "asc" | "desc";
-  }>({});
-
-  const {
-    products,
-    subcategories,
-    blog,
-    seriesName,
-    meta,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useFetchSeriesWiseProducts(slug, {
-    page: currentPage,
-    limit: PRODUCTS_PER_PAGE,
-
-    colorIds: filters.colorIds,
-    materialIds: filters.materialIds,
-    subCategoryIds: filters.subCategoryIds,
-    minPrice: filters.minPrice,
-    maxPrice: filters.maxPrice,
-    sortBy: sortParams.sortBy,
-    order: sortParams.order,
-  });
-
-  // console.log("useFetchSeriesWiseProducts", "products", products);
-
-  const { colors: colorsData, isLoading: isColorLoading } = useFetchColors();
-  const { materials, isLoading: isMaterialLoading } = useFetchMaterials();
-
-  const totalPages = meta?.totalPages || 1;
-  const totalProducts = meta?.total || 0;
-
-  useEffect(() => {
-    setCurrentPage(1);
-    devLog(filters, "filters");
-    // refetch();
-  }, [
-    filters.colorIds,
-    filters.materialIds,
-    filters.subCategoryIds,
-    filters.minPrice,
-    filters.maxPrice,
-    // refetch,
-  ]);
-
-  useEffect(() => {
-    if (isLoading) {
-      document.title = `Sakigai - Series`;
-    } else if (seriesName) {
-      document.title = `Sakigai - ${seriesName}`;
-    }
-  }, [isLoading, seriesName]);
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const getDisplayPrice = (product: Product) => {
-    if (!product.discount) return product.basePrice;
-
-    if (product.discountType === "PERCENT") {
-      return product.basePrice - (product.basePrice * product.discount) / 100;
-    }
-    return product.basePrice - product.discount;
-  };
-
-  const handleSortChange = (sortValue: string) => {
-    setSelectedSort(sortValue);
-    setCurrentPage(1);
-
-    switch (sortValue) {
-      // case "Relevance":
-      //   setSortParams({ sortBy: "createdAt", order: "asc" });
-      //   break;
-      case "Price: Low to High":
-        setSortParams({ sortBy: "price", order: "asc" });
-        break;
-      case "Price: High to Low":
-        setSortParams({ sortBy: "price", order: "desc" });
-        break;
-      case "Newest":
-        setSortParams({ sortBy: "createdAt", order: "desc" });
-        break;
-      case "Featured":
-        setSortParams({ sortBy: "featured", order: "desc" });
-        break;
-      case "Bestselling":
-        setSortParams({ sortBy: "sold", order: "desc" });
-        break;
-      case "Ratings":
-        setSortParams({ sortBy: "rating", order: "desc" });
-        break;
-      case "A–Z":
-        setSortParams({ sortBy: "title", order: "asc" });
-        break;
-      case "Z–A":
-        setSortParams({ sortBy: "title", order: "desc" });
-        break;
-      default:
-        setSortParams({});
-    }
-  };
-
-  const handleImageChange = (images: ProductImage[]) => {
-    // console.log(images, "imageeeeeees");
-    const sortedImages = images.sort((a, b) => a.serialNo - b.serialNo);
-
-    let secondImage = sortedImages[0].image;
-    if (images.length > 1) secondImage = sortedImages[1].image;
-
-    setProductImage(secondImage);
-    setHoveredProduct(sortedImages[0].productId);
-  };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-6 font-sans text-[#222222]">
-      {/* <Head>
-        <title>Sakigai - {seriesName}</title>
-      </Head> */}
-      {/* Breadcrumbs */}
-      {/* <nav className="text-xs mb-8 flex items-center gap-2 text-gray-500">
-          <span className="hover:underline cursor-pointer">Décor & Pillows</span>
-          <span>/</span>
-          <span className="text-black font-medium capitalize">
-            {slug?.replace(/-/g, " ")}
-          </span>
-        </nav> */}
-      {/* Header Section */}
-      <DisplayHeading
-        name={seriesName || slug?.replace(/-/g, " ")}
-        isLoading={isLoading}
-        totalProducts={totalProducts}
-        isSortOpen={isSortOpen}
-        setIsSortOpen={setIsSortOpen}
-        selectedSort={selectedSort}
-        handleSortChange={handleSortChange}
-        setSelectedSort={setSelectedSort}
-        sortData={sortData}
-        handleNextPage={handleNextPage}
-        handlePrevPage={handlePrevPage}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-      />
-      {/* Filter Bar */}
+    <div>
       <div className="mb-10">
         {/* Desktop Filters with Hover functionality */}
         <div className="hidden md:flex items-center gap-8 border-t border-gray-100 pt-4">
           {[
             { name: "Price", data: priceData.priceRanges },
             { name: "Color", data: colorsData },
-            { name: "Material", data: materials },
+            { name: "Material", data: materialData },
           ].map((filter) => (
             <div key={filter.name} className="relative">
               <button
@@ -402,7 +256,7 @@ export default function SeriesWiseProducts() {
 
           {/* Material chips */}
           {filters.materialIds?.map((id) => {
-            const material = materials?.find((m: any) => m.id === id);
+            const material = materialData?.find((m: any) => m.id === id);
             if (!material) return null;
 
             return (
@@ -422,7 +276,7 @@ export default function SeriesWiseProducts() {
             );
           })}
 
-          {/* Material chips */}
+          {/* subcategories */}
           {filters.subCategoryIds?.map((id) => {
             const subcat = subcategories?.find((m: any) => m.id === id);
             if (!subcat) return null;
@@ -476,37 +330,7 @@ export default function SeriesWiseProducts() {
         </div>
       )}
 
-      {/* Product Cards from API */}
-      {!isLoading && products && products.length > 0 ? (
-        <EachProductShow
-          products={products}
-          setSelectedProduct={setSelectedProduct}
-          getDisplayPrice={getDisplayPrice}
-          productImage={productImage}
-          hoveredProduct={hoveredProduct}
-          setProductImage={setProductImage}
-          setHoveredProduct={setHoveredProduct}
-        />
-      ) : !isLoading ? (
-        <div className="col-span-2 md:col-span-3 text-center py-20 text-gray-500">
-          No products found in this series
-        </div>
-      ) : null}
-      {/* Pagination bottom */}
-      {!isLoading && totalPages > 1 && (
-        <BottomPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          handlePrevPage={handlePrevPage}
-          handleNextPage={handleNextPage}
-        />
-      )}
-      {/* Loading overlay during fetching */}
-      {isFetching && !isLoading && (
-        <div className="fixed inset-0 bg-white/50 z-40 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
-      )}
+      {/* filters sidebar  */}
       {isFilterOpen && (
         <div className="fixed inset-0 z-50">
           <div
@@ -519,7 +343,7 @@ export default function SeriesWiseProducts() {
 
           <div className="absolute right-0 top-0 w-full sm:w-[420px] animate-filter-slide bg-[#FAF9F7] h-full flex flex-col">
             {/* Header */}
-            <div className="px-6 py-5 border-b text-center relative">
+            <div className="px-6 py-5 border-b border-gray-200 text-center relative">
               {activeFilterTab && (
                 <button
                   onClick={() => setActiveFilterTab(null)}
@@ -546,7 +370,7 @@ export default function SeriesWiseProducts() {
               {!activeFilterTab ? (
                 <>
                   {/* Sort Section (Pills) */}
-                  <div className="px-6 py-6 border-b">
+                  <div className="px-6 py-6 border-b border-gray-200">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-4 font-bold">
                       Sort By
                     </p>
@@ -573,14 +397,7 @@ export default function SeriesWiseProducts() {
 
                   {/* Main Category List */}
                   <div className="divide-y divide-gray-100">
-                    {[
-                      "Product Type",
-                      // "Rooms",
-                      // "In Stock",
-                      "Color",
-                      "Price",
-                      "Material",
-                    ]?.map((item) => (
+                    {FILTERS?.map((item) => (
                       <button
                         key={item}
                         onClick={() => setActiveFilterTab(item)}
@@ -635,7 +452,7 @@ export default function SeriesWiseProducts() {
                   {/* MATERIAL VIEW */}
                   {activeFilterTab === "Material" && (
                     <div className="grid grid-cols-2 gap-4">
-                      {materials?.map((material: any) => (
+                      {materialData?.map((material: any) => (
                         <label
                           key={material.id}
                           className="flex items-center gap-3 cursor-pointer group"
@@ -803,39 +620,8 @@ export default function SeriesWiseProducts() {
           </div>
         </div>
       )}
-      {/* Blog Section - Only show if blog exists */}
-      {blog && (
-        <div className="my-10 p-6 bg-linear-to-r from-blue-50 to-gray-50 border border-blue-100 rounded-lg">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <h4 className="text-xl font-light mb-3">{blog.title}</h4>
-              <div className="text-sm text-gray-600 mb-4 line-clamp-3 prose prose-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {blog?.content?.slice(0, 400)}
-                </ReactMarkdown>
-              </div>
-
-              <Link
-                href={`/blogs/${blog.slug}`}
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Read full article
-                <ChevronRight className="ml-1 w-4 h-4" />
-              </Link>
-            </div>
-            {/* <div className="text-xs text-gray-500 bg-white px-3 py-2 rounded border">
-              From our blog
-            </div> */}
-          </div>
-        </div>
-      )}
-      {/* Quick Shop Modal */}
-      {selectedProduct && (
-        <QuickShopModal
-          slug={selectedProduct.slug}
-          onClose={() => setSelectedProduct(null)}
-        />
-      )}
     </div>
   );
-}
+};
+
+export default FilterProducts;

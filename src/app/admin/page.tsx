@@ -1,11 +1,11 @@
-import React from 'react';
+import DashboardPageComp from "@/component/admin/Dashboard/DashboardPageComp";
 
 const AdminPage = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+  return (
+    <div>
+      <DashboardPageComp />
+    </div>
+  );
 };
 
 export default AdminPage;

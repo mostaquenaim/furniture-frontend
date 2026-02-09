@@ -1,4 +1,4 @@
-import SeriesWiseProducts from "@/component/ProductDisplay/SeriesWiseProducts";
+import SeriesWiseProducts from "@/component/ProductDisplay/ByCategory/SeriesWiseProducts";
 
 const SeriesWiseProductsPage = () => {
   return (
