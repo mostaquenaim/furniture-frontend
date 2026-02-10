@@ -28,7 +28,7 @@ const WishlistComponent = () => {
 
   const removeItem = async (id: number) => {
     try {
-      await axiosSecure.delete(`/wishlist/delete/${id}`);
+      await axiosSecure.patch(`/wishlist/toggle/${id}`);
       refetch();
       toast.success("Removed from your collection");
     } catch {
@@ -56,7 +56,7 @@ const WishlistComponent = () => {
     console.log("bulk - delete");
     try {
       await Promise.all(
-        selectedIds.map((id) => axiosSecure.delete(`/wishlist/delete/${id}`)),
+        selectedIds.map((id) => axiosSecure.patch(`/wishlist/toggle/${id}`)),
       );
 
       toast.success(`${selectedIds.length} items removed`);

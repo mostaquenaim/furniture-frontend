@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import {
   Search,
   Menu,
@@ -35,9 +35,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { MdDashboard } from "react-icons/md";
 import useCartCount from "@/hooks/Cart/useCartCount";
+import SearchComp from "./Search/SearchComp";
 
 // Desktop MegaMenu Component (Unchanged)
-const MegaMenu: React.FC<MegaMenuProps> = ({ data, image }) => {
+const MegaMenu: FC<MegaMenuProps> = ({ data, image }) => {
+  console.log(data, "mega-menu-data");
   const [seriesImage, setSeriesImage] = useState<string | null | undefined>(
     null,
   );
@@ -317,26 +319,49 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
 // --- MAIN HEADER COMPONENT ---
 const Header = () => {
   const pathname = usePathname();
-  const seriesSlugFromUrl = pathname.startsWith("/series/")
-    ? pathname.split("/")[2]
-    : null;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [activeNavItem, setActiveNavItem] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const derivedActiveNavItem = activeNavItem ?? seriesSlugFromUrl;
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const { cartCount, isLoading: isCartLoading } = useCartCount();
 
   const router = useRouter();
   // Generate dynamic Navigation Items (Series names)
 
   const { navItems, isLoading } = useFetchNavItems();
+
   // console.log(navItems);
   // const navItems = useMemo(() => navbarDetails?.map((s) => s?.name), [navbarDetails]);
+
+  const seriesSlugFromUrl = useMemo(() => {
+    // Case 1: /series/[slug]
+    if (pathname.startsWith("/series/")) {
+      return pathname.split("/")[2];
+    }
+
+    // Case 2: /product-type/[slug]
+    if (pathname.startsWith("/product-type/")) {
+      const productTypeSlug = pathname.split("/")[2];
+
+      // find which series owns this product-type
+      const matchedSeries = navItems.find((series) =>
+        series.categories?.some((cat) =>
+          cat.subCategories?.some((sub) => sub.slug === productTypeSlug),
+        ),
+      );
+
+      return matchedSeries?.slug ?? null;
+    }
+
+    return null;
+  }, [pathname, navItems]);
+
+  const derivedActiveNavItem = activeNavItem ?? seriesSlugFromUrl;
+
+  console.log(derivedActiveNavItem, "derivedActiveNavItem");
 
   const { token, logout, loading, setLoading } = useAuth();
   // console.log(token,'tokennn');
@@ -373,7 +398,7 @@ const Header = () => {
 
   //   Generate dynamic Mega Menu Content (Desktop)
   const megaMenuContent = useMemo(() => {
-    const activeSeries = navItems.find((s) => s.slug === derivedActiveNavItem);
+    const activeSeries = navItems.find((s) => s.slug === hoveredItem);
 
     if (!activeSeries) return null;
 
@@ -384,7 +409,7 @@ const Header = () => {
         href: `/product-type/${sub.slug}`,
       })),
     }));
-  }, [derivedActiveNavItem, navItems]);
+  }, [hoveredItem, navItems]);
 
   const handleAuthModal = () => {
     token ? router.push("/dashboard") : setIsModalOpen(true);
@@ -420,7 +445,10 @@ const Header = () => {
 
       <div
         className="border-b border-gray-200 sticky top-0 z-50 bg-white"
-        onMouseLeave={() => setActiveNavItem(null)}
+        onMouseLeave={() => {
+          setActiveNavItem(null);
+          setHoveredItem(null);
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col gap-3 lg:flex-row items-center justify-between mb-4">
@@ -438,16 +466,7 @@ const Header = () => {
 
             {/* Right Side Actions (unchanged for brevity) */}
             <div className="lg:w-fit w-full sm:gap-4 flex justify-between items-center">
-              <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-                <Search className="text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  className="bg-transparent border-none outline-none px-3 text-sm w-36 sm:w-48"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <SearchComp />
 
               <div className="flex items-center gap-4">
                 <div className="hidden lg:flex text-gray-700 hover:text-amber-700 transition-colors gap-2">
@@ -525,7 +544,6 @@ const Header = () => {
                   key={item.id}
                   href={`/series/${item.slug}`}
                   onMouseEnter={() => {
-                    setActiveNavItem(item.slug);
                     setHoveredItem(item.slug);
                   }}
                   className={`font-semibold heading text-xs relative border-b-2 pb-4
