@@ -18,6 +18,9 @@ import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCa
 import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
+import useFetchMaterials from "@/hooks/useFetchMaterials";
+
+type DiscountType = "PERCENT" | "FIXED";
 
 interface ProductFormData {
   title: string;
@@ -25,6 +28,7 @@ interface ProductFormData {
   sku?: string;
   basePrice: number;
   description?: string;
+  brand?: string;
   hasColorVariants: boolean;
   showColor: boolean;
   discountType?: "PERCENT" | "fixed";
@@ -38,6 +42,7 @@ interface ProductFormData {
 
   selectedColors: number[];
   variantId: number | null;
+  materialId?: number | null;
 
   note: string;
   deliveryEstimate: string;
@@ -45,6 +50,7 @@ interface ProductFormData {
   dimension: string;
   shippingReturn: string;
   isActive: boolean;
+  isFeatured: boolean;
 }
 
 interface SizeDetail {
@@ -108,6 +114,7 @@ const ProductAddLBL = () => {
     sku: "",
     basePrice: 0,
     description: "",
+    brand: "",
     hasColorVariants: true,
     showColor: true,
     discountType: "PERCENT",
@@ -121,6 +128,7 @@ const ProductAddLBL = () => {
 
     selectedColors: [],
     variantId: null,
+    materialId: null,
 
     note: "",
     deliveryEstimate: "3-5 business days",
@@ -128,6 +136,7 @@ const ProductAddLBL = () => {
     dimension: "",
     shippingReturn: defaultShippingReturn,
     isActive: true,
+    isFeatured: false,
   });
 
   // Hooks
@@ -135,6 +144,7 @@ const ProductAddLBL = () => {
   const { variants, isLoading: variantsLoading } = useFetchVariants();
   const { seriesList, isLoading: seriesLoading } = useFetchSeries();
 
+  const { materials, isLoading: isMaterialLoading } = useFetchMaterials();
   const { categoryList, isLoading: categoriesLoading } =
     useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
 
@@ -143,7 +153,7 @@ const ProductAddLBL = () => {
 
   // Get sizes for selected variant
   const selectedVariant = variants.find((v) => v.id === formData.variantId);
-  const availableSizes = selectedVariant?.sizes || [];
+  // const availableSizes = selectedVariant?.sizes || [];
 
   // Sizes state
   const [sizeSelections, setSizeSelections] = useState<{
@@ -159,29 +169,31 @@ const ProductAddLBL = () => {
     Record<number, boolean>
   >({});
 
-  // Initialize size selections when color is selected
+  // Reset size selections when variant changes
   useEffect(() => {
-    if (selectedVariant && formData.selectedColors.length > 0) {
-      const newSizeSelections = { ...sizeSelections };
-      let hasChanges = false;
+    if (!formData.variantId) return;
 
-      formData.selectedColors.forEach((colorId) => {
-        if (!newSizeSelections[colorId]) {
-          newSizeSelections[colorId] = availableSizes?.map((size) => ({
-            sizeId: size.id,
-            sku: "",
-            price: formData.basePrice || undefined,
-            quantity: 0,
-          }));
-          hasChanges = true;
-        }
-      });
+    const selectedVariant = variants.find((v) => v.id === formData.variantId);
+    if (!selectedVariant) return;
 
-      if (hasChanges) {
-        setSizeSelections(newSizeSelections);
-      }
-    }
-  }, [formData.selectedColors, selectedVariant, formData.basePrice]);
+    const newSizeSelections: { [colorId: number]: SizeDetail[] } = {};
+
+    formData.selectedColors.forEach((colorId) => {
+      newSizeSelections[colorId] = selectedVariant.sizes.map((size) => ({
+        sizeId: size.id,
+        sku: "",
+        price: formData.basePrice || undefined,
+        quantity: 0,
+      }));
+    });
+
+    setSizeSelections(newSizeSelections);
+  }, [
+    formData.variantId,
+    formData.selectedColors,
+    formData.basePrice,
+    variants,
+  ]);
 
   // Slug generation
   const generateSlug = (value: string) =>
@@ -515,6 +527,8 @@ const ProductAddLBL = () => {
         dimension: formData.dimension || undefined,
         shippingReturn: formData.shippingReturn || undefined,
         isActive: formData.isActive,
+        materialId: formData.materialId || undefined,
+        isFeatured: formData.isFeatured,
 
         // Subcategories connection
         subCategories: [...formData.selectedSubCategoryIds],
@@ -556,6 +570,7 @@ const ProductAddLBL = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* page header */}
         <PageHeader
           title="Add New Product"
           subtitle="Create a new product with all details"
@@ -944,6 +959,8 @@ const ProductAddLBL = () => {
                     const color = colors.find((c) => c.id === colorId);
                     const colorSizes = sizeSelections[colorId] || [];
 
+                    // console.log(colorSizes, "colorSizes");
+
                     return (
                       <div
                         key={colorId}
@@ -960,7 +977,7 @@ const ProductAddLBL = () => {
                         {colorSizes.length > 0 ? (
                           <div className="space-y-3">
                             {colorSizes?.map((sizeDetail, index) => {
-                              const size = availableSizes.find(
+                              const size = selectedVariant?.sizes?.find(
                                 (s) => s.id === sizeDetail.sizeId,
                               );
 
@@ -1058,6 +1075,53 @@ const ProductAddLBL = () => {
             description="Optional product information"
           >
             <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Material */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Material
+                  </label>
+                  <select
+                    value={formData.materialId || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        materialId: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      }))
+                    }
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
+         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">-- Select Material --</option>
+                    {materials?.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Featured toggle */}
+                <div className="flex items-center gap-2 col-span-1 md:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isFeatured}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isFeatured: e.target.checked,
+                      }))
+                    }
+                    id="isFeatured"
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="isFeatured" className="text-sm text-gray-700">
+                    Featured Product
+                  </label>
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Note (Internal)

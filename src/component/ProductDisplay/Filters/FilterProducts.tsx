@@ -98,11 +98,7 @@ type FilterProps = {
   totalProducts: number;
 };
 
-const FILTERS = [
-  "Color",
-  "Price",
-  "Material",
-];
+const FILTERS = ["Color", "Price", "Material"];
 
 const FilterProducts = ({
   slug,
@@ -120,7 +116,9 @@ const FilterProducts = ({
   const { subCategoryList: seriesWiseSubcategories } =
     useFetchSeriesWiseSubcategories(slug);
 
-  subcategories && FILTERS.push("Product Type");
+  if (subcategories && !FILTERS.includes("Product Type")) {
+    FILTERS.push("Product Type");
+  }
 
   const [activeDesktopFilter, setActiveDesktopFilter] = useState<string | null>(
     null,
