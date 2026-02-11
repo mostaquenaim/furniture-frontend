@@ -189,3 +189,8 @@ export interface Cart {
   items?: CartItem[];
   user?: User;
 }
+
+export type Tag = {
+  id: number;
+  name: string;
+};

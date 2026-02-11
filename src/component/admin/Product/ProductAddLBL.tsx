@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import { Save, X } from "lucide-react";
@@ -19,6 +20,8 @@ import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useFetchMaterials from "@/hooks/useFetchMaterials";
+import useFetchTags from "@/hooks/Tags/useFetchTags";
+import { Tag } from "@/types/product.types";
 
 type DiscountType = "PERCENT" | "FIXED";
 
@@ -105,6 +108,7 @@ Returns:
 
 const ProductAddLBL = () => {
   const router = useRouter();
+  const axiosSecure = useAxiosSecure();
   const [isLoading, setIsLoading] = useState(false);
 
   // Form state
@@ -151,6 +155,12 @@ const ProductAddLBL = () => {
   const { subCategoryList, isLoading: subCategoriesLoading } =
     useFetchSubCategoriesByCategoryIds(formData.selectedCategoryIds);
 
+  const { tags, refetch } = useFetchTags();
+
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
   // Get sizes for selected variant
   const selectedVariant = variants.find((v) => v.id === formData.variantId);
   // const availableSizes = selectedVariant?.sizes || [];
@@ -168,6 +178,14 @@ const ProductAddLBL = () => {
   const [colorUseDefault, setColorUseDefault] = useState<
     Record<number, boolean>
   >({});
+
+  const tagExists = tags.some(
+    (tag: any) => tag.name.toLowerCase() === searchTerm.toLowerCase(),
+  );
+
+  const filteredTags = tags.filter((tag: any) =>
+    tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   // Reset size selections when variant changes
   useEffect(() => {
@@ -204,6 +222,7 @@ const ProductAddLBL = () => {
       .replace(/--+/g, "-")
       .trim();
 
+  // name change
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     setFormData((prev) => ({
@@ -237,6 +256,7 @@ const ProductAddLBL = () => {
     });
   };
 
+  // category toggle
   const handleCategoryToggle = (categoryId: number) => {
     setFormData((prev) => {
       const isSelected = prev.selectedCategoryIds.includes(categoryId);
@@ -260,6 +280,7 @@ const ProductAddLBL = () => {
     });
   };
 
+  // subcategory toggle
   const handleSubCategoryToggle = (subCategoryId: number) => {
     setFormData((prev) => {
       const isSelected = prev.selectedSubCategoryIds.includes(subCategoryId);
@@ -270,6 +291,7 @@ const ProductAddLBL = () => {
     });
   };
 
+  // color toggle
   const handleColorToggle = (colorId: number) => {
     setFormData((prev) => {
       const isSelected = prev.selectedColors.includes(colorId);
@@ -294,6 +316,7 @@ const ProductAddLBL = () => {
     }
   };
 
+  // color image change
   const handleColorImagesChange = (
     colorId: number,
     images: ProductImageItem[],
@@ -301,6 +324,7 @@ const ProductAddLBL = () => {
     setColorImages((prev) => ({ ...prev, [colorId]: images }));
   };
 
+  // color use default change
   const handleColorUseDefaultChange = (
     colorId: number,
     useDefault: boolean,
@@ -332,6 +356,34 @@ const ProductAddLBL = () => {
     });
   };
 
+  // tags / add tag / remove tag / delete tag
+  const addTag = (tag: Tag) => {
+    if (selectedTags.length >= 10) return;
+
+    if (!selectedTags.find((t) => t.id === tag.id)) {
+      setSelectedTags((prev) => [...prev, tag]);
+    }
+  };
+
+  const removeTag = (id: number) => {
+    setSelectedTags((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleCreateTag = async () => {
+    if (!searchTerm.trim()) return;
+    if (selectedTags.length >= 10) return;
+
+    const res = await axiosSecure.post("tags", {
+      name: searchTerm.trim().toLowerCase(),
+    });
+
+    const newTag = res.data;
+
+    refetch();
+    setSelectedTags((prev) => [...prev, newTag]);
+    setSearchTerm("");
+  };
+
   // Get category/subcategory info for display
   const getSeriesName = (id: number) =>
     seriesList.find((s) => s.id === id)?.name || "";
@@ -339,8 +391,6 @@ const ProductAddLBL = () => {
     categoryList.find((c) => c.id === id)?.name || "";
   const getSubCategoryName = (id: number) =>
     subCategoryList.find((sc) => sc.id === id)?.name || "";
-
-  const axiosSecure = useAxiosSecure();
 
   // Image upload function
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
@@ -499,6 +549,8 @@ const ProductAddLBL = () => {
           return colorData;
         });
 
+      const finalTags = selectedTags.map((t) => t.id);
+      console.log(finalTags, "finalTags");
       // Prepare submit data
       const submitData = {
         title: formData.title,
@@ -529,6 +581,7 @@ const ProductAddLBL = () => {
         isActive: formData.isActive,
         materialId: formData.materialId || undefined,
         isFeatured: formData.isFeatured,
+        tags: finalTags,
 
         // Subcategories connection
         subCategories: [...formData.selectedSubCategoryIds],
@@ -574,7 +627,7 @@ const ProductAddLBL = () => {
         <PageHeader
           title="Add New Product"
           subtitle="Create a new product with all details"
-          backLink="/"
+          backLink="/admin"
         />
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -687,6 +740,7 @@ const ProductAddLBL = () => {
                 />
               </div>
 
+              {/* end date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   End Date
@@ -1102,25 +1156,59 @@ const ProductAddLBL = () => {
                     ))}
                   </select>
                 </div>
+              </div>
 
-                {/* Featured toggle */}
-                <div className="flex items-center gap-2 col-span-1 md:col-span-2">
+              <div
+                // onBlur={() => setShowDropdown(false)}
+                className="relative"
+              >
+                <div
+                  className="border rounded-md p-2 flex flex-wrap gap-2 cursor-text"
+                  onClick={() => setShowDropdown(true)}
+                >
+                  {selectedTags.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="bg-gray-200 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                    >
+                      {tag.name}
+                      <button onClick={() => removeTag(tag.id)}>×</button>
+                    </span>
+                  ))}
+
                   <input
-                    type="checkbox"
-                    checked={formData.isFeatured}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        isFeatured: e.target.checked,
-                      }))
-                    }
-                    id="isFeatured"
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    type="text"
+                    className="flex-1 outline-none text-sm"
+                    placeholder="Add tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => setShowDropdown(true)}
                   />
-                  <label htmlFor="isFeatured" className="text-sm text-gray-700">
-                    Featured Product
-                  </label>
                 </div>
+
+                {showDropdown && (
+                  <div className=" z-10 mt-1 w-full bg-white border rounded-md max-h-60 overflow-y-auto shadow">
+                    {filteredTags.map((tag: any) => (
+                      <div
+                        key={tag.id}
+                        onClick={() => addTag(tag)}
+                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+
+                    {/* Create Option */}
+                    {searchTerm && !tagExists && (
+                      <div
+                        onClick={handleCreateTag}
+                        className="px-3 py-2 text-sm text-blue-600 hover:bg-gray-100 cursor-pointer"
+                      >
+                        + Create "{searchTerm}"
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1219,24 +1307,41 @@ const ProductAddLBL = () => {
 
           {/* Status */}
           <FormSection title="Status">
-            <div className="flex items-center gap-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1 mb-0">
-                Product Status
-              </label>
-              <select
-                value={formData.isActive ? "1" : "0"}
+            <div className="flex items-center gap-2 col-span-1 md:col-span-2">
+              <input
+                type="checkbox"
+                checked={formData.isActive}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    isActive: e.target.value === "1",
+                    isActive: e.target.checked,
                   }))
                 }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
+                id="isFeatured"
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="isFeatured" className="text-sm text-gray-700">
+                Active (visible to customers)
+              </label>
+            </div>
+
+            {/* Featured toggle */}
+            <div className="flex items-center gap-2 col-span-1 md:col-span-2">
+              <input
+                type="checkbox"
+                checked={formData.isFeatured}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isFeatured: e.target.checked,
+                  }))
+                }
+                id="isFeatured"
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="isFeatured" className="text-sm text-gray-700">
+                Featured Product (show in featured product)
+              </label>
             </div>
           </FormSection>
 
@@ -1244,7 +1349,7 @@ const ProductAddLBL = () => {
           <div className="flex justify-end gap-3 pt-6">
             <button
               type="button"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/admin")}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-md
                border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
             >
