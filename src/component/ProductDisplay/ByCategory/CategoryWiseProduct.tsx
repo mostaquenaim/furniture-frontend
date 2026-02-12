@@ -12,7 +12,6 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-  Heart,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -89,7 +88,7 @@ export default function CategoryWiseProduct() {
     }, 150);
   };
 
-  const { products, meta, isLoading, isFetching, blog, subCategory } =
+  const { products, meta, isLoading, isFetching, subCategory } =
     useFetchSubcategoryWiseProducts(slug, {
       page: currentPage,
       limit: PRODUCTS_PER_PAGE,
@@ -181,6 +180,7 @@ export default function CategoryWiseProduct() {
         handleSortChange={handleSortChange}
         setSelectedSort={setSelectedSort}
         sortData={sortData}
+        setCurrentPage={setCurrentPage}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         currentPage={currentPage}

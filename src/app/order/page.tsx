@@ -1,9 +1,12 @@
 import OrderDetails from "@/component/Order/OrderDetails";
+import { Suspense } from "react";
 
 const OrderByIdPage = () => {
   return (
     <div>
-      <OrderDetails />
+      <Suspense>
+        <OrderDetails />
+      </Suspense>
     </div>
   );
 };

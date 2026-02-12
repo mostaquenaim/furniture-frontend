@@ -1,24 +1,32 @@
 "use client";
+
 import { usePathname } from "next/navigation";
-import Header from "./Header";
-import AdminDrawerTS from "./AdminDrawerTS";
 import { useAuth } from "@/context/AuthContext";
+import Header from "./Header";
+import AdminDrawerPro from "./AdminDrawerPro";
+import { AdminDrawerProvider } from "@/context/AdminContext";
+import AdminHeader from "./AdminHeader";
 
 const RoleBasedHeader = () => {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdminRoute = pathname?.startsWith("/admin");
+  const isAdmin = user?.role !== "CUSTOMER" && isAdminRoute;
 
-  return (
-    <>
-      {user && user.role != "CUSTOMER" && isAdmin ? (
-        <AdminDrawerTS />
-      ) : (
-        <Header />
-      )}
-    </>
-  );
+  // For admin routes, return the complete admin layout components
+  if (isAdmin) {
+    return null;
+    // (
+    //   <AdminDrawerProvider>
+    //     <AdminDrawerPro />
+    //     <AdminHeader />
+    //   </AdminDrawerProvider>
+    // );
+  }
+
+  // For non-admin routes, return the regular header
+  return <Header />;
 };
 
 export default RoleBasedHeader;

@@ -197,12 +197,14 @@ const ProductAddLBL = () => {
     const newSizeSelections: { [colorId: number]: SizeDetail[] } = {};
 
     formData.selectedColors.forEach((colorId) => {
-      newSizeSelections[colorId] = selectedVariant.sizes.map((size) => ({
-        sizeId: size.id,
-        sku: "",
-        price: formData.basePrice || undefined,
-        quantity: 0,
-      }));
+      if (selectedVariant.sizes) {
+        newSizeSelections[colorId] = selectedVariant.sizes.map((size) => ({
+          sizeId: size.id,
+          sku: "",
+          price: formData.basePrice || undefined,
+          quantity: 0,
+        }));
+      }
     });
 
     setSizeSelections(newSizeSelections);

@@ -48,13 +48,9 @@ const AllProductsComp = () => {
 
   const {
     products,
-    subcategories,
-    blog,
-    seriesName,
     meta,
     isLoading,
     isFetching,
-    refetch,
   } = useFetchProducts( {
     page: currentPage,
     search: searchQuery,

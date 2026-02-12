@@ -1,9 +1,12 @@
 import AllProductsComp from "@/component/Product/AllProductsComp";
+import { Suspense } from "react";
 
 const AllProducts = () => {
   return (
     <div>
-      <AllProductsComp />
+      <Suspense>
+        <AllProductsComp />
+      </Suspense>
     </div>
   );
 };

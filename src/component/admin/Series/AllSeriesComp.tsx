@@ -2,9 +2,11 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const AllSeriesComp = () => {
+  const router = useRouter();
   const { seriesList, isLoading } = useFetchSeries();
 
   if (isLoading) {
@@ -12,6 +14,10 @@ const AllSeriesComp = () => {
       <div className="p-4 text-center text-gray-500">Loading series...</div>
     );
   }
+
+  const handleSeriesView = (slug: string) => {
+    router.push(`/admin/series/update/${slug}`);
+  };
 
   return (
     <div className="p-4">
@@ -62,9 +68,7 @@ const AllSeriesComp = () => {
                 <td className="px-4 py-3 border-b text-center">
                   <button
                     className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-                    onClick={() => {
-                      console.log("View series:", series.id);
-                    }}
+                    onClick={() => handleSeriesView(series.slug)}
                   >
                     View
                   </button>

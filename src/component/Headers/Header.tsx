@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Search,
   Menu,
@@ -28,7 +28,7 @@ import AuthModal from "../Auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "../Loading/LoadingDS";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import sampleData from "@/data/sampleData";
 import useFetchNavItems from "@/hooks/useFetchNavitems";
 import Link from "next/link";
@@ -466,7 +466,9 @@ const Header = () => {
 
             {/* Right Side Actions (unchanged for brevity) */}
             <div className="lg:w-fit w-full sm:gap-4 flex justify-between items-center">
-              <SearchComp />
+              <Suspense>
+                <SearchComp />
+              </Suspense>
 
               <div className="flex items-center gap-4">
                 <div className="hidden lg:flex text-gray-700 hover:text-amber-700 transition-colors gap-2">

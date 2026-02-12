@@ -1,10 +1,11 @@
-import AdminDashboard from "@/component/admin/Dashboard/AdminDashboard";
 import DashboardPageComp from "@/component/admin/Dashboard/DashboardPageComp";
 
 const AdminPage = () => {
   return (
     <div>
-      {/* <AdminDashboard /> */}
+      {/* <Suspense>
+        <AdminDashboard />
+      </Suspense> */}
       <DashboardPageComp />
     </div>
   );
