@@ -4,21 +4,23 @@ import {
   useQuery,
   UseQueryResult,
 } from "@tanstack/react-query";
-import { Product } from "@/types/product.types";
+import { FetchProductsParams, Product } from "@/types/product.types";
 import useAxiosPublic from "../Axios/useAxiosPublic";
 import { AxiosError } from "axios";
 
 /**
  * Parameters for fetching products
  */
-interface FetchProductsParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  isActive?: boolean | null;
-  order?: string;
-  sortBy?: string;
-}
+// interface FetchProductsParams {
+//   page?: number;
+//   limit?: number;
+//   search?: string;
+//   isActive?: boolean | null;
+//   order?: string;
+//   sortBy?: string;
+//   thumb?: boolean;
+//   enabled?: boolean;
+// }
 
 /**
  * Metadata for paginated product response
@@ -82,6 +84,19 @@ const useFetchProducts = (
 
     if (params?.sortBy) queryParams.sortBy = params.sortBy;
     if (params?.order) queryParams.order = params.order;
+    if (params?.thumb) queryParams.thumb = params.thumb;
+
+    // Fix: Use plural parameter names as expected by backend
+    if (params?.colorIds?.length)
+      queryParams.colorIds = params.colorIds.join(",");
+    if (params?.materialIds?.length)
+      queryParams.materialIds = params.materialIds.join(",");
+    if (params?.subCategoryIds?.length)
+      queryParams.subCategoryIds = params.subCategoryIds.join(",");
+
+    if (params?.minPrice !== undefined) queryParams.minPrice = params.minPrice;
+
+    if (params?.maxPrice !== undefined) queryParams.maxPrice = params.maxPrice;
 
     const response = await axiosPublic.get<ProductsResponse>("/product/all", {
       params: queryParams,
@@ -102,6 +117,7 @@ const useFetchProducts = (
     params.search ?? "",
     params.isActive ?? null,
     params?.order,
+    params?.thumb,
     params?.sortBy,
   ] as const;
 
@@ -115,6 +131,7 @@ const useFetchProducts = (
   }: UseQueryResult<ProductsResponse, AxiosError> = useQuery({
     queryKey,
     queryFn: fetchProducts,
+    enabled: params.enabled ?? true,
     placeholderData: keepPreviousData, // React Query v5 syntax
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime in v5)

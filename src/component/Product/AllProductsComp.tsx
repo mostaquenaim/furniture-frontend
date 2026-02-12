@@ -1,31 +1,28 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import sortData from "@/data/SortData";
-import useFetchSubcategoryWiseProducts from "@/hooks/Products/useFetchSubcategoryWiseProducts";
 import { Product, ProductImage } from "@/types/product.types";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import DisplayHeading from "../Heading/DisplayHeading";
-import BottomPagination from "../../Pagination/BottomPagination";
-import EachProductShow from "../EachProductShow";
-import { QuickShopModal } from "../QuickShopModal";
-import FilterProducts from "../Filters/FilterProducts";
+import { useParams, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import useFetchSeriesWiseProducts from "@/hooks/Products/useFetchSeriesWiseProducts";
+import DisplayHeading from "../ProductDisplay/Heading/DisplayHeading";
+import FilterProducts from "../ProductDisplay/Filters/FilterProducts";
+import EachProductShow from "../ProductDisplay/EachProductShow";
+import BottomPagination from "../Pagination/BottomPagination";
+import { QuickShopModal } from "../ProductDisplay/QuickShopModal";
 import { devLog } from "@/utils/devlog";
+import useFetchProducts from "@/hooks/Products/useFetchProducts";
 
-const PRODUCTS_PER_PAGE = 18;
+const PRODUCTS_PER_PAGE = Number(process.env.NEXT_PUBLIC_PRODUCTS_PER_PAGE) || 18;
 
-export default function ProductTypeWiseProducts() {
-  const { slug } = useParams<{ slug: string }>();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isSortOpen, setIsSortOpen] = useState(false);
+const AllProductsComp = () => {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q") ?? "";
 
-  const [selectedSort, setSelectedSort] = useState(
-    sortData.sortCategories[0].name,
-  );
+  console.log(searchQuery);
 
   const [filters, setFilters] = useState<{
     colorIds?: number[];
@@ -35,6 +32,12 @@ export default function ProductTypeWiseProducts() {
     maxPrice?: number;
   }>({});
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [selectedSort, setSelectedSort] = useState(
+    sortData.sortCategories[0].name,
+  );
   const [productImage, setProductImage] = useState("");
   const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
 
@@ -43,21 +46,32 @@ export default function ProductTypeWiseProducts() {
     order?: "asc" | "desc";
   }>({});
 
-  const { products, meta, isLoading, isFetching, blog, subCategory, refetch } =
-    useFetchSubcategoryWiseProducts(slug, {
-      page: currentPage,
-      limit: PRODUCTS_PER_PAGE,
+  const {
+    products,
+    subcategories,
+    blog,
+    seriesName,
+    meta,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useFetchProducts( {
+    page: currentPage,
+    search: searchQuery,
+    limit: PRODUCTS_PER_PAGE,
 
-      colorIds: filters.colorIds,
-      materialIds: filters.materialIds,
-      subCategoryIds: filters.subCategoryIds,
-      minPrice: filters.minPrice,
-      maxPrice: filters.maxPrice,
-      sortBy: sortParams.sortBy,
-      order: sortParams.order,
-    });
+    colorIds: filters.colorIds,
+    materialIds: filters.materialIds,
+    subCategoryIds: filters.subCategoryIds,
+    minPrice: filters.minPrice,
+    maxPrice: filters.maxPrice,
+    sortBy: sortParams.sortBy,
+    order: sortParams.order,
+  });
 
-  // set current page to 1
+  const totalPages = meta?.totalPages || 1;
+  const totalProducts = meta?.total || 0;
+
   useEffect(() => {
     setCurrentPage(1);
     devLog(filters, "filters");
@@ -71,19 +85,13 @@ export default function ProductTypeWiseProducts() {
     filters,
   ]);
 
-  // title setup
   useEffect(() => {
     if (isLoading) {
-      document.title = `Sakigai - Product Type`;
-    } else if (subCategory) {
-      document.title = `Sakigai - ${subCategory?.name}`;
+      document.title = `All Products`;
+    } else if (searchQuery) {
+      document.title = `Search Results - ${searchQuery}`;
     }
-  }, [isLoading, subCategory]);
-
-  // console.log(products, "products");
-
-  const totalPages = meta?.totalPages || 1;
-  const totalProducts = meta?.total || 0;
+  }, [isLoading, searchQuery]);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -147,23 +155,17 @@ export default function ProductTypeWiseProducts() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-6 font-sans text-[#222222]">
-      <nav className="text-xs mb-8 flex items-center gap-2 text-gray-500">
-        <span className="hover:underline cursor-pointer capitalize">
-          {subCategory?.category?.series && (
-            <Link href={`/series/${subCategory?.category?.series?.slug}`}>
-              {subCategory?.category?.series?.name}
-            </Link>
-          )}
-        </span>
-        <span>/</span>
-        <span className="text-black font-medium capitalize">
-          {subCategory?.name || slug?.replace(/-/g, " ")}
-        </span>
-      </nav>
-
-      {/* Header Section */}
+      {searchQuery && (
+        <div className="flex justify-center items-center">
+          <p>You searched for {" "}
+            <span className="italic font-semibold">
+                {searchQuery}
+            </span>
+          </p>
+        </div>
+      )}
       <DisplayHeading
-        name={subCategory?.name || slug?.replace(/-/g, " ")}
+        name={"All Products"}
         isLoading={isLoading}
         totalProducts={totalProducts}
         isSortOpen={isSortOpen}
@@ -184,19 +186,11 @@ export default function ProductTypeWiseProducts() {
         setFilters={setFilters}
         setCurrentPage={setCurrentPage}
         filters={filters}
-        // subcategories={subcategories}
         handleSortChange={handleSortChange}
         selectedSort={selectedSort}
         // slug={slug}
         totalProducts={totalProducts}
       />
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
-      )}
 
       {/* Product Cards from API */}
       {!isLoading && products && products.length > 0 ? (
@@ -209,11 +203,11 @@ export default function ProductTypeWiseProducts() {
           setProductImage={setProductImage}
           setHoveredProduct={setHoveredProduct}
         />
-      ) : (
+      ) : !isLoading ? (
         <div className="col-span-2 md:col-span-3 text-center py-20 text-gray-500">
           No products found
         </div>
-      )}
+      ) : null}
 
       {/* Pagination bottom */}
       {!isLoading && totalPages > 1 && (
@@ -232,6 +226,10 @@ export default function ProductTypeWiseProducts() {
         </div>
       )}
 
+      {/* filters sidebar */}
+
+      {/* Blog Section - Only show if blog exists */}
+      {/* {blog && <ShortBlog blog={blog} />} */}
       {/* Quick Shop Modal */}
       {selectedProduct && (
         <QuickShopModal
@@ -241,4 +239,6 @@ export default function ProductTypeWiseProducts() {
       )}
     </div>
   );
-}
+};
+
+export default AllProductsComp;

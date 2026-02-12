@@ -74,7 +74,7 @@ const FilterDropdown = ({
 };
 
 type FilterProps = {
-  slug: string;
+  slug?: string;
   setCurrentPage: Dispatch<SetStateAction<number>>;
   filters: {
     colorIds?: number[];
@@ -114,7 +114,9 @@ const FilterProducts = ({
   const { materials: materialData, isLoading: isMaterialLoading } =
     useFetchMaterials();
   const { subCategoryList: seriesWiseSubcategories } =
-    useFetchSeriesWiseSubcategories(slug);
+    useFetchSeriesWiseSubcategories({
+      seriesSlug: slug,
+    });
 
   if (subcategories && !FILTERS.includes("Product Type")) {
     FILTERS.push("Product Type");

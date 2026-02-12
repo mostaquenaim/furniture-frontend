@@ -150,7 +150,7 @@ export interface FetchProductsParams {
   page?: number;
   limit?: number;
   search?: string;
-  isActive?: boolean;
+  isActive?: boolean | null;
 
   colorIds?: number[];
   materialIds?: number[];
@@ -159,6 +159,9 @@ export interface FetchProductsParams {
   maxPrice?: number;
   order?: string;
   sortBy?: string;
+
+  thumb?: boolean;
+  enabled?: boolean;
 }
 
 export interface CartItem {
