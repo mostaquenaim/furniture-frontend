@@ -40,7 +40,9 @@ const AddSubcategory = () => {
   // const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const { seriesList } = useFetchSeries();
+  const { seriesList } = useFetchSeries({
+    isActive: true,
+  });
 
   const [formData, setFormData] = useState<SubCategoryFormData>({
     name: "",

@@ -146,7 +146,9 @@ const ProductAddLBL = () => {
   // Hooks
   const { colors, isLoading: colorsLoading } = useFetchColors();
   const { variants, isLoading: variantsLoading } = useFetchVariants();
-  const { seriesList, isLoading: seriesLoading } = useFetchSeries();
+  const { seriesList, isLoading: seriesLoading } = useFetchSeries({
+    isActive: true,
+  });
 
   const { materials, isLoading: isMaterialLoading } = useFetchMaterials();
   const { categoryList, isLoading: categoriesLoading } =

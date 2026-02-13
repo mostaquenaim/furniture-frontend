@@ -10,11 +10,6 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 
-interface Series {
-  id: number;
-  name: string;
-}
-
 interface CategoryFormData {
   name: string;
   slug: string;
@@ -31,7 +26,9 @@ const AddCategory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const { seriesList } = useFetchSeries();
+  const { seriesList } = useFetchSeries({
+    isActive: true,
+  });
 
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",

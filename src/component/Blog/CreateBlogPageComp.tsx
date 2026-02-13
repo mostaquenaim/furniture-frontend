@@ -132,7 +132,9 @@ export default function CreateBlogPage() {
   const [submitting, setSubmitting] = useState(false);
 
   // Custom Hooks for fetching data
-  const { seriesList } = useFetchSeries();
+  const { seriesList } = useFetchSeries({
+    isActive: true,
+  });
   const { categoryList } = useFetchCategoriesBySeriesIds(
     formData.selectedSeriesIds,
   );

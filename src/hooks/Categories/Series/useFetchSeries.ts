@@ -4,15 +4,17 @@ import useAxiosPublic from "../../Axios/useAxiosPublic";
 import { Series } from "@/types/menu";
 import { series } from "@/data/Categories";
 
-const useFetchSeries = () => {
+const useFetchSeries = ({ isActive = true }: { isActive?: boolean | null }) => {
   const axiosPublic = useAxiosPublic();
   const [seriesList, setSeries] = useState<Series[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log(isActive, " check if active");
+
   useEffect(() => {
     const fetchSeries = async () => {
       try {
-        const res = await axiosPublic.get("/series");
+        const res = await axiosPublic.get(`/series?isActive=${isActive}`);
         console.log(res.data, "serieees");
         setSeries(res.data);
       } catch {
@@ -24,7 +26,7 @@ const useFetchSeries = () => {
     };
 
     fetchSeries();
-  }, [axiosPublic]);
+  }, [axiosPublic, isActive]);
 
   return { seriesList, isLoading };
 };

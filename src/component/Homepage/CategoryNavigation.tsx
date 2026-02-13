@@ -6,7 +6,9 @@ const FALLBACK_IMAGE = "/images/categories/furniture-category-image.jpg";
 
 const CategoryNavigation = () => {
   const router = useRouter();
-  const { seriesList = [], isLoading } = useFetchSeries();
+  const { seriesList = [], isLoading } = useFetchSeries({
+    isActive: true,
+  });
 
   const handleCategoryClick = (slug: string) => {
     router.push(`/series/${slug}`);

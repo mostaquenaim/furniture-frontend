@@ -81,7 +81,7 @@ export interface Series {
   image: string | null;
   notice: string | null;
   isActive?: boolean;
-  sortOrder?: number;
+  sortOrder: number;
   createdAt?: string;
   updatedAt?: string;
   categories?: Category[];

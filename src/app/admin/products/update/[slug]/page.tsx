@@ -172,7 +172,9 @@ const UpdateProductPage = () => {
   // Hooks
   const { colors, isLoading: colorsLoading } = useFetchColors();
   const { variants, isLoading: variantsLoading } = useFetchVariants();
-  const { seriesList, isLoading: seriesLoading } = useFetchSeries();
+  const { seriesList, isLoading: seriesLoading } = useFetchSeries({
+    isActive: true,
+  });
 
   const { categoryList, isLoading: categoriesLoading } =
     useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
