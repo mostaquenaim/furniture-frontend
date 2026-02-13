@@ -1,13 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { ChangeEvent, FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { FiUpload, FiX, FiSave } from "react-icons/fi";
 import { toast, Toaster } from "react-hot-toast";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import axios from "axios";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
+import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
+import useFetchASeries from "@/hooks/Categories/Series/useFetchASeries";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
+import LoadingDots from "@/component/Loading/LoadingDS";
 
 interface SeriesFormData {
   name: string;
@@ -19,6 +23,32 @@ interface SeriesFormData {
 }
 
 const AddSeriesComp = () => {
+  const { slug }: { slug: string } = useParams();
+
+  const isUpdateMode = !!slug;
+
+  const { seriesData, isLoading: isProductLoading } = useFetchASeries({
+    seriesSlug: slug,
+  });
+
+  useEffect(() => {
+    if (seriesData && slug) {
+      setFormData({
+        name: seriesData.name || "",
+        slug: seriesData.slug || "",
+        image: null, // keep null, because backend image is string URL
+        notice: seriesData.notice || "",
+        isActive: seriesData.isActive ?? true,
+        sortOrder: seriesData.sortOrder ?? 0,
+      });
+
+      // show existing image preview
+      if (seriesData.image) {
+        setImagePreview(seriesData.image);
+      }
+    }
+  }, [seriesData, slug]);
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -45,10 +75,11 @@ const AddSeriesComp = () => {
   // Name change
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
+
     setFormData((prev) => ({
       ...prev,
       name,
-      slug: generateSlug(name),
+      slug: isUpdateMode ? prev.slug : generateSlug(name),
     }));
   };
 
@@ -90,48 +121,52 @@ const AddSeriesComp = () => {
     setIsLoading(true);
 
     try {
-      let imageUrl = "";
+      let imageUrl = seriesData?.image || "";
 
-      //  Upload to Cloudinary first if a file exists
+      // Upload only if new file selected
       if (formData.image) {
-        // Assuming handleUploadWithCloudinary is an async function that returns the URL string
         imageUrl = await handleUploadWithCloudinary(formData.image);
       }
 
-      //  Prepare the data for your API
       const finalData = {
         name: formData.name,
         slug: formData.slug,
-        image: imageUrl, // Now this is the string URL from Cloudinary
+        image: imageUrl,
         notice: formData.notice,
         isActive: formData.isActive,
         sortOrder: formData.sortOrder,
       };
 
-      //  Validation
       if (!finalData.name.trim()) {
         toast.error("Series name is required");
         setIsLoading(false);
         return;
       }
 
-      //  Submit to your backend
-      const response = await axiosSecure.post("/series", finalData);
-      toast.success("Series created successfully!");
+      if (slug) {
+        // UPDATE
+        await axiosSecure.patch(`/series/${slug}`, finalData);
+        toast.success("Series updated successfully!");
+      } else {
+        // CREATE
+        await axiosSecure.post("/series", finalData);
+        toast.success("Series created successfully!");
+      }
 
       setTimeout(() => {
-        router.push("/admin/series");
-      }, 1500);
+        router.push("/admin/series/all");
+      }, 1200);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(
+        const errorMsg =
           (err.response?.data as { message?: string })?.message ||
-            "Failed to add series.",
-        );
+          "Operation failed.";
+        toast.error(errorMsg);
+        setError(errorMsg);
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Failed to add series.");
+        setError("Operation failed.");
       }
     } finally {
       setIsLoading(false);
@@ -151,6 +186,14 @@ const AddSeriesComp = () => {
     toast.success("Form reset");
   };
 
+  if (slug && isProductLoading) {
+    return (
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
+    );
+  }
+
   return (
     <div>
       <div className="max-w-4xl mx-auto">
@@ -158,10 +201,13 @@ const AddSeriesComp = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
-                Add New Series
+                {slug ? "Update Series" : "Add New Series"}
               </h1>
+
               <p className="text-gray-600 mt-1">
-                Create a new furniture series for your catalog
+                {slug
+                  ? "Update furniture series for your catalog"
+                  : "Create a new furniture series for your catalog"}
               </p>
             </div>
             <button
@@ -212,15 +258,21 @@ const AddSeriesComp = () => {
                     type="text"
                     value={formData.slug}
                     onChange={handleSlugChange}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    placeholder="living-room-collection"
+                    disabled={isUpdateMode}
+                    className={`flex-1 px-4 py-2 border rounded-lg outline-none transition ${
+                      isUpdateMode
+                        ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200"
+                        : "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    }`}
                     required
                   />
                 </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  URL-friendly version of the name. Auto-generated from series
-                  name
-                </p>
+                {!isUpdateMode && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    URL-friendly version of the name. Auto-generated from series
+                    name
+                  </p>
+                )}
               </div>
 
               {/* Notice/Description */}
@@ -432,12 +484,12 @@ const AddSeriesComp = () => {
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Creating...</span>
+                    <span>{slug ? "Updating..." : "Creating..."}</span>
                   </>
                 ) : (
                   <>
                     <FiSave className="text-base" />
-                    <span>Create Series</span>
+                    <span>{slug ? "Update Series" : "Create Series"}</span>
                   </>
                 )}
               </button>
@@ -448,7 +500,7 @@ const AddSeriesComp = () => {
         {/* Help Text */}
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
           <h3 className="text-sm font-medium text-blue-800 mb-2">
-            💡 Tips for creating a series:
+            Tips {!slug && "for creating a series"}:
           </h3>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Use descriptive names that customers will understand</li>

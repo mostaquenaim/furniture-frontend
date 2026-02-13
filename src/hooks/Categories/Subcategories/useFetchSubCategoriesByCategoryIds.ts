@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useMemo } from "react";
-import useAxiosSecure from "../Axios/useAxiosSecure";
+import useAxiosSecure from "../../Axios/useAxiosSecure";
 import { toast } from "react-hot-toast";
 
 interface SubCategory {

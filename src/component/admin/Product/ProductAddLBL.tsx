@@ -11,11 +11,11 @@ import {
 } from "@/component/admin/Product/ImageUploader";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import useFetchVariants from "@/hooks/useFetchVariants";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCategoriesBySeriesIds";
-import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCategoriesByCategoryIds";
+import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/Subcategories/useFetchSubCategoriesByCategoryIds";
 import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";

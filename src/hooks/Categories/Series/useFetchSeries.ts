@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import useAxiosPublic from "../Axios/useAxiosPublic";
+import useAxiosPublic from "../../Axios/useAxiosPublic";
 import { Series } from "@/types/menu";
 import { series } from "@/data/Categories";
 

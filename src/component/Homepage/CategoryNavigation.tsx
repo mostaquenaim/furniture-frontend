@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import { useRouter } from "next/navigation";
 
 const FALLBACK_IMAGE = "/images/categories/furniture-category-image.jpg";

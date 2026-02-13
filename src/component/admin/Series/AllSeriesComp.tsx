@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import { useRouter } from "next/navigation";
 import React from "react";
 

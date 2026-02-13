@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import useAxiosSecure from "../Axios/useAxiosSecure";
+import useAxiosSecure from "../../Axios/useAxiosSecure";
 import { toast } from "react-hot-toast";
 
 interface SubCategory {

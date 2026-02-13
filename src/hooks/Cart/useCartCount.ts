@@ -38,7 +38,7 @@ const useCartCount = () => {
     queryKey: ["cartCount"],
     queryFn: () => fetchCartCount(),
     enabled: !loading,
-    staleTime: 30 * 1000,
+    // staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
   });
 

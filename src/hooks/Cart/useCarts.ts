@@ -133,7 +133,7 @@ const useFetchCarts = (options?: UseFetchCartsOptions): UseFetchCartsReturn => {
     queryKey: ["cart", options, token], // Add token to queryKey
     queryFn: fetchCarts,
     enabled: !authLoading && isTokenReady, // Use isTokenReady
-    staleTime: 2 * 60 * 1000,
+    // staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: (count, error) => {
       // Don't retry on 401 - we handle it in fetchCarts

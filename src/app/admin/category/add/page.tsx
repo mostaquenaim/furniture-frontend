@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
-import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 
 interface Series {
   id: number;

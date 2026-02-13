@@ -2,7 +2,7 @@
 "use client";
 import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
-import useFetchSeriesWiseSubcategories from "@/hooks/Categories/useFetchSeriesWiseSubcategories";
+import useFetchSeriesWiseSubcategories from "@/hooks/Categories/Subcategories/useFetchSeriesWiseSubcategories";
 import useFetchColors from "@/hooks/useFetchColors";
 import useFetchMaterials from "@/hooks/useFetchMaterials";
 import { SubCategory } from "@/types/menu";

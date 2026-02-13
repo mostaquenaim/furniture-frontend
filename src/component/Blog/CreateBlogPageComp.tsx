@@ -12,9 +12,9 @@ import React, {
 import { Save, X, ImageIcon } from "lucide-react";
 import { PageHeader } from "../PageHeader/PageHeader";
 import { FormSection } from "../admin/Product/FormSection";
-import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCategoriesBySeriesIds";
-import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/useFetchSubCategoriesByCategoryIds";
+import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/Subcategories/useFetchSubCategoriesByCategoryIds";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
 import axios, { AxiosError } from "axios";

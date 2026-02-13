@@ -9,7 +9,7 @@ import axios from "axios";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
-import useFetchSeries from "@/hooks/Categories/useFetchSeries";
+import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 
 interface Series {
   id: number;
