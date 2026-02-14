@@ -361,7 +361,7 @@ const Header = () => {
 
   const derivedActiveNavItem = activeNavItem ?? seriesSlugFromUrl;
 
-  console.log(derivedActiveNavItem, "derivedActiveNavItem");
+  // console.log(derivedActiveNavItem, "derivedActiveNavItem");
 
   const { token, logout, loading, setLoading } = useAuth();
   // console.log(token,'tokennn');

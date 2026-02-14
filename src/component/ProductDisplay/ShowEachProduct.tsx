@@ -47,18 +47,6 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   averageRating,
   ratingCount,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleWriteReview = () => {
-    // If you want to check authentication first
-    if (!isAuthenticated()) {
-      // open login/signup modal
-      setIsModalOpen(true);
-      return;
-    }
-    // Otherwise open review form modal
-    setIsModalOpen(true);
-  };
 
   return (
     <section id="review" className="py-14 text-[#262626]">
@@ -148,14 +136,14 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
       </div>
 
       {/* Write Review Button */}
-      <div className="border-t border-gray-100 pt-12 flex flex-col items-center">
+      {/* <div className="border-t border-gray-100 pt-12 flex flex-col items-center">
         <button
           onClick={handleWriteReview}
           className="border border-[#262626] px-24 py-3 text-[12px] uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-colors"
         >
           Write a Review
         </button>
-      </div>
+      </div> */}
     </section>
   );
 };

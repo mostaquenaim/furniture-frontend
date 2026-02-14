@@ -5,7 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { Providers } from "../providers";
 import ProtectedRoute from "@/component/ProtectedRoute";
 import AdminGuard from "@/component/admin/auth/AdminGuard";
-import { AdminDrawerProvider } from "@/context/AdminContext";
+import { AdminDrawerProvider, useAdminDrawer } from "@/context/AdminContext";
 import AdminDrawer from "@/component/Headers/AdminDrawerTS";
 import AdminHeader from "@/component/Headers/AdminHeader";
 
@@ -26,6 +26,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  
   return (
     <div className={`${inter.variable} font-sans antialiased`}>
       <Providers>
@@ -36,7 +37,9 @@ export default function AdminLayout({
                 <AdminDrawer />
                 <div className="transition-all duration-300">
                   <AdminHeader />
-                  <main className="p-4 sm:p-6 lg:p-8 bg-slate-100">
+                  {/* ${isAdminOpen ? 'md:pl-64' : 'md:pl-20'} */}
+                  <main className={`p-4 sm:p-6 lg:p-8 bg-slate-100 
+                    `}>
                     <div className="max-w-7xl mx-auto">
                       {children}
                     </div>
