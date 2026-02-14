@@ -87,10 +87,11 @@ const AddOrUpdateCategoryComp = () => {
   // -------------------------
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
+
     setFormData((prev) => ({
       ...prev,
       name,
-      slug: generateSlug(name),
+      slug: isUpdateMode ? prev.slug : generateSlug(name),
     }));
   };
 
@@ -303,7 +304,12 @@ const AddOrUpdateCategoryComp = () => {
               slug: generateSlug(e.target.value),
             }))
           }
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg"
+          disabled={isUpdateMode}
+          className={`w-full px-4 py-2 border rounded-lg ${
+            isUpdateMode
+              ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200"
+              : "border-gray-200"
+          }`}
           required
         />
       </div>

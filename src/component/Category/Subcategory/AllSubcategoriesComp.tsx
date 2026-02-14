@@ -13,7 +13,7 @@ const AllSubcategoriesComp = () => {
   const { subcategoryList, isLoading } = useFetchSubcategories({ isActive: null });
 
   const handleSave = async (payload: any) => {
-    await axiosSecure.patch("/categories/reorder", { orders: payload });
+    await axiosSecure.patch("/subcategories/reorder", { orders: payload });
     toast.success("Category order updated");
   };
 

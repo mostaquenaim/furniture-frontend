@@ -37,13 +37,13 @@ export const EntityFormLayout = ({
         </div>
         <button
           onClick={() => router.push(backPath)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
         >
           Back
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <form onSubmit={onSubmit} className="space-y-8">
           {children}
 
@@ -54,8 +54,8 @@ export const EntityFormLayout = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-            <button type="button" onClick={onReset} className="px-6 py-2 border rounded-lg hover:bg-gray-50" disabled={isLoading}>
+          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button type="button" onClick={onReset} className="px-6 py-2 border border-gray-200 rounded-lg hover:bg-gray-50" disabled={isLoading}>
               Reset
             </button>
             <button
