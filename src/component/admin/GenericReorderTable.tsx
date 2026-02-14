@@ -3,9 +3,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
 import { GripVertical, Edit3, Save } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
+import { ShortSeries } from "@/types/menu";
 
 interface BaseItem {
   id: number | string;
@@ -15,6 +21,12 @@ interface BaseItem {
   notice?: string | null;
   isActive?: boolean | null;
   sortOrder: number;
+  series?: ShortSeries;
+  category?: {
+    id: number;
+    name: string;
+    series?: ShortSeries;
+  };
 }
 
 interface GenericReorderTableProps<T extends BaseItem> {
@@ -24,9 +36,11 @@ interface GenericReorderTableProps<T extends BaseItem> {
   title: string;
   description: string;
   isSaving: boolean;
+  nowFetching?: string;
 }
 
 export function GenericReorderTable<T extends BaseItem>({
+  nowFetching,
   initialData,
   onSave,
   onEdit,
@@ -47,13 +61,19 @@ export function GenericReorderTable<T extends BaseItem>({
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    const updatedItems = items.map((item, index) => ({ ...item, sortOrder: index }));
+    const updatedItems = items.map((item, index) => ({
+      ...item,
+      sortOrder: index,
+    }));
     setList(updatedItems);
     setHasChanges(true);
   };
 
   const handleSave = async () => {
-    const payload = list.map((item) => ({ id: item.id, sortOrder: item.sortOrder }));
+    const payload = list.map((item) => ({
+      id: item.id,
+      sortOrder: item.sortOrder,
+    }));
     await onSave(payload);
     setHasChanges(false);
   };
@@ -83,26 +103,58 @@ export function GenericReorderTable<T extends BaseItem>({
             <thead className="bg-slate-50">
               <tr>
                 <th className="w-12 px-4 py-3"></th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Order</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Info</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Slug</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">
+                  Order
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">
+                  Info
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">
+                  Slug
+                </th>
+                {nowFetching === "categories" ||
+                  (nowFetching === "subcategories" && (
+                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">
+                      Parent
+                    </th>
+                  ))}
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <Droppable droppableId="generic-list">
               {(provided) => (
-                <tbody {...provided.droppableProps} ref={provided.innerRef} className="divide-y divide-slate-200">
+                <tbody
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="divide-y divide-slate-200"
+                >
                   {list.map((item, index) => (
-                    <Draggable key={item.id} draggableId={item.id.toString()} index={index}>
+                    <Draggable
+                      key={item.id}
+                      draggableId={item.id.toString()}
+                      index={index}
+                    >
                       {(provided, snapshot) => (
                         <tr
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className={cn("transition-colors", snapshot.isDragging ? "bg-indigo-50" : "hover:bg-slate-50")}
+                          className={cn(
+                            "transition-colors",
+                            snapshot.isDragging
+                              ? "bg-indigo-50"
+                              : "hover:bg-slate-50",
+                          )}
                         >
                           <td className="px-4 py-4">
-                            <div {...provided.dragHandleProps} className="text-slate-400 hover:text-indigo-600 cursor-grab">
+                            <div
+                              {...provided.dragHandleProps}
+                              className="text-slate-400 hover:text-indigo-600 cursor-grab"
+                            >
                               <GripVertical size={20} />
                             </div>
                           </td>
@@ -115,25 +167,51 @@ export function GenericReorderTable<T extends BaseItem>({
                             <div className="flex items-center gap-4">
                               <div className="h-10 w-14 rounded overflow-hidden border bg-slate-100">
                                 {item.image ? (
-                                  <img src={item.image} alt="" className="h-full w-full object-cover" />
+                                  <img
+                                    src={item.image}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                  />
                                 ) : (
-                                  <div className="h-full w-full flex items-center justify-center text-[10px]">NA</div>
+                                  <div className="h-full w-full flex items-center justify-center text-[10px]">
+                                    NA
+                                  </div>
                                 )}
                               </div>
-                              <div className="text-sm font-bold text-slate-900">{item.name}</div>
+                              <div className="text-sm font-bold text-slate-900">
+                                {item.name}
+                              </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-slate-500 font-mono">/{item.slug}</td>
+                          <td className="px-6 py-4 text-sm text-slate-500 font-mono">
+                            /{item.slug}
+                          </td>
+                          {(nowFetching === "categories" ||
+                            nowFetching === "subcategories") && (
+                            <td className="px-6 py-4 text-sm text-slate-500 font-mono">
+                              {nowFetching === "categories"
+                                ? item.series?.name
+                                : nowFetching === "subcategories" &&
+                                  `${item.category?.name} (${item.category?.series?.name})`}
+                            </td>
+                          )}
                           <td className="px-6 py-4">
-                            <span className={cn(
-                              "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                              item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
-                            )}>
+                            <span
+                              className={cn(
+                                "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                                item.isActive
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-slate-100 text-slate-500",
+                              )}
+                            >
                               {item.isActive ? "Active" : "Hidden"}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button onClick={() => onEdit(item.slug)} className="p-2 text-slate-400 hover:text-indigo-600">
+                            <button
+                              onClick={() => onEdit(item.slug)}
+                              className="p-2 text-slate-400 hover:text-indigo-600"
+                            >
                               <Edit3 size={18} />
                             </button>
                           </td>

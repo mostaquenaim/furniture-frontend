@@ -87,6 +87,11 @@ export interface Series {
   categories?: Category[];
 }
 
+export interface ShortSeries {
+  id: number;
+  name: string;
+}
+
 export interface SeriesWithRelations {
   id: number;
   name: string;

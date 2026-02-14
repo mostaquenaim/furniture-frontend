@@ -11,11 +11,6 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 
-interface Series {
-  id: number;
-  name: string;
-}
-
 interface Category {
   id: number;
   name: string;

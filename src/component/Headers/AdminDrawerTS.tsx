@@ -56,6 +56,7 @@ import {
   Wrench
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
+import { MdCategory } from "react-icons/md";
 
 interface NavSubItem {
   href: string;
@@ -144,12 +145,19 @@ const AdminDrawer = () => {
           ]
         },
         { 
+          name: "Product Type", 
+          icon: MdCategory, 
+          sub: [
+            { href: "/admin/subcategory/all", label: "All Subcategories" },
+            { href: "/admin/subcategory/add", label: "Add Subcategory" },
+          ]
+        },
+        { 
           name: "Categories", 
           icon: Grid, 
           sub: [
             { href: "/admin/category/all", label: "All Categories" },
             { href: "/admin/category/add", label: "Add Category" },
-            // { href: "/admin/category/arrange", label: "Arrange" },
           ]
         },
         { 

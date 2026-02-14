@@ -1,4 +1,4 @@
-import AllCategoriesComp from '@/component/admin/Catergogies/AllCategoriesComp';
+import AllCategoriesComp from '@/component/Category/Category/AllCategoriesComp';
 import React from 'react';
 
 const AllCategories = () => {

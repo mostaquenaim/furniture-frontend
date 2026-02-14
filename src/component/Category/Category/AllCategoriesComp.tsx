@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import toast from "react-hot-toast";
-import { GenericReorderTable } from "../GenericReorderTable";
+import { GenericReorderTable } from "../../admin/GenericReorderTable";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { useRouter } from "next/navigation";
 import useFetchCategories from "@/hooks/Categories/Categories/useFetchCategories";
@@ -28,6 +28,7 @@ const AllCategoriesComp = () => {
     <GenericReorderTable
       title="Product Categories"
       description="Drag categories to reorder them within their series."
+      nowFetching="categories"
       initialData={categoryList || []}
       isSaving={false}
       onSave={handleSave}
