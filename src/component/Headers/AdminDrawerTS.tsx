@@ -147,9 +147,9 @@ const AdminDrawer = () => {
           name: "Categories", 
           icon: Grid, 
           sub: [
-            { href: "/admin/categories", label: "All Categories" },
+            { href: "/admin/category/all", label: "All Categories" },
             { href: "/admin/category/add", label: "Add Category" },
-            { href: "/admin/category/arrange", label: "Arrange" },
+            // { href: "/admin/category/arrange", label: "Arrange" },
           ]
         },
         { 
@@ -158,7 +158,7 @@ const AdminDrawer = () => {
           sub: [
             { href: "/admin/series/all", label: "All Series" },
             { href: "/admin/series/add", label: "Add Series" },
-            { href: "/admin/series/arrange", label: "Arrange" },
+            // { href: "/admin/series/arrange", label: "Arrange" },
           ]
         },
         { 

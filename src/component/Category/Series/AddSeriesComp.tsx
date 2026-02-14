@@ -22,7 +22,7 @@ interface SeriesFormData {
   sortOrder: number;
 }
 
-const AddSeriesComp = () => {
+const AddOrUpdateSeriesComp = () => {
   const { slug }: { slug: string } = useParams();
 
   const isUpdateMode = !!slug;
@@ -31,6 +31,16 @@ const AddSeriesComp = () => {
     seriesSlug: slug,
   });
 
+  const [formData, setFormData] = useState<SeriesFormData>({
+    name: "",
+    slug: "",
+    image: null, // Initialized as null
+    notice: "",
+    isActive: true,
+    sortOrder: 0,
+  });
+
+  // pre define values if available
   useEffect(() => {
     if (seriesData && slug) {
       setFormData({
@@ -53,14 +63,6 @@ const AddSeriesComp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<SeriesFormData>({
-    name: "",
-    slug: "",
-    image: null, // Initialized as null
-    notice: "",
-    isActive: true,
-    sortOrder: 0,
-  });
 
   // Generate slug from name
   const generateSlug = (name: string) => {
@@ -515,4 +517,4 @@ const AddSeriesComp = () => {
   );
 };
 
-export default AddSeriesComp;
+export default AddOrUpdateSeriesComp;

@@ -1,9 +1,9 @@
-import AddSeriesComp from "@/component/Category/Series/AddSeriesComp";
+import AddOrUpdateSeriesComp from "@/component/Category/Series/AddSeriesComp";
 
 const AddSeries = () => {
   return (
     <div>
-      <AddSeriesComp />
+      <AddOrUpdateSeriesComp />
     </div>
   );
 };

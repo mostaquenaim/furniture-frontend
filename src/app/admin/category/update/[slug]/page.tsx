@@ -1,7 +1,6 @@
 import AddOrUpdateCategoryComp from "@/component/Category/Category/AddCategoryComp";
-import React from "react";
 
-const AddCategory = () => {
+const UpdateCategory = () => {
   return (
     <div>
       <AddOrUpdateCategoryComp />
@@ -9,4 +8,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default UpdateCategory;
