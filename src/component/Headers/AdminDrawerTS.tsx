@@ -53,7 +53,7 @@ import {
   ShieldCheck,
   Globe,
   Mail,
-  Wrench
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { MdCategory } from "react-icons/md";
@@ -96,9 +96,9 @@ const AdminDrawer = () => {
   }, []);
 
   const toggleExpand = (itemName: string) => {
-    setExpandedItems(prev => ({
+    setExpandedItems((prev) => ({
       ...prev,
-      [itemName]: !prev[itemName]
+      [itemName]: !prev[itemName],
     }));
   };
 
@@ -111,198 +111,203 @@ const AdminDrawer = () => {
     {
       label: "Overview",
       items: [
-        { 
-          name: "Dashboard", 
-          icon: LayoutDashboard, 
+        {
+          name: "Dashboard",
+          icon: LayoutDashboard,
           href: "/admin/dashboard",
           sub: [
             { href: "/admin/dashboard", label: "Overview" },
             { href: "/admin/analytics", label: "Analytics", badge: 3 },
             { href: "/admin/statistics", label: "Statistics" },
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       label: "Commerce",
       items: [
-        { 
-          name: "Products", 
-          icon: Package, 
+        {
+          name: "Products",
+          icon: Package,
           sub: [
             { href: "/admin/products", label: "All Products", badge: 124 },
             { href: "/admin/product/add", label: "Add Product" },
             { href: "/admin/product/trash", label: "Trash" },
             { href: "/admin/product/reviews", label: "Reviews", badge: 12 },
-          ]
+          ],
         },
-        { 
-          name: "Purchases", 
-          icon: Download, 
+        {
+          name: "Purchases",
+          icon: Download,
           sub: [
             { href: "/admin/purchases", label: "All Purchases" },
             { href: "/admin/purchase/add", label: "Add Purchase" },
-          ]
+          ],
         },
-        { 
-          name: "Product Type", 
-          icon: MdCategory, 
+        {
+          name: "Product Type",
+          icon: MdCategory,
           sub: [
             { href: "/admin/subcategory/all", label: "All Subcategories" },
             { href: "/admin/subcategory/add", label: "Add Subcategory" },
-          ]
+          ],
         },
-        { 
-          name: "Categories", 
-          icon: Grid, 
+        {
+          name: "Categories",
+          icon: Grid,
           sub: [
             { href: "/admin/category/all", label: "All Categories" },
             { href: "/admin/category/add", label: "Add Category" },
-          ]
+          ],
         },
-        { 
-          name: "Series", 
-          icon: Layers, 
+        {
+          name: "Series",
+          icon: Layers,
           sub: [
             { href: "/admin/series/all", label: "All Series" },
             { href: "/admin/series/add", label: "Add Series" },
             // { href: "/admin/series/arrange", label: "Arrange" },
-          ]
+          ],
         },
-        { 
-          name: "Attributes", 
-          icon: Sliders, 
+        {
+          name: "Attributes",
+          icon: Sliders,
           sub: [
             { href: "/admin/attribute/colors", label: "Colors" },
             { href: "/admin/attribute/sizes", label: "Sizes" },
             { href: "/admin/attribute/materials", label: "Materials" },
             { href: "/admin/attribute/manage", label: "Manage" },
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       label: "Sales",
       items: [
-        { 
-          name: "Orders", 
-          icon: ShoppingCart, 
+        {
+          name: "Orders",
+          icon: ShoppingCart,
           badge: 8,
           sub: [
             { href: "/admin/orders", label: "All Orders", badge: 156 },
             { href: "/admin/order/pending", label: "Pending", badge: 8 },
             { href: "/admin/order/completed", label: "Completed" },
             { href: "/admin/order/returns", label: "Returns", badge: 3 },
-          ]
+          ],
         },
-        { 
-          name: "Inventory", 
-          icon: Database, 
+        {
+          name: "Inventory",
+          icon: Database,
           sub: [
             { href: "/admin/inventories", label: "Stock Overview" },
-            { href: "/admin/inventory/low-stock", label: "Low Stock", badge: 5 },
+            {
+              href: "/admin/inventory/low-stock",
+              label: "Low Stock",
+              badge: 5,
+            },
             { href: "/admin/inventory/adjustments", label: "Adjustments" },
             { href: "/admin/inventory/warehouse", label: "Warehouse" },
-          ]
+          ],
         },
-        { 
-          name: "Promotions", 
-          icon: Percent, 
+        {
+          name: "Promotions",
+          icon: Percent,
           sub: [
             { href: "/admin/promotions/coupons", label: "Coupons" },
             { href: "/admin/promotions/discounts", label: "Discounts" },
             { href: "/admin/promotions/offers", label: "Special Offers" },
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       label: "Customers",
       items: [
-        { 
-          name: "Customers", 
-          icon: Users, 
+        {
+          name: "Customers",
+          icon: Users,
           sub: [
             { href: "/admin/customers", label: "All Customers", badge: 892 },
             { href: "/admin/customer/groups", label: "Groups" },
             { href: "/admin/customer/reviews", label: "Reviews" },
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       label: "Content",
       items: [
-        { 
-          name: "Content", 
-          icon: FileText, 
+        {
+          name: "Content",
+          icon: FileText,
           sub: [
             { href: "/admin/content/banners", label: "Banners" },
             { href: "/admin/content/pages", label: "Pages" },
             { href: "/admin/content/blogs", label: "Blog Posts", badge: 4 },
             { href: "/admin/blog/add", label: "Create Blog" },
-          ]
+          ],
         },
-        { 
-          name: "Media", 
-          icon: Image, 
+        {
+          name: "Media",
+          icon: Image,
           sub: [
             { href: "/admin/media/gallery", label: "Gallery" },
             { href: "/admin/media/library", label: "Library" },
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       label: "Insights",
       items: [
-        { 
-          name: "Reports", 
-          icon: BarChart3, 
+        {
+          name: "Reports",
+          icon: BarChart3,
           sub: [
             { href: "/admin/reports/sales", label: "Sales Reports" },
             { href: "/admin/reports/inventory", label: "Inventory Reports" },
             { href: "/admin/reports/customers", label: "Customer Reports" },
-          ]
+          ],
         },
-        { 
-          name: "Analytics", 
-          icon: TrendingUp, 
+        {
+          name: "Analytics",
+          icon: TrendingUp,
           sub: [
             { href: "/admin/analytics/traffic", label: "Traffic" },
             { href: "/admin/analytics/conversion", label: "Conversion" },
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       label: "Finance",
       items: [
-        { 
-          name: "Finances", 
-          icon: DollarSign, 
+        {
+          name: "Finances",
+          icon: DollarSign,
           sub: [
             { href: "/admin/finances/transactions", label: "Transactions" },
             { href: "/admin/finances/payments", label: "Payments" },
             { href: "/admin/finances/taxes", label: "Tax Settings" },
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       label: "System",
       items: [
-        { 
-          name: "Settings", 
-          icon: Settings, 
+        {
+          name: "Settings",
+          icon: Settings,
           sub: [
             { href: "/admin/settings/general", label: "General" },
             { href: "/admin/settings/shipping", label: "Shipping" },
+            { href: "/admin/settings/shipping/districts", label: "Districts" }, 
             { href: "/admin/settings/email", label: "Email Templates" },
             { href: "/admin/settings/maintenance", label: "Maintenance" },
-          ]
+          ],
         },
-      ]
+      ],
     },
   ];
 
@@ -314,16 +319,16 @@ const AdminDrawer = () => {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 hidden md:flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
-          isAdminOpen ? "w-64" : "w-20"
+          isAdminOpen ? "w-64" : "w-20",
         )}
       >
         {/* Logo Area */}
         <div className="flex items-center h-16 px-4 border-b border-gray-100">
-          <Link 
-            href="/admin" 
+          <Link
+            href="/admin"
             className={cn(
               "flex items-center",
-              !isAdminOpen && "justify-center w-full"
+              !isAdminOpen && "justify-center w-full",
             )}
           >
             <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg shadow-md">
@@ -354,7 +359,9 @@ const AdminDrawer = () => {
                   const hasSubItems = item.sub && item.sub.length > 0;
                   const isExpanded = expandedItems[item.name];
                   const isItemActive = item.href ? isActive(item.href) : false;
-                  const hasActiveChild = item.sub?.some(sub => isActive(sub.href));
+                  const hasActiveChild = item.sub?.some((sub) =>
+                    isActive(sub.href),
+                  );
 
                   return (
                     <li key={item.name}>
@@ -364,27 +371,32 @@ const AdminDrawer = () => {
                             onClick={() => toggleExpand(item.name)}
                             className={cn(
                               "group w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200",
-                              isAdminOpen ? "justify-between" : "justify-center",
-                              (isItemActive || hasActiveChild)
+                              isAdminOpen
+                                ? "justify-between"
+                                : "justify-center",
+                              isItemActive || hasActiveChild
                                 ? "bg-indigo-50 text-indigo-700"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
                             )}
                           >
                             <div className="flex items-center">
-                              <Icon 
-                                size={18} 
+                              <Icon
+                                size={18}
                                 className={cn(
                                   "shrink-0 transition-colors",
-                                  (isItemActive || hasActiveChild)
+                                  isItemActive || hasActiveChild
                                     ? "text-indigo-600"
-                                    : "text-gray-400 group-hover:text-gray-600"
-                                )} 
+                                    : "text-gray-400 group-hover:text-gray-600",
+                                )}
                               />
                               {isAdminOpen && (
-                                <span className={cn(
-                                  "ml-3 text-sm font-medium",
-                                  (isItemActive || hasActiveChild) && "text-indigo-700"
-                                )}>
+                                <span
+                                  className={cn(
+                                    "ml-3 text-sm font-medium",
+                                    (isItemActive || hasActiveChild) &&
+                                      "text-indigo-700",
+                                  )}
+                                >
                                   {item.name}
                                 </span>
                               )}
@@ -406,7 +418,7 @@ const AdminDrawer = () => {
                               </div>
                             )}
                           </button>
-                          
+
                           {/* Submenu */}
                           {isAdminOpen && isExpanded && item.sub && (
                             <ul className="mt-1 ml-9 space-y-0.5">
@@ -420,7 +432,7 @@ const AdminDrawer = () => {
                                         "flex items-center justify-between px-3 py-2 rounded-md text-sm transition-all",
                                         isSubActive
                                           ? "bg-indigo-50 text-indigo-700 font-medium"
-                                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                                       )}
                                     >
                                       <span>{subItem.label}</span>
@@ -444,15 +456,17 @@ const AdminDrawer = () => {
                             isAdminOpen ? "justify-start" : "justify-center",
                             isItemActive
                               ? "bg-indigo-50 text-indigo-700"
-                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
                           )}
                         >
-                          <Icon 
-                            size={18} 
+                          <Icon
+                            size={18}
                             className={cn(
                               "shrink-0",
-                              isItemActive ? "text-indigo-600" : "text-gray-400"
-                            )} 
+                              isItemActive
+                                ? "text-indigo-600"
+                                : "text-gray-400",
+                            )}
                           />
                           {isAdminOpen && (
                             <>
@@ -491,16 +505,17 @@ const AdminDrawer = () => {
                   <p className="text-sm font-semibold text-gray-900 truncate">
                     Sakigai Admin
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    Super Admin
-                  </p>
+                  <p className="text-xs text-gray-500 truncate">Super Admin</p>
                 </div>
               </div>
               <Link
                 href="/"
                 className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors group"
               >
-                <Store size={16} className="text-gray-400 group-hover:text-gray-600" />
+                <Store
+                  size={16}
+                  className="text-gray-400 group-hover:text-gray-600"
+                />
                 <span>Back to Store</span>
               </Link>
             </div>
@@ -534,12 +549,12 @@ const AdminDrawer = () => {
               onClick={toggleAdminDrawer}
             />
           )}
-          
+
           {/* Mobile Drawer */}
           <aside
             className={cn(
               "fixed inset-y-0 left-0 z-50 md:hidden flex flex-col bg-white w-72 shadow-2xl transition-transform duration-300 ease-in-out",
-              isAdminOpen ? "translate-x-0" : "-translate-x-full"
+              isAdminOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >
             <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
@@ -594,7 +609,7 @@ const AdminDrawer = () => {
                                       "flex items-center justify-between px-3 py-2 rounded-md text-sm",
                                       isActive(subItem.href)
                                         ? "bg-indigo-50 text-indigo-700 font-medium"
-                                        : "text-gray-600 hover:bg-gray-50"
+                                        : "text-gray-600 hover:bg-gray-50",
                                     )}
                                   >
                                     <span>{subItem.label}</span>
@@ -626,9 +641,7 @@ const AdminDrawer = () => {
                   <p className="text-sm font-semibold text-gray-900">
                     Sakigai Admin
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Super Admin
-                  </p>
+                  <p className="text-xs text-gray-500">Super Admin</p>
                 </div>
               </div>
               <Link

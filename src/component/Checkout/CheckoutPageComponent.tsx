@@ -10,7 +10,6 @@ import OrderSummary from "./OrderSummary";
 import { useAuth } from "@/context/AuthContext";
 import useFetchDistricts from "@/hooks/Districts/useFetchDistricts";
 import LoadingDots from "../Loading/LoadingDS";
-import { devLog } from "@/utils/devlog";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
@@ -19,8 +18,6 @@ import { useRouter } from "next/navigation";
 
 const CheckoutPageComponent = () => {
   const { user, loading } = useAuth();
-
-  // devLog(user, "userrrr");
 
   const {
     districts,
@@ -367,6 +364,7 @@ const CheckoutPageComponent = () => {
               >
                 Cancel
               </button>
+
               <button
                 onClick={handlePlaceOrder}
                 disabled={placingOrder}

@@ -1,13 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import useAxiosPublic from "../Axios/useAxiosPublic";
 import useAxiosSecure from "../Axios/useAxiosSecure";
 import { useAuth } from "@/context/AuthContext";
-
-type Districts = {
-  name: string;
-};
 
 interface DistrictsResponse {
   id: number;
@@ -15,46 +9,33 @@ interface DistrictsResponse {
   deliveryFee: number;
   isCODAvailable: boolean;
 }
-[];
 
 const useFetchDistricts = () => {
   const { loading } = useAuth();
-  const [districts, setDistricts] = useState<DistrictsResponse[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
 
-  useEffect(() => {
-    const fetchDistricts = async () => {
-      try {
-        setIsLoading(true);
+  const {
+    data: districts = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<DistrictsResponse[]>({
+    queryKey: ["districts"],
+    enabled: !loading, // wait until auth loading finishes
+    queryFn: async () => {
+      const response = await axiosSecure.get<DistrictsResponse[]>("/districts");
+      return response.data;
+    },
+  });
 
-        const response =
-          await axiosSecure.get<DistrictsResponse[]>("/districts");
-
-        // console.log(response.data, "distrits");
-
-        const data = response.data;
-
-        // console.log(sortedData);
-        setDistricts(data);
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          setError(err.response?.data?.message || err.message);
-        } else {
-          setError("Something went wrong while fetching districts");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    !loading && fetchDistricts();
-  }, [axiosSecure, loading]);
-
-  return { districts, isLoading, error };
+  return {
+    districts,
+    isLoading,
+    error: axios.isAxiosError(error)
+      ? error.response?.data?.message || error.message
+      : error?.message,
+    refetch,
+  };
 };
 
 export default useFetchDistricts;

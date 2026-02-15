@@ -160,6 +160,7 @@ const CartItemComponent = ({
   refetch,
   refetchCount,
 }: CartItemComponentProps) => {
+  // console.log(item, "caritem");
   const itemTotal = Number(item.subtotalAtAdd);
 
   const maxQuantity = Math.max(
