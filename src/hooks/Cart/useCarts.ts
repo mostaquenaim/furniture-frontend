@@ -23,6 +23,8 @@ interface CartResponse {
   id: number | null;
   subtotalAtAdd: number;
   baseSubtotalAtAdd: number;
+  codAvailable?: boolean;
+  codMessage?: string;
   couponId?: number;
   coupon?: CartCoupon;
   items: CartItem[];
@@ -86,7 +88,7 @@ const useFetchCarts = (options?: UseFetchCartsOptions): UseFetchCartsReturn => {
           params,
         });
 
-        // console.log(res.data, 'caritems');
+        // console.log(res.data, "caritems");
         return res.data;
       }
 
@@ -109,6 +111,8 @@ const useFetchCarts = (options?: UseFetchCartsOptions): UseFetchCartsReturn => {
         `/guest/cart/items/${visitorId}`,
         { params },
       );
+
+      // console.log(res.data, "cart-full");
 
       return res.data;
     } catch (error: any) {

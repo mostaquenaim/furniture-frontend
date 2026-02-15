@@ -34,6 +34,8 @@ const CheckoutPageComponent = () => {
     refetch,
   } = useFetchCarts({ isSummary: true });
 
+  // console.log(cart, "cart-response");
+
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -49,7 +51,6 @@ const CheckoutPageComponent = () => {
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
   const [showModal, setShowModal] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
-  const [isCODAvailable, setIsCODAvailable] = useState(true);
 
   const total = subtotal + deliveryFee;
   const axiosSecure = useAxiosSecure();
@@ -74,6 +75,18 @@ const CheckoutPageComponent = () => {
       }));
     }
   }, [user]);
+
+  const selectedDistrict = districts?.find((d) => d.id === address.districtId);
+
+  const districtBlocksCOD = selectedDistrict?.isCODAvailable === false;
+
+  const finalCODAvailable = cart?.codAvailable && !districtBlocksCOD;
+
+  useEffect(() => {
+    if (!finalCODAvailable && paymentMethod === "cod") {
+      setPaymentMethod("online");
+    }
+  }, [finalCODAvailable, paymentMethod]);
 
   // loading state
   if (loading || isCartLoading || isFetching) {
@@ -199,10 +212,16 @@ const CheckoutPageComponent = () => {
                   }));
 
                   setDeliveryFee(district?.deliveryFee ?? 0);
-                  setIsCODAvailable(district?.isCODAvailable ?? true);
+
+                  setAddress((prev) => ({
+                    ...prev,
+                    districtId: id,
+                  }));
+
+                  setDeliveryFee(district?.deliveryFee ?? 0);
 
                   // auto-switch to online if COD not allowed
-                  if (district && !district.isCODAvailable) {
+                  if (district && !finalCODAvailable) {
                     setPaymentMethod("online");
                   }
                 }}
@@ -269,21 +288,23 @@ const CheckoutPageComponent = () => {
               {/* Cash on Delivery */}
               <label
                 className={`flex items-center gap-3 cursor-pointer ${
-                  !isCODAvailable ? "opacity-50 cursor-not-allowed" : ""
+                  !finalCODAvailable ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
                 <input
                   type="radio"
                   name="payment"
                   checked={paymentMethod === "cod"}
-                  disabled={!isCODAvailable}
+                  disabled={!finalCODAvailable}
                   onChange={() => setPaymentMethod("cod")}
                 />
                 <span className="text-sm">
                   Cash on Delivery
-                  {!isCODAvailable && (
+                  {!finalCODAvailable && (
                     <span className="block text-xs text-red-500">
-                      Not available in this district
+                      {cart?.codMessage
+                        ? cart.codMessage
+                        : "Not available in this district"}
                     </span>
                   )}
                 </span>
