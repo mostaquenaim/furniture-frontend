@@ -58,6 +58,9 @@ export interface SubCategory {
   createdAt: string;
   updatedAt: string;
   category: Category;
+  isCODAvailable?: boolean
+  advancePercentage?: number
+  isAdvancePayment?:boolean
 }
 
 export interface Category {

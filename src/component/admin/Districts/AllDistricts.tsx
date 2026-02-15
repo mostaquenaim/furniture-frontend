@@ -31,6 +31,7 @@ const AllDistrictsComp = () => {
     setEditingId(null);
   };
 
+  // save district after edit
   const handleSave = async (id: number) => {
     try {
       await axiosSecure.patch(`/districts/${id}`, formData);

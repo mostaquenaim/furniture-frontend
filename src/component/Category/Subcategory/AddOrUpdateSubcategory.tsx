@@ -24,6 +24,7 @@ interface SubcategoryFormData {
   categoryId: number | "";
   isAdvancePayment: boolean;
   advancePercentage: number;
+  isCODAvailable: boolean;
 }
 
 const AddOrUpdateCategoryComp = () => {
@@ -46,6 +47,7 @@ const AddOrUpdateCategoryComp = () => {
     categoryId: "",
     isAdvancePayment: false,
     advancePercentage: 0,
+    isCODAvailable: true,
   });
 
   // pre define values if available
@@ -60,6 +62,7 @@ const AddOrUpdateCategoryComp = () => {
         categoryId: subcategoryData.categoryId,
         isAdvancePayment: subcategoryData.isAdvancePayment ?? false,
         advancePercentage: subcategoryData.advancePercentage ?? 0,
+        isCODAvailable: subcategoryData.isCODAvailable ?? true,
       });
 
       // show existing image preview
@@ -175,6 +178,7 @@ const AddOrUpdateCategoryComp = () => {
         isActive: formData.isActive,
         categoryId: formData.categoryId,
         isAdvancePayment: formData.isAdvancePayment,
+        isCODAvailable: formData.isCODAvailable,
         advancePercentage: formData.isAdvancePayment
           ? formData.advancePercentage
           : 0,
@@ -236,6 +240,7 @@ const AddOrUpdateCategoryComp = () => {
           categoryId: "",
           advancePercentage: 0,
           isAdvancePayment: false,
+          isCODAvailable: true,
         });
         setImagePreview(null);
       }}
@@ -404,9 +409,24 @@ const AddOrUpdateCategoryComp = () => {
             <option value="0">Inactive</option>
           </select>
         </div>
-        
+
         {/* Advance Payment Settings */}
         <div className="border-t pt-6">
+          <label className="flex items-center gap-3 mb-4">
+            <input
+              type="checkbox"
+              checked={formData.isCODAvailable}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isCODAvailable: e.target.checked,
+                }))
+              }
+              className="w-4 h-4"
+            />
+            <span className="text-sm font-medium">COD Available</span>
+          </label>
+
           <label className="flex items-center gap-3 mb-4">
             <input
               type="checkbox"

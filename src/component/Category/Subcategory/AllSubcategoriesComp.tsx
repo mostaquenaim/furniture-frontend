@@ -1,16 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client'
+"use client";
 import toast from "react-hot-toast";
 import { GenericReorderTable } from "../../admin/GenericReorderTable";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { useRouter } from "next/navigation";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import useFetchSubcategories from "@/hooks/Categories/Subcategories/useFetchSubcategories";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 const AllSubcategoriesComp = () => {
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
-  const { subcategoryList, isLoading } = useFetchSubcategories({ isActive: null });
+  const { subcategoryList, isLoading } = useFetchSubcategories({
+    isActive: null,
+  });
 
   const handleSave = async (payload: any) => {
     await axiosSecure.patch("/subcategories/reorder", { orders: payload });
@@ -19,9 +22,9 @@ const AllSubcategoriesComp = () => {
 
   if (isLoading)
     return (
-      <div>
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   return (
@@ -37,4 +40,4 @@ const AllSubcategoriesComp = () => {
   );
 };
 
-export default AllSubcategoriesComp
+export default AllSubcategoriesComp;
