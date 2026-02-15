@@ -146,7 +146,7 @@ const AllProducts = () => {
           <input
             type="text"
             placeholder="Search by title or SKU..."
-            className="w-full border rounded-md px-4 py-2.5 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full gray-border rounded-md px-4 py-2.5 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={search}
             onChange={(e) => {
               setCurrentPage(1);
@@ -159,7 +159,7 @@ const AllProducts = () => {
         </div>
 
         <select
-          className="border rounded-md px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]"
+          className="gray-border rounded-md px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]"
           value={isActive === null ? "" : isActive ? "true" : "false"}
           onChange={(e) => handleStatusChange(e.target.value)}
         >
@@ -192,7 +192,7 @@ const AllProducts = () => {
             <tr>
               <th className="py-3 px-4">#</th>
               <th className="py-3 px-4">Product</th>
-              <th className="py-3 px-4">SKU</th>
+              <th className="py-3 px-4">Slug</th>
               <th className="py-3 px-4">Price</th>
               <th className="py-3 px-4">Stock</th>
               <th className="py-3 px-4">Status</th>
@@ -241,7 +241,10 @@ const AllProducts = () => {
                 const imageUrl = getFirstImage(product);
 
                 return (
-                  <tr key={product.id} className="border-t hover:bg-gray-50">
+                  <tr
+                    key={product.id}
+                    className="border-t border-gray-200 hover:bg-gray-50"
+                  >
                     <td className="py-3 px-4">
                       {(meta.page - 1) * meta.limit + index + 1}
                     </td>
@@ -277,7 +280,7 @@ const AllProducts = () => {
 
                     <td className="py-3 px-4">
                       <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                        {product.sku}
+                        {product.slug}
                       </span>
                     </td>
 
@@ -462,7 +465,7 @@ const AllProducts = () => {
 
       {/* Enhanced Pagination */}
       {meta?.totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-lg border">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-lg border border-gray-200">
           <div className="text-sm text-gray-600">
             Showing {(meta.page - 1) * meta.limit + 1} to{" "}
             {Math.min(meta.page * meta.limit, meta.total)} of {meta.total}{" "}
@@ -513,7 +516,8 @@ const AllProducts = () => {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, meta.totalPages))
               }
-              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-md disabled:opacity-50 disabled:cursor-not-allowed
+               hover:bg-gray-50"
             >
               Next
               <FiChevronRight className="w-4 h-4" />

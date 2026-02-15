@@ -15,6 +15,7 @@ const useFetchASubcategory = ({
     queryKey: ["individual-subcategory", categorySlug],
     queryFn: async () => {
       const res = await axiosSecure.get(`/subcategory/${categorySlug}`);
+      console.log(res.data, "subcategory");
       return res.data;
     },
     enabled: !!categorySlug && enabled, // only fetch if categorySlug exists and enabled
@@ -25,4 +26,3 @@ const useFetchASubcategory = ({
 };
 
 export default useFetchASubcategory;
-

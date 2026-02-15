@@ -22,6 +22,8 @@ interface SubcategoryFormData {
   sortOrder: number;
   isActive: boolean;
   categoryId: number | "";
+  isAdvancePayment: boolean;
+  advancePercentage: number;
 }
 
 const AddOrUpdateCategoryComp = () => {
@@ -42,6 +44,8 @@ const AddOrUpdateCategoryComp = () => {
     sortOrder: 0,
     isActive: true,
     categoryId: "",
+    isAdvancePayment: false,
+    advancePercentage: 0,
   });
 
   // pre define values if available
@@ -50,11 +54,12 @@ const AddOrUpdateCategoryComp = () => {
       setFormData({
         name: subcategoryData.name || "",
         slug: subcategoryData.slug || "",
-        image: null, // keep null, because backend image is string URL
-        // notice: categoryData.notice || "",
+        image: null,
         isActive: subcategoryData.isActive ?? true,
         sortOrder: subcategoryData.sortOrder ?? 0,
         categoryId: subcategoryData.categoryId,
+        isAdvancePayment: subcategoryData.isAdvancePayment ?? false,
+        advancePercentage: subcategoryData.advancePercentage ?? 0,
       });
 
       // show existing image preview
@@ -134,13 +139,22 @@ const AddOrUpdateCategoryComp = () => {
     }
 
     if (!formData.name.trim()) {
-      toast.error("Category name is required");
+      toast.error("Subcategory name is required");
       return;
     }
 
     if (!formData.slug.trim()) {
       toast.error("Slug is required");
       return;
+    }
+
+    // advance payment
+    if (formData.isAdvancePayment) {
+      if (formData.advancePercentage <= 0 || formData.advancePercentage > 100) {
+        toast.error("Advance percentage must be between 1 and 100");
+        setIsLoading(false);
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -160,14 +174,18 @@ const AddOrUpdateCategoryComp = () => {
         sortOrder: formData.sortOrder,
         isActive: formData.isActive,
         categoryId: formData.categoryId,
+        isAdvancePayment: formData.isAdvancePayment,
+        advancePercentage: formData.isAdvancePayment
+          ? formData.advancePercentage
+          : 0,
       };
 
       if (isUpdateMode) {
         await axiosSecure.patch(`/subcategory/${slug}`, payload);
-        toast.success("Category updated successfully");
+        toast.success("Subcategory updated successfully");
       } else {
         await axiosSecure.post("/subcategory", payload);
-        toast.success("Category created successfully");
+        toast.success("Subcategory created successfully");
       }
 
       setTimeout(() => {
@@ -200,7 +218,7 @@ const AddOrUpdateCategoryComp = () => {
   // -------------------------
   return (
     <EntityFormLayout
-      title={slug ? "Update Category" : "Add New Category"}
+      title={slug ? "Update Subcategory" : "Add New Subcategory"}
       description={
         slug ? "Update furniture category" : "Create a new furniture category"
       }
@@ -216,10 +234,12 @@ const AddOrUpdateCategoryComp = () => {
           sortOrder: 0,
           isActive: true,
           categoryId: "",
+          advancePercentage: 0,
+          isAdvancePayment: false,
         });
         setImagePreview(null);
       }}
-      submitLabel={slug ? "Update Category" : "Create Category"}
+      submitLabel={slug ? "Update Subcategory" : "Create Subcategory"}
       previewCard={
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden max-w-md">
           {imagePreview && (
@@ -235,7 +255,7 @@ const AddOrUpdateCategoryComp = () => {
             <div className="flex justify-between items-start">
               <div>
                 <h4 className="font-medium">
-                  {formData.name || "Category Name"}
+                  {formData.name || "Subcategory Name"}
                 </h4>
               </div>
               <span
@@ -284,7 +304,7 @@ const AddOrUpdateCategoryComp = () => {
       {/* Name */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Category Name *
+          Subcategory Name *
         </label>
         <input
           type="text"
@@ -319,7 +339,9 @@ const AddOrUpdateCategoryComp = () => {
 
       {/* Image */}
       <div>
-        <label className="block text-sm font-medium mb-2">Category Image</label>
+        <label className="block text-sm font-medium mb-2">
+          Subcategory Image
+        </label>
 
         {imagePreview ? (
           <div className="relative w-64 h-40">
@@ -381,6 +403,48 @@ const AddOrUpdateCategoryComp = () => {
             <option value="1">Active</option>
             <option value="0">Inactive</option>
           </select>
+        </div>
+        
+        {/* Advance Payment Settings */}
+        <div className="border-t pt-6">
+          <label className="flex items-center gap-3 mb-4">
+            <input
+              type="checkbox"
+              checked={formData.isAdvancePayment}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isAdvancePayment: e.target.checked,
+                  advancePercentage: e.target.checked
+                    ? prev.advancePercentage
+                    : 0,
+                }))
+              }
+              className="w-4 h-4"
+            />
+            <span className="text-sm font-medium">Enable Advance Payment</span>
+          </label>
+
+          {formData.isAdvancePayment && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Advance Percentage (%)
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={formData.advancePercentage}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    advancePercentage: Number(e.target.value) || 0,
+                  }))
+                }
+                className="w-32 px-4 py-2 border border-gray-200 rounded-lg"
+              />
+            </div>
+          )}
         </div>
       </div>
     </EntityFormLayout>

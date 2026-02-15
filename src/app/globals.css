@@ -16,6 +16,10 @@
   font-family: var(--font-inter);
 }
 
+.gray-border {
+  border: 2px solid #e5e7eb;
+}
+
 @keyframes pulse-dots {
   0%,
   80%,
