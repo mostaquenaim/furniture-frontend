@@ -47,7 +47,6 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   averageRating,
   ratingCount,
 }) => {
-
   return (
     <section id="review" className="py-14 text-[#262626]">
       {/* Header */}
@@ -216,6 +215,17 @@ export default function ShowEachProduct() {
       content: product?.shippingReturn ?? "",
     },
   ];
+
+  // add view
+  useEffect(() => {
+    const addView = async () => {
+      const visitorId = await getVisitorId();
+
+      await axiosSecure.post(`/product/view/${product?.id}`, { visitorId });
+    };
+
+    product && addView();
+  }, [product]);
 
   // refetch cart on loading over and slug change
   useEffect(() => {

@@ -39,7 +39,7 @@ import SearchComp from "./Search/SearchComp";
 
 // Desktop MegaMenu Component (Unchanged)
 const MegaMenu: FC<MegaMenuProps> = ({ data, image }) => {
-  console.log(data, "mega-menu-data");
+  // console.log(data, "mega-menu-data");
   const [seriesImage, setSeriesImage] = useState<string | null | undefined>(
     null,
   );

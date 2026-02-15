@@ -9,6 +9,8 @@ import CategoryNavigation from "./Homepage/CategoryNavigation";
 import ShowProductsFlex from "./ProductDisplay/ShowProductsFlex";
 import Title from "./Headers/Title";
 import HomepageGallery from "./Homepage/HomepageGallery";
+import RecommendedProducts from "./Recommended/RecommendedProducts";
+import RecentlyViewedProducts from "./RecentlyViewed/RecentlyViewedProducts";
 
 export default function Homepage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -148,13 +150,12 @@ export default function Homepage() {
         {/* More to Explore */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">
           <Title title="More to Explore" />
-          <ShowProductsFlex id="explore" />
+          <RecommendedProducts />
         </div>
 
         {/* Recently viewed products */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">
-          <Title title="Recently Viewed" />
-          <ShowProductsFlex id="recent" />
+          <RecentlyViewedProducts />
         </div>
       </div>
     </div>

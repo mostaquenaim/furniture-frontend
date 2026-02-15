@@ -33,7 +33,7 @@ const useFetchProductReview = ({
       `/product/review/${slug}`,
     );
 
-    console.log("reviews", response.data);
+    // console.log("reviews", response.data);
     return response.data;
   };
 

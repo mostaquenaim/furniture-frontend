@@ -9,15 +9,18 @@ import { AxiosError } from "axios";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 
 export interface RelatedProductImage {
-  id: number;
+  id?: number;
   image: string;
-  serialNo: number;
+  serialNo?: number;
 }
 
 export interface RelatedProduct {
   id: number;
   title: string;
   slug: string;
+  price?: number;
+  basePrice?: number;
+  rating?: number;
   images: RelatedProductImage[];
 }
 

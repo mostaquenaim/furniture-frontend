@@ -1,7 +1,9 @@
+import { isAuthenticated } from "./auth";
+
 export const getVisitorId = async () => {
   let visitorId = localStorage.getItem("visitorId");
 
-  if (!visitorId) {
+  if (!visitorId && !isAuthenticated()) {
     const random = Math.floor(Math.random() * 1000);
 
     visitorId = `${Date.now()}_${random}`;

@@ -112,7 +112,8 @@ const ShowProductsFlex = ({
                     <div className="h-3 bg-gray-200 rounded w-3/4 animate-pulse" />
                   </div>
                 </SwiperSlide>
-              ))}
+              ))
+              }
       </Swiper>
 
       {/* Custom Navigation Buttons */}

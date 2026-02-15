@@ -203,6 +203,8 @@ export default function AuthModal({
         setToken(data.token);
         setUser(data.user);
 
+        await mergeGuestUserWithRealUser(data.token);
+
         toast.success(`Welcome to Sakigai`);
         handleView("signin");
         onClose();
@@ -280,7 +282,7 @@ export default function AuthModal({
       setReceivedOtp(res.data.otpDetails);
       const data = res.data;
 
-      if (data.status === 'OTP_REQUIRED') {
+      if (data.status === "OTP_REQUIRED") {
         setVerificationTarget(data.otpSentTo);
         toast.success(`OTP sent to your ${mobileNumber ? "phone" : "email"}`);
         handleView("otp-verification");
