@@ -46,7 +46,32 @@ export default function RootLayout({
           {children}
           {/* <Footer></Footer> */}
           <RoleBasedFooter></RoleBasedFooter>
-          <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: "#1f1f1f",
+                color: "#ffffff",
+                fontSize: "13px",
+                letterSpacing: "0.05em",
+                padding: "14px 18px",
+                borderRadius: "6px",
+              },
+              success: {
+                iconTheme: {
+                  primary: "#ffffff",
+                  secondary: "#1f1f1f",
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: "#ffffff",
+                  secondary: "#1f1f1f",
+                },
+              },
+            }}
+          />
         </body>
       </Providers>
     </html>
