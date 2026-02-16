@@ -12,20 +12,6 @@ import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import { RelatedProduct } from "../RelatedProducts/useFetchRelatedProducts";
 import { getVisitorId } from "@/utils/visitor";
 
-// {
-//         "id": 53,
-//         "title": "Random good looking sofa",
-//         "slug": "random-good-looking-sofa",
-//         "price": 11400,
-//         "basePrice": 12000,
-//         "rating": "0",
-//         "images": [
-//             {
-//                 "image": "https://res.cloudinary.com/dihmu6jca/image/upload/w_600,q_auto,f_auto/v1769589874/products/hbduxzd3sbol4dis9iud.jpg"
-//             }
-//         ]
-//     },
-
 const useFetchRecentlyViewedProducts = ({
   limit = 10,
   enabled = true,

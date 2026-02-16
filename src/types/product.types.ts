@@ -85,9 +85,9 @@ export interface Color {
   name: string;
   hexCode?: string;
   image?: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: Date;
+  sortOrder?: number;
+  isActive?: boolean;
+  createdAt?: Date;
 }
 
 export interface Review {

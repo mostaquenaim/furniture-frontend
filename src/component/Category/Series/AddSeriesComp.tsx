@@ -4,11 +4,10 @@
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FiUpload, FiX, FiSave } from "react-icons/fi";
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import axios from "axios";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
-import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import useFetchASeries from "@/hooks/Categories/Series/useFetchASeries";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";

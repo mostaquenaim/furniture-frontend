@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
-import { Toaster } from "react-hot-toast";
 import { Providers } from "../providers";
 import ProtectedRoute from "@/component/ProtectedRoute";
 import AdminGuard from "@/component/admin/auth/AdminGuard";
@@ -45,25 +44,6 @@ export default function AdminLayout({
                     </div>
                   </main>
                 </div>
-                <Toaster
-                  position="top-right"
-                  toastOptions={{
-                    duration: 3000,
-                    className: "text-sm",
-                    success: {
-                      iconTheme: {
-                        primary: "#10b981",
-                        secondary: "#ffffff",
-                      },
-                    },
-                    error: {
-                      iconTheme: {
-                        primary: "#ef4444",
-                        secondary: "#ffffff",
-                      },
-                    },
-                  }}
-                />
               </div>
             </AdminDrawerProvider>
           </AdminGuard>

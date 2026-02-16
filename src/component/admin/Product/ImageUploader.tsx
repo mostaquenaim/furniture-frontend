@@ -8,7 +8,7 @@ import {
   Copy,
   Image as ImageIcon,
 } from "lucide-react";
-import { Color } from "@/hooks/useFetchColors";
+import { Color } from "@/hooks/Attributes/useFetchColors";
 import { optimizeImage, formatFileSize } from "@/utils/imageOptimizer";
 import toast from "react-hot-toast";
 

@@ -54,7 +54,7 @@ const AddColor: React.FC = () => {
     setSuccess("");
 
     try {
-      const response = await axiosPublic.post("/color", {
+      const response = await axiosPublic.post("/colors", {
         name: formData.name,
         hexCode: formData.hexCode,
         sortOrder: formData.sortOrder,

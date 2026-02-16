@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import useAxiosSecure from "./Axios/useAxiosSecure";
+import useAxiosSecure from "../Axios/useAxiosSecure";
 import { toast } from "react-hot-toast";
 
 export interface Variant {

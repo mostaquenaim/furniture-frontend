@@ -3,8 +3,8 @@
 "use client";
 import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
-import useFetchColors from "@/hooks/useFetchColors";
-import useFetchMaterials from "@/hooks/useFetchMaterials";
+import useFetchColors from "@/hooks/Attributes/useFetchColors";
+import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
 import useFetchSubcategoryWiseProducts from "@/hooks/Products/useFetchSubcategoryWiseProducts";
 import { Product, ProductImage } from "@/types/product.types";
 import {
@@ -96,7 +96,7 @@ export default function CategoryWiseProduct() {
 
   console.log(products, "products");
 
-  const { colors: colorsData, isLoading: isColorLoading } = useFetchColors();
+  const { colors: colorsData, isLoading: isColorLoading } = useFetchColors({});
   const { materials, isLoading: isMaterialLoading } = useFetchMaterials();
 
   // console.log(products, "sortedImages");

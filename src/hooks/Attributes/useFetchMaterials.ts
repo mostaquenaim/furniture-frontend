@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import useAxiosPublic from "./Axios/useAxiosPublic";
+import useAxiosPublic from "../Axios/useAxiosPublic";
 
 export interface Material {
   id: number;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
@@ -13,8 +14,8 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
-import useFetchVariants from "@/hooks/useFetchVariants";
-import useFetchColors from "@/hooks/useFetchColors";
+import useFetchVariants from "@/hooks/Attributes/useFetchVariants";
+import useFetchColors from "@/hooks/Attributes/useFetchColors";
 import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCategoriesBySeriesIds";
 import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/Subcategories/useFetchSubCategoriesByCategoryIds";
 import GotoArrows from "@/component/Arrow/GotoArrows";
@@ -170,7 +171,7 @@ const UpdateProductPage = () => {
   }, [productId]);
 
   // Hooks
-  const { colors, isLoading: colorsLoading } = useFetchColors();
+  const { colors, isLoading: colorsLoading } = useFetchColors({});
   const { variants, isLoading: variantsLoading } = useFetchVariants();
   const { seriesList, isLoading: seriesLoading } = useFetchSeries({
     isActive: true,

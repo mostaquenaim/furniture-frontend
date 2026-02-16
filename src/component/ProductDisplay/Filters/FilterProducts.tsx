@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
 import useFetchSeriesWiseSubcategories from "@/hooks/Categories/Subcategories/useFetchSeriesWiseSubcategories";
-import useFetchColors from "@/hooks/useFetchColors";
-import useFetchMaterials from "@/hooks/useFetchMaterials";
+import useFetchColors from "@/hooks/Attributes/useFetchColors";
+import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
 import { SubCategory } from "@/types/menu";
 import {
   ChevronDown,
@@ -59,9 +61,32 @@ const FilterDropdown = ({
               <button
                 key={item.id}
                 onClick={() => onToggleSelect?.(item.id)}
-                className={`flex justify-between w-full px-3 py-2 text-sm rounded
-                  ${active ? "bg-gray-100" : "hover:bg-gray-50"}`}
+                className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded transition ${
+                  active ? "bg-gray-100" : "hover:bg-gray-50"
+                }`}
               >
+                {type === "Color" ? (
+                  item.image ? (
+                    <div className="w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-5 h-5 rounded-full border border-gray-300"
+                      style={{ backgroundColor: item.hexCode }}
+                    />
+                  )
+                ) : type === "Material" && item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-5 h-5 rounded border border-gray-300 object-cover"
+                  />
+                ) : null}
                 {item.name}
                 {active && "✓"}
               </button>
@@ -110,7 +135,7 @@ const FilterProducts = ({
   selectedSort,
   totalProducts,
 }: FilterProps) => {
-  const { colors: colorsData, isLoading: isColorLoading } = useFetchColors();
+  const { colors: colorsData, isLoading: isColorLoading } = useFetchColors({});
   const { materials: materialData, isLoading: isMaterialLoading } =
     useFetchMaterials();
   const { subCategoryList: seriesWiseSubcategories } =
@@ -244,10 +269,20 @@ const FilterProducts = ({
                 }
                 className="flex items-center gap-2 px-3 py-1 border rounded-full bg-white hover:bg-gray-50"
               >
-                <span
-                  className="w-3 h-3 rounded-full border"
-                  style={{ backgroundColor: color.hexCode }}
-                />
+                {color.image ? (
+                  <div className="w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
+                    <img
+                      src={color.image}
+                      alt={color.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="w-5 h-5 rounded-full border border-gray-300"
+                    style={{ backgroundColor: color.hexCode }}
+                  />
+                )}
                 {color.name}
                 <X size={14} />
               </button>
@@ -432,15 +467,24 @@ const FilterProducts = ({
                                   : ids.delete(color.id);
                                 return { ...prev, colorIds: Array.from(ids) };
                               });
-                              // setCurrentPage(1);
                             }}
                             className="w-4 h-4 accent-black"
                           />
 
-                          <div
-                            className="w-5 h-5 rounded-full border border-gray-200"
-                            style={{ backgroundColor: color.hexCode }}
-                          />
+                          {color.image ? (
+                            <div className="w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
+                              <img
+                                src={color.image}
+                                alt={color.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              className="w-5 h-5 rounded-full border border-gray-300"
+                              style={{ backgroundColor: color.hexCode }}
+                            />
+                          )}
                           <span className="text-xs text-gray-700 group-hover:text-black">
                             {color.name}
                           </span>
