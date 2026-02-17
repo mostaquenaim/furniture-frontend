@@ -97,7 +97,7 @@ export default function CategoryWiseProduct() {
   console.log(products, "products");
 
   const { colors: colorsData, isLoading: isColorLoading } = useFetchColors({});
-  const { materials, isLoading: isMaterialLoading } = useFetchMaterials();
+  const { materials, isLoading: isMaterialLoading } = useFetchMaterials({});
 
   // console.log(products, "sortedImages");
 

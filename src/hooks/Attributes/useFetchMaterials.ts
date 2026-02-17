@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import useAxiosPublic from "../Axios/useAxiosPublic";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 
 export interface Material {
   id: number;
@@ -13,27 +15,38 @@ export interface Material {
   updatedAt?: Date;
 }
 
-const useFetchMaterials = () => {
+const useFetchMaterials = ({
+  isActive = true,
+  isEnabled = true,
+}: {
+  isActive?: boolean | null;
+  isEnabled?: boolean;
+}) => {
   const axiosPublic = useAxiosPublic();
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        const res = await axiosPublic.get("/materials");
-        setMaterials(res.data);
-      } catch {
-        toast.error("Failed to load materials");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const {
+    data: materials = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<Material[]>({
+    queryKey: ["materials"],
+    enabled: !!isEnabled, // wait until auth loading finishes
+    queryFn: async () => {
+      const response = await axiosPublic.get<Material[]>(`/materials?isActive=${isActive}`);
+      console.log(response.data, "response-data");
+      return response.data;
+    },
+  });
 
-    fetchMaterials();
-  }, [axiosPublic]);
-
-  return { materials, isLoading };
+  return {
+    materials,
+    isLoading,
+    error: axios.isAxiosError(error)
+      ? error.response?.data?.message || error.message
+      : error?.message,
+    refetch,
+  };
 };
 
 export default useFetchMaterials;

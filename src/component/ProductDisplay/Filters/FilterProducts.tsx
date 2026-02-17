@@ -137,7 +137,7 @@ const FilterProducts = ({
 }: FilterProps) => {
   const { colors: colorsData, isLoading: isColorLoading } = useFetchColors({});
   const { materials: materialData, isLoading: isMaterialLoading } =
-    useFetchMaterials();
+    useFetchMaterials({});
   const { subCategoryList: seriesWiseSubcategories } =
     useFetchSeriesWiseSubcategories({
       seriesSlug: slug,

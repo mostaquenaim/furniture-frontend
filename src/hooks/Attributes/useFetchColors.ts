@@ -5,12 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Color } from "@/types/product.types";
 
-// export interface Color {
-//   id: number;
-//   name: string;
-//   hexCode: string;
-// }
-
 const useFetchColors = ({ isEnabled = true }: { isEnabled?: boolean }) => {
   const axiosPublic = useAxiosPublic();
 

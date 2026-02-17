@@ -150,7 +150,7 @@ const ProductAddLBL = () => {
     isActive: true,
   });
 
-  const { materials, isLoading: isMaterialLoading } = useFetchMaterials();
+  const { materials, isLoading: isMaterialLoading } = useFetchMaterials({});
   const { categoryList, isLoading: categoriesLoading } =
     useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
 
