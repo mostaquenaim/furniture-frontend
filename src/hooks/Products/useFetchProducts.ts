@@ -9,20 +9,6 @@ import useAxiosPublic from "../Axios/useAxiosPublic";
 import { AxiosError } from "axios";
 
 /**
- * Parameters for fetching products
- */
-// interface FetchProductsParams {
-//   page?: number;
-//   limit?: number;
-//   search?: string;
-//   isActive?: boolean | null;
-//   order?: string;
-//   sortBy?: string;
-//   thumb?: boolean;
-//   enabled?: boolean;
-// }
-
-/**
  * Metadata for paginated product response
  */
 interface ProductsMeta {

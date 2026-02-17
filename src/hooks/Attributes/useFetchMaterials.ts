@@ -30,10 +30,12 @@ const useFetchMaterials = ({
     error,
     refetch,
   } = useQuery<Material[]>({
-    queryKey: ["materials"],
+    queryKey: ["materials", isActive],
     enabled: !!isEnabled, // wait until auth loading finishes
     queryFn: async () => {
-      const response = await axiosPublic.get<Material[]>(`/materials?isActive=${isActive}`);
+      const response = await axiosPublic.get<Material[]>(
+        `/materials?isActive=${isActive}`,
+      );
       console.log(response.data, "response-data");
       return response.data;
     },

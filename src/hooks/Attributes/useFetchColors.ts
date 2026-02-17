@@ -5,7 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Color } from "@/types/product.types";
 
-const useFetchColors = ({ isEnabled = true }: { isEnabled?: boolean }) => {
+const useFetchColors = ({
+  isActive = true,
+  isEnabled = true,
+}: {
+  isActive?: boolean | null;
+  isEnabled?: boolean;
+}) => {
   const axiosPublic = useAxiosPublic();
 
   const {
@@ -14,10 +20,10 @@ const useFetchColors = ({ isEnabled = true }: { isEnabled?: boolean }) => {
     error,
     refetch,
   } = useQuery<Color[]>({
-    queryKey: ["colors"],
+    queryKey: ["colors", isActive],
     enabled: !!isEnabled, // wait until auth loading finishes
     queryFn: async () => {
-      const response = await axiosPublic.get<Color[]>("/colors");
+      const response = await axiosPublic.get<Color[]>(`/colors?isActive=${isActive}`);
       return response.data;
     },
   });

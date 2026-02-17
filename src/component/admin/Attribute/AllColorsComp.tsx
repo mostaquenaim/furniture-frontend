@@ -8,18 +8,19 @@ import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import useFetchColors from "@/hooks/Attributes/useFetchColors";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
+import { Color } from "@/types/product.types";
 
 // TypeScript interfaces
-interface Color {
-  id: number;
-  name: string;
-  hexCode: string;
-  sortOrder: number;
-  isActive: boolean;
-  image?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// interface Color {
+//   id: number;
+//   name: string;
+//   hexCode: string;
+//   sortOrder: number;
+//   isActive: boolean;
+//   image?: string | null;
+//   createdAt?: string;
+//   updatedAt?: string;
+// }
 
 interface ColorFormData {
   name: string;
@@ -48,7 +49,9 @@ const DEFAULT_FORM_DATA: ColorFormData = {
 
 const AllColorsComp: React.FC = () => {
   const axiosSecure = useAxiosSecure();
-  const { colors, isLoading, refetch } = useFetchColors({});
+  const { colors, isLoading, refetch } = useFetchColors({
+    isActive: null,
+  });
 
   // State management
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -69,6 +72,27 @@ const AllColorsComp: React.FC = () => {
       formData.hexCode.match(/^#[0-9A-F]{6}$/i)
     );
   }, [formData.name, formData.hexCode]);
+
+  // toggle active status
+  const toggleStatusQuickly = useCallback(
+    async (color: Color) => {
+      setIsUploading(true);
+      try {
+        await axiosSecure.patch(`/colors/${color.id}`, {
+          isActive: !color.isActive,
+        });
+        toast.success(
+          `${color.name} is now ${!color.isActive ? "Active" : "Inactive"}`,
+        );
+        await refetch();
+      } catch (error: any) {
+        toast.error("Failed to update status");
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [axiosSecure, refetch],
+  );
 
   // Reset form to default state
   const resetForm = useCallback(() => {
@@ -132,9 +156,9 @@ const AllColorsComp: React.FC = () => {
     setIsAdding(false);
     setFormData({
       name: color.name,
-      hexCode: color.hexCode,
+      hexCode: color.hexCode ?? "#000000",
       sortOrder: color.sortOrder || 0,
-      isActive: color.isActive,
+      isActive: color.isActive ?? true,
       image: color.image || null,
     });
     setImagePreview(color.image || null);
@@ -182,6 +206,7 @@ const AllColorsComp: React.FC = () => {
         };
 
         if (id) {
+          console.log(payload, "payload");
           // Update existing color
           await axiosSecure.patch(`/colors/${id}`, payload);
           toast.success("Color updated successfully");
@@ -438,7 +463,28 @@ const AllColorsComp: React.FC = () => {
                   </td>
 
                   <td className="px-6 py-4">
-                    <StatusBadge isActive={color.isActive} />
+                    {isEditing ? (
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={formData.isActive}
+                          onChange={(e) =>
+                            handleInputChange("isActive", e.target.checked)
+                          }
+                          className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 transition-all"
+                        />
+                        <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">
+                          {formData.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </label>
+                    ) : (
+                      /* Passing the whole color object and a toggle handler for better UX */
+                      <StatusBadge
+                        isActive={color.isActive}
+                        onToggle={() => toggleStatusQuickly(color)}
+                        isPending={isUploading && editingId === color.id}
+                      />
+                    )}
                   </td>
 
                   <td className="px-6 py-4">
@@ -603,16 +649,30 @@ const ColorVisual: React.FC<ColorVisualProps> = ({
 
 interface StatusBadgeProps {
   isActive: boolean;
+  onToggle?: () => void;
+  isPending?: boolean;
 }
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ isActive }) => (
-  <span
-    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-      isActive ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600"
+const StatusBadge: React.FC<StatusBadgeProps> = ({
+  isActive,
+  onToggle,
+  isPending,
+}) => (
+  <button
+    onClick={onToggle}
+    disabled={isPending}
+    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${
+      isActive
+        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
     }`}
+    title="Click to toggle status"
   >
+    <span
+      className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isActive ? "bg-emerald-500" : "bg-gray-400"}`}
+    ></span>
     {isActive ? "Active" : "Inactive"}
-  </span>
+  </button>
 );
 
 interface DeleteConfirmationModalProps {
