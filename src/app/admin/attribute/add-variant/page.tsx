@@ -39,7 +39,7 @@ const AddVariant = () => {
     setIsLoading(true);
 
     try {
-      await axiosSecure.post("/variant", formData);
+      await axiosSecure.post("/variants", formData);
       toast.success("Variant added successfully");
       setFormData({ name: "", sortOrder: 0, isActive: true });
     } catch (err: unknown) {

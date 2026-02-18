@@ -1,55 +1,37 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
-import { Edit3, Save, Trash2, X, Plus, Ruler, Search, Tag } from "lucide-react";
 import toast from "react-hot-toast";
+import { Edit3, Save, Trash2, Plus, Tag } from "lucide-react";
 import LoadingDots from "@/component/Loading/LoadingDS";
-import useFetchSizes from "@/hooks/Attributes/useFetchSizes";
-import { ProductSizeRelation } from "@/types/product.types";
 import useFetchVariants from "@/hooks/Attributes/useFetchVariants";
 import StatusToggle from "./Status/StatusToggle";
 
-interface SizeFormData {
+interface VariantFormData {
   name: string;
   sortOrder: number;
   isActive: boolean;
-  variantId: number | null;
 }
 
-const DEFAULT_FORM: SizeFormData = {
+const DEFAULT_FORM: VariantFormData = {
   name: "",
   sortOrder: 0,
   isActive: true,
-  variantId: null,
 };
 
-const AllSizesComp: React.FC = () => {
+const AllVariantsComp: React.FC = () => {
   const axiosSecure = useAxiosSecure();
-  const { sizes, isLoading, refetch } = useFetchSizes({ isActive: null });
-  const { variants, isLoading: isVariantLoading } = useFetchVariants({
-    needSize: false,
-  });
+  const { variants, isLoading, refetch } = useFetchVariants({ isActive: null });
 
-  // UI States
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Form State
-  const [formData, setFormData] = useState<SizeFormData>(DEFAULT_FORM);
-
-  const filteredSizes = useMemo(() => {
-    if (!sizes) return [];
-    return sizes.filter(
-      (s: ProductSizeRelation) =>
-        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.variant?.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [sizes, searchTerm]);
+  const [formData, setFormData] = useState<VariantFormData>(DEFAULT_FORM);
 
   const resetForm = useCallback(() => {
     setFormData(DEFAULT_FORM);
@@ -57,31 +39,27 @@ const AllSizesComp: React.FC = () => {
     setIsAdding(false);
   }, []);
 
-  const handleEditInit = (size: ProductSizeRelation) => {
+  const handleEditInit = (variant: any) => {
     setIsAdding(false);
-    setEditingId(size.id);
+    setEditingId(variant.id);
     setFormData({
-      name: size.name,
-      sortOrder: size.sortOrder || 0,
-      isActive: size.isActive ?? true,
-      variantId: size.variantId,
+      name: variant.name,
+      sortOrder: variant.sortOrder || 0,
+      isActive: variant.isActive ?? true,
     });
   };
 
-  // save (edit/update/create)
   const handleSave = async (id?: number) => {
-    if (!formData.name.trim()) return toast.error("Size name is required");
-    if (!formData.variantId) return toast.error("Please select a variant");
+    if (!formData.name.trim()) return toast.error("Variant name is required");
 
     setIsProcessing(true);
     try {
       if (id) {
-        // Changed from /materials to /sizes
-        await axiosSecure.patch(`/sizes/${id}`, formData);
-        toast.success("Size updated");
+        await axiosSecure.patch(`/variants/${id}`, formData);
+        toast.success("Variant updated");
       } else {
-        await axiosSecure.post("/sizes", formData);
-        toast.success("Size created");
+        await axiosSecure.post("/variants", formData);
+        toast.success("Variant created");
       }
       refetch();
       resetForm();
@@ -96,8 +74,8 @@ const AllSizesComp: React.FC = () => {
     if (!deleteId) return;
     setIsProcessing(true);
     try {
-      await axiosSecure.delete(`/sizes/${deleteId}`);
-      toast.success("Size removed");
+      await axiosSecure.delete(`/variants/${deleteId}`);
+      toast.success("Variant removed");
       refetch();
       setDeleteId(null);
     } catch (error: any) {
@@ -106,6 +84,13 @@ const AllSizesComp: React.FC = () => {
       setIsProcessing(false);
     }
   };
+
+  const filteredVariants = useMemo(() => {
+    if (!variants) return [];
+    return variants.filter((v: any) =>
+      v.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [variants, searchTerm]);
 
   if (isLoading)
     return (
@@ -117,56 +102,51 @@ const AllSizesComp: React.FC = () => {
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-slate-200 bg-slate-50/50">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <Ruler size={22} className="text-indigo-600" /> Size Library
-            </h2>
-            <p className="text-sm text-slate-500">
-              Manage dimension labels and sorting
-            </p>
-          </div>
+      <div className="p-6 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <Tag size={22} className="text-indigo-600" /> Variant Library
+          </h2>
+          <p className="text-sm text-slate-500">
+            Manage product variant categories
+          </p>
+        </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                size={16}
-              />
-              <input
-                type="text"
-                placeholder="Search sizes or variants..."
-                className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            {!isAdding && (
-              <button
-                disabled={editingId !== null}
-                onClick={() => {
-                  resetForm();
-                  setIsAdding(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-black text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
-              >
-                <Plus size={18} /> Add New
-              </button>
-            )}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <input
+              type="text"
+              placeholder="Search variants..."
+              className="w-full pl-3 pr-4 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
+          {!isAdding && (
+            <button
+              disabled={editingId !== null}
+              onClick={() => {
+                resetForm();
+                setIsAdding(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-black text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
+            >
+              <Plus size={18} /> Add New
+            </button>
+          )}
         </div>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50">
             <tr>
               <th className="px-6 py-4 text-left font-bold text-slate-500 uppercase tracking-wider">
-                Size Name
+                Variant Name
               </th>
               <th className="px-6 py-4 text-left font-bold text-slate-500 uppercase tracking-wider">
-                Variant Category
+                Sizes Count
               </th>
               <th className="px-6 py-4 text-left font-bold text-slate-500 uppercase tracking-wider">
                 Order
@@ -183,12 +163,11 @@ const AllSizesComp: React.FC = () => {
           <tbody className="divide-y divide-slate-200 bg-white">
             {isAdding && (
               <tr className="bg-indigo-50/40 border-l-4 border-indigo-500">
-                {/* Size Name */}
                 <td className="px-6 py-4">
                   <input
                     autoFocus
                     type="text"
-                    placeholder="e.g. XL, 42, 10-inch"
+                    placeholder="e.g. Color, Size, Material"
                     className="w-full border-slate-200 rounded-lg border p-2 outline-none focus:ring-2 focus:ring-indigo-500"
                     value={formData.name}
                     onChange={(e) =>
@@ -196,27 +175,9 @@ const AllSizesComp: React.FC = () => {
                     }
                   />
                 </td>
-                {/* variant category */}
                 <td className="px-6 py-4">
-                  <select
-                    className="w-full border-slate-200 rounded-lg border p-2 outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={formData.variantId ?? ""}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        variantId: Number(e.target.value),
-                      })
-                    }
-                  >
-                    <option value="">Select Variant</option>
-                    {variants?.map((variant: any) => (
-                      <option key={variant.id} value={variant.id}>
-                        {variant.name}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="text-slate-400">—</span>
                 </td>
-                {/* sort order */}
                 <td className="px-6 py-4">
                   <input
                     type="number"
@@ -230,7 +191,6 @@ const AllSizesComp: React.FC = () => {
                     }
                   />
                 </td>
-                {/* status toggle */}
                 <td className="px-6 py-4">
                   <StatusToggle
                     active={formData.isActive}
@@ -250,19 +210,21 @@ const AllSizesComp: React.FC = () => {
                       onClick={resetForm}
                       className="p-2 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300"
                     >
-                      <X size={18} />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </td>
               </tr>
             )}
 
-            {filteredSizes.map((item: ProductSizeRelation) => {
+            {filteredVariants.map((item: any) => {
               const isEditing = editingId === item.id;
               return (
                 <tr
                   key={item.id}
-                  className={`hover:bg-slate-50 transition-colors ${isEditing ? "bg-amber-50/30" : ""}`}
+                  className={`hover:bg-slate-50 transition-colors ${
+                    isEditing ? "bg-amber-50/30" : ""
+                  }`}
                 >
                   <td className="px-6 py-4">
                     {isEditing ? (
@@ -280,33 +242,7 @@ const AllSizesComp: React.FC = () => {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
-                    {isEditing ? (
-                      <select
-                        className="w-full border-slate-200 rounded px-2 py-1 border outline-none focus:ring-2 focus:ring-indigo-500"
-                        value={formData.variantId ?? ""}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            variantId: Number(e.target.value),
-                          })
-                        }
-                      >
-                        <option value="">Select Variant</option>
-                        {variants?.map((variant: any) => (
-                          <option key={variant.id} value={variant.id}>
-                            {variant.name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-slate-600">
-                        <Tag size={14} className="text-slate-400" />
-                        {item.variant?.name || "Uncategorized"}
-                      </div>
-                    )}
-                  </td>
-
+                  <td className="px-6 py-4">{item.sizes?.length || 0}</td>
                   <td className="px-6 py-4">
                     {isEditing ? (
                       <input
@@ -326,9 +262,7 @@ const AllSizesComp: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <StatusToggle
-                      active={
-                        isEditing ? formData.isActive : (item.isActive ?? true)
-                      }
+                      active={isEditing ? formData.isActive : item.isActive}
                       onToggle={(v) =>
                         isEditing
                           ? setFormData({ ...formData, isActive: v })
@@ -352,7 +286,7 @@ const AllSizesComp: React.FC = () => {
                             onClick={resetForm}
                             className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition"
                           >
-                            <X size={18} />
+                            <Trash2 size={18} />
                           </button>
                         </>
                       ) : (
@@ -391,7 +325,7 @@ const AllSizesComp: React.FC = () => {
               Permanently delete?
             </h3>
             <p className="text-sm text-slate-500 text-center mt-2">
-              Removing this size might affect products that currently use it.
+              Removing this variant will also affect associated sizes.
             </p>
             <div className="flex gap-3 mt-6">
               <button
@@ -414,4 +348,4 @@ const AllSizesComp: React.FC = () => {
   );
 };
 
-export default AllSizesComp;
+export default AllVariantsComp;

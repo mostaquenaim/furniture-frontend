@@ -175,6 +175,7 @@ const AdminDrawer = () => {
           sub: [
             { href: "/admin/attribute/colors", label: "Colors" },
             { href: "/admin/attribute/sizes", label: "Sizes" },
+            { href: "/admin/attribute/variants", label: "Variants" },
             { href: "/admin/attribute/materials", label: "Materials" },
             { href: "/admin/attribute/manage", label: "Manage" },
           ],
