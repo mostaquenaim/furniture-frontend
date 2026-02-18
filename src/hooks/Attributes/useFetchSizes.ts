@@ -1,30 +1,28 @@
 import useAxiosPublic from "../Axios/useAxiosPublic";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { Variant } from "@/types/product.types";
+import { ProductSizeRelation } from "@/types/product.types";
 
-const useFetchVariants = ({
+const useFetchSizes = ({
   isActive = true,
   isEnabled = true,
-  needSize = true
 }: {
   isActive?: boolean | null;
   isEnabled?: boolean;
-  needSize?:boolean
 }) => {
   const axiosPublic = useAxiosPublic();
 
   const {
-    data: variants = [],
+    data: sizes = [],
     isLoading,
     error,
     refetch,
-  } = useQuery<Variant[]>({
-    queryKey: ["all-variants", isActive],
+  } = useQuery<ProductSizeRelation[]>({
+    queryKey: ["all-sizes", isActive],
     enabled: !!isEnabled, // wait until auth loading finishes
     queryFn: async () => {
-      const response = await axiosPublic.get<Variant[]>(
-        `/variants?isActive=${isActive}&&needSizes=${needSize}`,
+      const response = await axiosPublic.get<ProductSizeRelation[]>(
+        `/sizes?isActive=${isActive}`,
       );
       console.log(response.data, "response-data");
       return response.data;
@@ -32,7 +30,7 @@ const useFetchVariants = ({
   });
 
   return {
-    variants,
+    sizes,
     isLoading,
     error: axios.isAxiosError(error)
       ? error.response?.data?.message || error.message
@@ -41,4 +39,4 @@ const useFetchVariants = ({
   };
 };
 
-export default useFetchVariants;
+export default useFetchSizes;

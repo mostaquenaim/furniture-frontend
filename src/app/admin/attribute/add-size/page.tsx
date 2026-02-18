@@ -23,7 +23,7 @@ const AddSize = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   /* Fetch variants */
-  const { variants, isLoading: isPending } = useFetchVariants();
+  const { variants, isLoading: isPending } = useFetchVariants({});
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,

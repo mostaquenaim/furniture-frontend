@@ -119,12 +119,22 @@ enum UserRole {
   CUSTOMER,
 }
 
-export interface ProductSizeRelation {
-  // size: {
+export interface Variant {
   id: number;
   name: string;
+  sizes?: {
+    name: string;
+    id: number;
+  }[];
+}
+
+export interface ProductSizeRelation {
+  id: number;
+  name: string;
+  sortOrder?: number;
+  isActive?: boolean;
   variantId: number;
-  // };
+  variant?: Variant;
 }
 
 interface ProductsMeta {

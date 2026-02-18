@@ -172,7 +172,7 @@ const UpdateProductPage = () => {
 
   // Hooks
   const { colors, isLoading: colorsLoading } = useFetchColors({});
-  const { variants, isLoading: variantsLoading } = useFetchVariants();
+  const { variants, isLoading: variantsLoading } = useFetchVariants({});
   const { seriesList, isLoading: seriesLoading } = useFetchSeries({
     isActive: true,
   });

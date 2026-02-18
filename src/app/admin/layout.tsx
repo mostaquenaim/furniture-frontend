@@ -25,7 +25,6 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  
   return (
     <div className={`${inter.variable} font-sans antialiased`}>
       <Providers>
@@ -37,11 +36,11 @@ export default function AdminLayout({
                 <div className="transition-all duration-300">
                   <AdminHeader />
                   {/* ${isAdminOpen ? 'md:pl-64' : 'md:pl-20'} */}
-                  <main className={`p-4 sm:p-6 lg:p-8 bg-slate-100 
-                    `}>
-                    <div className="max-w-7xl mx-auto">
-                      {children}
-                    </div>
+                  <main
+                    className={`p-4 sm:p-6 lg:p-8 bg-slate-100 min-h-screen
+                    `}
+                  >
+                    <div className="max-w-7xl mx-auto">{children}</div>
                   </main>
                 </div>
               </div>
