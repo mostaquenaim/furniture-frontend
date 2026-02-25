@@ -21,7 +21,7 @@ import axios, { AxiosError } from "axios";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { optimizeImage } from "@/utils/imageOptimizer";
 import useFetchBlogCategories from "@/hooks/Admin/Blog/useFetchBlogCategories";
-import { generateSlug } from "@/utils/generateSlug";
+import { generateSlug } from "@/utils/validation";
 
 interface ImageResponse {
   image: File | null; // Expect a File object

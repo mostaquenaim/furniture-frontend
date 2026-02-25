@@ -30,10 +30,11 @@ import {
   ProductSubCategory,
   Tag,
 } from "@/types/product.types";
+import VariantNSizes from "./FormComponents/VariantNSizes";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface ProductFormData {
+export interface ProductFormData {
   title: string;
   slug: string;
   sku?: string;
@@ -64,7 +65,7 @@ interface ProductFormData {
   isFeatured: boolean;
 }
 
-interface SizeDetail {
+export interface SizeDetail {
   sizeId: number;
   sku?: string;
   price?: number;
@@ -349,7 +350,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
   // Sync product discount to sizes when product discount changes (but not vice versa)
   useEffect(() => {
-    // Skip during hydration or if no variant selected
+    // Skip during hydration
     if (isHydrating.current || !formData.variantId) return;
 
     setSizeSelections((prev) => {
@@ -379,7 +380,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     formData.discountType,
     formData.discount,
     formData.selectedColors,
-    formData.variantId,
+    formData.variantId
   ]);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -638,6 +639,10 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     }
     return Math.max(0, formData.basePrice - formData.discount);
   }, [formData.basePrice, formData.discount, formData.discountType]);
+
+  const handleTagDropDown = () => {
+    setShowDropdown(!showDropdown);
+  };
 
   // ─── Submit ───────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1226,6 +1231,18 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           </FormSection>
 
           {/* ── Variant & Sizes ── */}
+          <VariantNSizes
+            formData={formData}
+            variants={variants}
+            variantsLoading={variantsLoading}
+            colors={colors}
+            sizeSelections={sizeSelections}
+            availableSizes={availableSizes}
+            setFormData={setFormData}
+            calculateSizeDiscountedPrice={calculateSizeDiscountedPrice}
+            setSizeSelections={setSizeSelections}
+          />
+          
           <FormSection
             title="Variant & Sizes"
             description="Select variant type and manage sizes for each color"
@@ -1542,9 +1559,12 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
               {/* Tags */}
               <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tags
+                </label>
                 <div
                   className="gray-border rounded-md p-2 flex flex-wrap gap-2 cursor-text"
-                  onClick={() => setShowDropdown(true)}
+                  onClick={handleTagDropDown}
                 >
                   {selectedTags.map((tag) => (
                     <span
