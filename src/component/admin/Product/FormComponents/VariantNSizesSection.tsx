@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dispatch, SetStateAction, memo } from "react";
 import { FormSection } from "../FormSection";
 import { ProductFormData, SizeDetail } from "../ProductForm";
@@ -13,6 +14,12 @@ interface Props {
   calculateSizeDiscountedPrice: (sizeDetail: SizeDetail) => number;
   availableSizes: { id: number; name: string }[];
   setSizeSelections: Dispatch<SetStateAction<Record<number, SizeDetail[]>>>;
+  handleSizeFieldChange: (
+    colorId: number,
+    sizeId: number,
+    field: keyof SizeDetail,
+    value: string | number | null,
+  ) => void;
 }
 
 const VariantNSizes = ({
@@ -25,30 +32,8 @@ const VariantNSizes = ({
   calculateSizeDiscountedPrice,
   availableSizes,
   setSizeSelections,
+  handleSizeFieldChange,
 }: Props) => {
-    
-  const handleSizeFieldChange = (
-    colorId: number,
-    sizeId: number,
-    field: keyof SizeDetail,
-    value: string | number | null,
-  ) => {
-    setSizeSelections((prev) => {
-      const next = { ...prev };
-      if (!next[colorId]) return prev;
-
-      const idx = next[colorId].findIndex((s) => s.sizeId === sizeId);
-      if (idx === -1) return prev;
-
-      next[colorId][idx] = {
-        ...next[colorId][idx],
-        [field]:
-          field === "quantity" || field === "discount" ? Number(value) : value,
-      };
-      return next;
-    });
-  };
-
   return (
     <FormSection
       title="Variants & Inventory"
@@ -65,40 +50,12 @@ const VariantNSizes = ({
             disabled={variantsLoading}
             required={formData.hasColorVariants}
             className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 transition-all shadow-sm"
-            onChange={(e) => {
-              const id = e.target.value ? Number(e.target.value) : null;
-              const variant = variants.find((v) => v.id === id);
-
-              setFormData((prev) => ({ ...prev, variantId: id }));
-
-              if (variant?.sizes) {
-                setSizeSelections((prev) => {
-                  const next = { ...prev };
-                  let changed = false;
-                  formData.selectedColors.forEach((colorId) => {
-                    const existing = next[colorId] || [];
-                    const existingIds = new Set(existing.map((s) => s.sizeId));
-                    const missing = variant.sizes!.filter(
-                      (s) => !existingIds.has(s.id),
-                    );
-
-                    if (missing.length > 0) {
-                      next[colorId] = [
-                        ...existing,
-                        ...missing.map((s) => ({
-                          sizeId: s.id,
-                          sku: "",
-                          price: formData.basePrice || undefined,
-                          quantity: 0,
-                        })),
-                      ];
-                      changed = true;
-                    }
-                  });
-                  return changed ? next : prev;
-                });
-              }
-            }}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                variantId: Number(e.target.value) || null,
+              }))
+            }
           >
             <option value="">Select a variant category...</option>
             {variants?.map((v) => (
@@ -284,7 +241,7 @@ const SizeRow = memo(
           />
         </td>
         <td className="py-3 font-semibold text-sm text-green-700">
-          ৳{finalPrice.toLocaleString()}
+          ৳{parseInt(finalPrice).toLocaleString()}
         </td>
         <td className="py-3 text-right pr-2">
           {hasCustomDiscount && (

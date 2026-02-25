@@ -30,7 +30,8 @@ import {
   ProductSubCategory,
   Tag,
 } from "@/types/product.types";
-import VariantNSizes from "./FormComponents/VariantNSizes";
+import VariantNSizes from "./FormComponents/VariantNSizesSection";
+import BasicInfoSection from "./FormComponents/BasicInfoSection";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -292,61 +293,41 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     setSizeSelections(colorSizes);
   };
 
-  // ─── Sync sizes when variant / colors change (create mode) ───────────────
   useEffect(() => {
-    if (isEditMode) {
-      // In edit mode, skip effect during hydration
-      if (pageLoading || isHydrating.current) return;
-    } else {
-      // In create mode, run every time
-      if (!formData.variantId) return;
-    }
+    const isHydratingNow = isEditMode && (pageLoading || isHydrating.current);
 
-    if (!selectedVariant) return;
+    if (isHydratingNow || !selectedVariant) return;
 
     setSizeSelections((prev) => {
-      const next = { ...prev };
-      let changed = false;
+      const variantSizes = selectedVariant.sizes || [];
+
+      const next: Record<number, SizeDetail[]> = {};
 
       formData.selectedColors.forEach((colorId) => {
-        const existing = next[colorId] || [];
-        const existingIds = new Set(existing.map((s) => s.sizeId));
-        const missing = availableSizes.filter((s) => !existingIds.has(s.id));
+        const existing = prev[colorId] || [];
 
-        if (!next[colorId]) {
-          next[colorId] = availableSizes.map((s) => ({
-            sizeId: s.id,
-            sku: "",
-            price: formData.basePrice || undefined,
-            quantity: 0,
-            discountType: null,
-            discount: 0,
-          }));
-          changed = true;
-        } else if (missing.length > 0) {
-          next[colorId] = [
-            ...existing,
-            ...missing.map((s) => ({
-              sizeId: s.id,
+        const existingMap = new Map(existing.map((s) => [s.sizeId, s]));
+
+        next[colorId] = variantSizes.map((size) => {
+          return (
+            existingMap.get(size.id) ?? {
+              sizeId: size.id,
               sku: "",
-              price: formData.basePrice || undefined,
+              price: formData.basePrice,
               quantity: 0,
               discountType: null,
               discount: 0,
-            })),
-          ];
-          changed = true;
-        }
+            }
+          );
+        });
       });
 
-      return changed ? next : prev;
+      // shallow compare
+      const same = JSON.stringify(prev) === JSON.stringify(next);
+
+      return same ? prev : next;
     });
-  }, [
-    formData.selectedColors,
-    selectedVariant,
-    formData.variantId,
-    pageLoading,
-  ]);
+  }, [formData.selectedColors, selectedVariant, isEditMode, pageLoading]);
 
   // Sync product discount to sizes when product discount changes (but not vice versa)
   useEffect(() => {
@@ -380,7 +361,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     formData.discountType,
     formData.discount,
     formData.selectedColors,
-    formData.variantId
+    formData.variantId,
   ]);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -484,31 +465,58 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
     if (!isSelected) {
       // Init sizes if not already present
-      if (!sizeSelections[colorId] && selectedVariant?.sizes) {
-        setSizeSelections((prev) => ({
-          ...prev,
-          [colorId]: (selectedVariant.sizes || []).map((s) => ({
-            sizeId: s.id,
-            sku: "",
-            price: formData.basePrice || undefined,
-            quantity: 0,
-            discountType: null, // Add this
-            discount: 0, // Add this
-          })),
-        }));
-      }
+      // if (!sizeSelections[colorId] && selectedVariant?.sizes) {
+      //   setSizeSelections((prev) => ({
+      //     ...prev,
+      //     [colorId]: (selectedVariant.sizes || []).map((s) => ({
+      //       sizeId: s.id,
+      //       sku: "",
+      //       price: formData.basePrice || undefined,
+      //       quantity: 0,
+      //       discountType: null, // Add this
+      //       discount: 0, // Add this
+      //     })),
+      //   }));
+      // }
       if (!colorImages[colorId]) {
         setColorImages((prev) => ({ ...prev, [colorId]: [] }));
         setColorUseDefault((prev) => ({ ...prev, [colorId]: true }));
       }
-    } else if (!isEditMode) {
-      // In create mode, clean up sizes on deselect
-      setSizeSelections((prev) => {
-        const next = { ...prev };
-        delete next[colorId];
-        return next;
-      });
     }
+    // else if (!isEditMode) {
+    //   // In create mode, clean up sizes on deselect
+    //   setSizeSelections((prev) => {
+    //     const next = { ...prev };
+    //     delete next[colorId];
+    //     return next;
+    //   });
+    // }
+  };
+
+  const handleSizeFieldChange = (
+    colorId: number,
+    sizeId: number,
+    field: keyof SizeDetail,
+    value: string | number | null,
+  ) => {
+    setSizeSelections((prev) => {
+      if (!prev[colorId]) return prev;
+
+      return {
+        ...prev,
+        [colorId]: prev[colorId].map((size) =>
+          size.sizeId === sizeId
+            ? {
+                ...size,
+                [field]:
+                  field === "quantity" || field === "discount"
+                    ? Number(value)
+                    : value,
+              }
+            : size,
+        ),
+      };
+    });
   };
 
   const handleColorImagesChange = (
@@ -519,28 +527,85 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   const handleColorUseDefaultChange = (colorId: number, useDefault: boolean) =>
     setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
 
-  const handleSizeFieldChange = (
-    colorId: number,
-    sizeId: number,
-    field: keyof SizeDetail,
-    value: string | number,
+  const handleDiscountTypeChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
+    const value = e.target.value as "PERCENT" | "FIXED";
+
+    setFormData((prev) => ({
+      ...prev,
+      discountType: value,
+    }));
+
     setSizeSelections((prev) => {
-      const next = { ...prev };
-      if (next[colorId]) {
-        const idx = next[colorId].findIndex((s) => s.sizeId === sizeId);
-        if (idx !== -1) {
-          next[colorId][idx] = {
-            ...next[colorId][idx],
-            [field]:
-              field === "quantity" || field === "discount"
-                ? Number(value)
-                : value,
-          };
-        }
-      }
-      return next;
+      let changed = false;
+
+      const next = Object.fromEntries(
+        Object.entries(prev).map(([colorId, sizes]) => [
+          Number(colorId),
+          sizes.map((size) => {
+            // only update inherited discounts
+            // if (!size.discountType) {
+            changed = true;
+            return {
+              ...size,
+              discountType: value,
+            };
+            // }
+            return size;
+          }),
+        ]),
+      );
+
+      return changed ? next : prev;
     });
+  };
+
+  const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === "" ? 0 : Number(e.target.value);
+
+    setFormData((prev) => ({
+      ...prev,
+      discount: value,
+    }));
+
+    setSizeSelections((prev) => {
+      let changed = false;
+
+      const next = Object.fromEntries(
+        Object.entries(prev).map(([colorId, sizes]) => [
+          Number(colorId),
+          sizes.map((size) => {
+            // if (!size.discountType) {
+            changed = true;
+            return {
+              ...size,
+              discount: value,
+            };
+            // }
+            return size;
+          }),
+        ]),
+      );
+
+      return changed ? next : prev;
+    });
+  };
+
+  const handleDiscountStartChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      discountStart: e.target.value,
+    }));
+  };
+
+  const handleDiscountEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      discountEnd: e.target.value,
+    }));
   };
 
   // ─── Tag handlers ─────────────────────────────────────────────────────────
@@ -555,6 +620,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     if (selectedTags.length >= 10 || selectedTags.find((t) => t.id === tag.id))
       return;
     setSelectedTags((prev) => [...prev, tag]);
+    setShowDropdown(false);
   };
 
   const removeTag = (id: number) =>
@@ -679,10 +745,10 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
               .map((size) => ({
                 sizeId: size.sizeId,
                 sku: size.sku || "",
-                price: size.price || formData.basePrice,
+                price: Number(size.price) || Number(formData.basePrice),
                 quantity: size.quantity,
-                discountType: size.discountType, // Add this
-                discount: size.discount, // Add this
+                discountType: size.discountType,
+                discount: size.discount,
               }));
 
             return {
@@ -769,7 +835,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
               colorData.sizes = validSizes.map((size) => ({
                 sizeId: size.sizeId,
                 sku: size.sku || "",
-                price: size.price || formData.basePrice,
+                price: Number(size.price) || Number(formData.basePrice),
                 quantity: size.quantity,
                 discountType: size.discountType,
                 discount: size.discount,
@@ -854,172 +920,12 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* ── Basic Information ── */}
-          <FormSection
-            title="Basic Information"
-            description="Product name, pricing, and stock"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={handleNameChange}
-                  placeholder="Enter product name"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Slug
-                </label>
-                <input
-                  type="text"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      slug: generateSlug(e.target.value),
-                    }))
-                  }
-                  placeholder="product-slug"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price *
-                </label>
-                <input
-                  type="number"
-                  value={formData.basePrice || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      basePrice: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-            </div>
-          </FormSection>
-
-          {/* ── Discount ── */}
-          <FormSection
-            title="Discount"
-            description="Set up product discount (applies to all sizes by default)"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {isEditMode && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Default Discount Type
-                  </label>
-                  <select
-                    value={formData.discountType}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        discountType: e.target.value as "PERCENT" | "FIXED",
-                      }))
-                    }
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="PERCENT">Percentage (%)</option>
-                    <option value="FIXED">Fixed Amount</option>
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {isEditMode && formData.discountType === "FIXED"
-                    ? "Default Discount Amount"
-                    : "Default Discount (%)"}
-                </label>
-                <input
-                  type="number"
-                  value={formData.discount || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      discount: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                  placeholder="0"
-                  min="0"
-                  max={
-                    !isEditMode || formData.discountType === "PERCENT"
-                      ? 100
-                      : undefined
-                  }
-                  step="0.01"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  This applies to all sizes by default. Override per size below.
-                </p>
-              </div>
-
-              {isEditMode && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Default Final Price
-                  </label>
-                  <input
-                    type="text"
-                    value={`৳${discountedPrice.toFixed(2)}`}
-                    disabled
-                    className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-700"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.discountStart}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      discountStart: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.discountEnd}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      discountEnd: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </FormSection>
+          <BasicInfoSection
+            formData={formData}
+            setFormData={setFormData}
+            generateSlug={generateSlug}
+            handleNameChange={handleNameChange}
+          />
 
           {/* ── Categories ── */}
           <FormSection
@@ -1230,6 +1136,86 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
             </div>
           </FormSection>
 
+          {/* ── Discount ── */}
+          <FormSection
+            title="Price"
+            description="Set up product discount (applies to all sizes by default)"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* {isEditMode && ( */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Discount Type
+                </label>
+                <select
+                  value={formData.discountType || "PERCENT"}
+                  onChange={handleDiscountTypeChange}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                >
+                  <option value="PERCENT">Percentage (%)</option>
+                  <option value="FIXED">Fixed Amount</option>
+                </select>
+              </div>
+              {/* )} */}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {formData.discountType === "FIXED"
+                    ? " Discount Amount"
+                    : " Discount (%)"}
+                </label>
+                <input
+                  type="number"
+                  value={formData.discount || ""}
+                  onChange={handleDiscountChange}
+                  placeholder="0"
+                  min="0"
+                  max={formData.discountType === "PERCENT" ? 100 : undefined}
+                  // step="0.01"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This applies to all sizes by default. Override per size below.
+                </p>
+              </div>
+
+              {/* {isEditMode && ( */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Final Price
+                </label>
+                <input
+                  type="text"
+                  value={`৳${discountedPrice.toFixed(2)}`}
+                  disabled
+                  className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-700"
+                />
+              </div>
+              {/* )} */}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.discountStart}
+                  onChange={handleDiscountStartChange}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.discountEnd}
+                  onChange={handleDiscountEndChange}
+                />
+              </div>
+            </div>
+          </FormSection>
+
           {/* ── Variant & Sizes ── */}
           <VariantNSizes
             formData={formData}
@@ -1239,289 +1225,10 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
             sizeSelections={sizeSelections}
             availableSizes={availableSizes}
             setFormData={setFormData}
+            handleSizeFieldChange={handleSizeFieldChange}
             calculateSizeDiscountedPrice={calculateSizeDiscountedPrice}
             setSizeSelections={setSizeSelections}
           />
-          
-          <FormSection
-            title="Variant & Sizes"
-            description="Select variant type and manage sizes for each color"
-          >
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Variant Type *
-                </label>
-                <select
-                  value={formData.variantId || ""}
-                  onChange={(e) => {
-                    const newVariantId = e.target.value
-                      ? Number(e.target.value)
-                      : null;
-                    const newVariant = variants.find(
-                      (v) => v.id === newVariantId,
-                    );
-
-                    setFormData((prev) => ({
-                      ...prev,
-                      variantId: newVariantId,
-                    }));
-
-                    if (newVariant?.sizes) {
-                      setSizeSelections((prev) => {
-                        const next = { ...prev };
-                        let changed = false;
-                        formData.selectedColors.forEach((colorId) => {
-                          const existing = next[colorId] || [];
-                          const existingIds = new Set(
-                            existing.map((s) => s.sizeId),
-                          );
-                          const missing = newVariant.sizes!.filter(
-                            (s) => !existingIds.has(s.id),
-                          );
-                          if (missing.length > 0) {
-                            next[colorId] = [
-                              ...existing,
-                              ...missing.map((s) => ({
-                                sizeId: s.id,
-                                sku: "",
-                                price: formData.basePrice || undefined,
-                                quantity: 0,
-                              })),
-                            ];
-                            changed = true;
-                          }
-                        });
-                        return changed ? next : prev;
-                      });
-                    }
-                  }}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={variantsLoading}
-                  required={formData.hasColorVariants}
-                >
-                  <option value="">-- Select Variant --</option>
-                  {variants?.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {formData.variantId && formData.selectedColors.length > 0 && (
-                <div className="space-y-6">
-                  <h4 className="text-sm font-medium text-gray-700">
-                    Size Management per Color
-                  </h4>
-                  {formData.selectedColors.map((colorId) => {
-                    const color = colors.find((c) => c.id === colorId);
-                    const colorSizes = sizeSelections[colorId] || [];
-
-                    return (
-                      <div
-                        key={colorId}
-                        className="gray-border rounded-lg p-4 bg-gray-50"
-                      >
-                        <div className="flex items-center gap-2 mb-4">
-                          <div
-                            className="w-4 h-4 rounded-full gray-border shadow-sm"
-                            style={{ backgroundColor: color?.hexCode }}
-                          />
-                          <h5 className="font-medium">{color?.name} Sizes</h5>
-                        </div>
-
-                        {colorSizes.length > 0 ? (
-                          <div className="space-y-4">
-                            {/* Header */}
-                            <div className="grid grid-cols-1 md:grid-cols-8 gap-3 text-xs font-medium text-gray-500 px-2">
-                              <div className="col-span-1">Size</div>
-                              <div className="col-span-1">SKU</div>
-                              <div className="col-span-1">Price</div>
-                              <div className="col-span-1">Discount Type</div>
-                              <div className="col-span-1">Discount</div>
-                              <div className="col-span-1">Quantity</div>
-                              <div className="col-span-1">Final Price</div>
-                              <div className="col-span-1">Action</div>
-                            </div>
-
-                            {colorSizes.map((sizeDetail) => {
-                              const size = availableSizes.find(
-                                (s) => s.id === sizeDetail.sizeId,
-                              );
-                              const finalPrice =
-                                calculateSizeDiscountedPrice(sizeDetail);
-                              const hasCustomDiscount =
-                                sizeDetail.discountType !== null &&
-                                (sizeDetail.discountType !==
-                                  formData.discountType ||
-                                  sizeDetail.discount !== formData.discount);
-
-                              return (
-                                <div
-                                  key={sizeDetail.sizeId}
-                                  className={`grid grid-cols-1 md:grid-cols-8 gap-3 items-center border-b border-gray-200 pb-3 last:border-0 ${
-                                    hasCustomDiscount ? "bg-blue-50" : ""
-                                  }`}
-                                >
-                                  <div className="col-span-1">
-                                    <span className="text-sm font-medium">
-                                      {size?.name ||
-                                        `Size ${sizeDetail.sizeId}`}
-                                    </span>
-                                  </div>
-
-                                  <div className="col-span-1">
-                                    <input
-                                      type="text"
-                                      placeholder="SKU"
-                                      value={sizeDetail.sku || ""}
-                                      onChange={(e) =>
-                                        handleSizeFieldChange(
-                                          colorId,
-                                          sizeDetail.sizeId,
-                                          "sku",
-                                          e.target.value,
-                                        )
-                                      }
-                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                                    />
-                                  </div>
-
-                                  <div className="col-span-1">
-                                    <input
-                                      type="number"
-                                      placeholder="Price"
-                                      value={
-                                        sizeDetail.price || formData.basePrice
-                                      }
-                                      onChange={(e) =>
-                                        handleSizeFieldChange(
-                                          colorId,
-                                          sizeDetail.sizeId,
-                                          "price",
-                                          e.target.value,
-                                        )
-                                      }
-                                      min="0"
-                                      step="0.01"
-                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                                    />
-                                  </div>
-
-                                  <div className="col-span-1">
-                                    <select
-                                      value={sizeDetail.discountType || ""}
-                                      onChange={(e) =>
-                                        handleSizeFieldChange(
-                                          colorId,
-                                          sizeDetail.sizeId,
-                                          "discountType",
-                                          e.target.value || null,
-                                        )
-                                      }
-                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                                    >
-                                      <option value="">
-                                        Use Product Default
-                                      </option>
-                                      <option value="PERCENT">%</option>
-                                      <option value="FIXED">Fixed</option>
-                                    </select>
-                                  </div>
-
-                                  <div className="col-span-1">
-                                    <input
-                                      type="number"
-                                      placeholder={
-                                        sizeDetail.discountType === "PERCENT"
-                                          ? "%"
-                                          : "Amount"
-                                      }
-                                      value={sizeDetail.discount || ""}
-                                      onChange={(e) =>
-                                        handleSizeFieldChange(
-                                          colorId,
-                                          sizeDetail.sizeId,
-                                          "discount",
-                                          e.target.value,
-                                        )
-                                      }
-                                      min="0"
-                                      max={
-                                        sizeDetail.discountType === "PERCENT"
-                                          ? 100
-                                          : undefined
-                                      }
-                                      step="0.01"
-                                      disabled={!sizeDetail.discountType}
-                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    />
-                                  </div>
-
-                                  <div className="col-span-1">
-                                    <input
-                                      type="number"
-                                      placeholder="Quantity"
-                                      value={sizeDetail.quantity || 0}
-                                      onChange={(e) =>
-                                        handleSizeFieldChange(
-                                          colorId,
-                                          sizeDetail.sizeId,
-                                          "quantity",
-                                          e.target.value,
-                                        )
-                                      }
-                                      min="0"
-                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                                    />
-                                  </div>
-
-                                  <div className="col-span-1 text-sm font-medium text-green-600">
-                                    ৳{finalPrice.toFixed(2)}
-                                  </div>
-
-                                  {/* Reset button */}
-                                  {hasCustomDiscount && (
-                                    <div className="col-span-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          handleSizeFieldChange(
-                                            colorId,
-                                            sizeDetail.sizeId,
-                                            "discountType",
-                                            null,
-                                          );
-                                          handleSizeFieldChange(
-                                            colorId,
-                                            sizeDetail.sizeId,
-                                            "discount",
-                                            0,
-                                          );
-                                        }}
-                                        className="text-xs text-blue-600 hover:text-blue-800 underline"
-                                      >
-                                        Reset to default
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-500 italic">
-                            No sizes available for this variant
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </FormSection>
 
           {/* ── Additional Details ── */}
           <FormSection
