@@ -1,12 +1,12 @@
-import PaymentPageComponent from '@/component/Checkout/Payment';
-import React from 'react';
+import PaymentPageComponent from "@/component/Checkout/Payment";
+import React, { Suspense } from "react";
 
 const CheckPaymentPage = () => {
-    return (
-        <div>
-            <PaymentPageComponent></PaymentPageComponent>
-        </div>
-    );
+  return (
+    <Suspense>
+      <PaymentPageComponent></PaymentPageComponent>
+    </Suspense>
+  );
 };
 
 export default CheckPaymentPage;

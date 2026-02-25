@@ -8,7 +8,6 @@ import TakaIcon from "../TakaIcon";
 import { useRouter } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
-import { isAuthenticated } from "@/utils/auth";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 export function QuickShopModal({

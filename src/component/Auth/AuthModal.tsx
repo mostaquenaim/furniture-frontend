@@ -187,8 +187,6 @@ export default function AuthModal({
 
       setReceivedOtp(res.data.otpDetails);
 
-      console.log(res.data, "resubhsdfnpp");
-
       const data = res.data;
 
       if (data.otpSentTo) {

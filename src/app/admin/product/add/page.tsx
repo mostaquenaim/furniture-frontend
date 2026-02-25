@@ -1,10 +1,9 @@
-import ProductAddLBL from '@/component/admin/Product/ProductAddLBL';
-import React from 'react';
+import ProductForm from '@/component/admin/Product/ProductForm';
 
 const ProductAddPage = () => {
     return (
         <div>
-            <ProductAddLBL></ProductAddLBL>
+            <ProductForm />
         </div>
     );
 };

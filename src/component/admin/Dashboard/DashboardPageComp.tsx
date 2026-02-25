@@ -8,6 +8,7 @@ import UserRetentionChart from "./Components/UserRetentionChart";
 import TopProductsTable from "./Components/TopProductsTable";
 import RecentOrders from "./Components/RecentOrders";
 import SearchAnalytics from "./Components/SearchAnalytics";
+import LoadingDots from "@/component/Loading/LoadingDS";
 
 export default function DashboardPageComp() {
   // 1. Initialize State
@@ -41,7 +42,9 @@ export default function DashboardPageComp() {
   if (loading && !data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 animate-pulse">Loading dashboard data...</p>
+        <p className="text-gray-500 animate-pulse">
+          <LoadingDots />
+        </p>
       </div>
     );
   }

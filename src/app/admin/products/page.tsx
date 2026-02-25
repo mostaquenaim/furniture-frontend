@@ -13,6 +13,7 @@ import {
   ProductSize,
   SubCategoryRelation,
 } from "@/types/product.types";
+import { Search } from "lucide-react";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -22,6 +23,8 @@ const AllProducts = () => {
   const [isActive, setIsActive] = useState<boolean | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  const axiosSecure = useAxiosSecure();
 
   const { products, meta, isLoading, isFetching, refetch } = useFetchProducts({
     page: currentPage,
@@ -71,8 +74,6 @@ const AllProducts = () => {
   const handleEdit = (productId: string) => {
     router.push(`/admin/products/update/${productId}`);
   };
-
-  const axiosSecure = useAxiosSecure();
 
   // Handle Toggle Product Status (Enable/Disable)
   const handleToggleStatus = async (productId: string) => {
@@ -154,7 +155,7 @@ const AllProducts = () => {
             }}
           />
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-            🔍
+            <Search />
           </div>
         </div>
 
@@ -364,7 +365,7 @@ const AllProducts = () => {
       <div className="md:hidden space-y-4">
         {isLoading ? (
           <div className="py-12 text-center text-gray-500">
-            Loading products...
+            <LoadingDots />
           </div>
         ) : products.length === 0 ? (
           <div className="py-12 text-center text-gray-500">

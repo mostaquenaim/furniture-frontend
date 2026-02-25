@@ -23,6 +23,10 @@ export interface Product {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  materialId?: number | null;
+  isFeatured?: boolean;
+  brand?: string | null;
+  tags?: Tag[];
   images: ProductImage[];
   colors: ProductColor[];
   reviews: Review[];

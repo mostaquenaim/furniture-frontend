@@ -15,6 +15,8 @@ import { QuickShopModal } from "../QuickShopModal";
 import { devLog } from "@/utils/devlog";
 import FilterProducts from "../Filters/FilterProducts";
 import ShortBlog from "../Blog/ShortBlog";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
+import LoadingDots from "@/component/Loading/LoadingDS";
 
 const PRODUCTS_PER_PAGE = 18;
 
@@ -37,7 +39,7 @@ export default function SeriesWiseProducts() {
   );
   const [productImage, setProductImage] = useState("");
   const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
-  
+
   const [sortParams, setSortParams] = useState<{
     sortBy?: string;
     order?: "asc" | "desc";
@@ -51,7 +53,6 @@ export default function SeriesWiseProducts() {
     meta,
     isLoading,
     isFetching,
-    refetch,
   } = useFetchSeriesWiseProducts(slug, {
     page: currentPage,
     limit: PRODUCTS_PER_PAGE,
@@ -159,6 +160,14 @@ export default function SeriesWiseProducts() {
     setProductImage(secondImage);
     setHoveredProduct(sortedImages[0].productId);
   };
+
+  if (isLoading || isFetching) {
+    return (
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
+    );
+  }
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-6 font-sans text-[#222222]">

@@ -4,7 +4,6 @@ import { Suspense } from "react";
 const Dashboard = () => {
   return (
     <div>
-      {/* <DashboardComp /> */}
       <Suspense>
         <CustomerDashboard />
       </Suspense>

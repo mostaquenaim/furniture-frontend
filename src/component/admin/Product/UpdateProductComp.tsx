@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import { Save, X } from "lucide-react";
 import { PageHeader } from "@/component/PageHeader/PageHeader";
-import { FormSection } from "./FormSection";
+import { FormSection } from "@/component/admin/Product/FormSection";
 import {
   DefaultImageUploader,
   ColorImageUploader,
   ProductImageItem,
 } from "@/component/admin/Product/ImageUploader";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import useFetchVariants from "@/hooks/Attributes/useFetchVariants";
@@ -19,12 +21,14 @@ import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/Subcategories
 import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
-import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
-import useFetchTags from "@/hooks/Tags/useFetchTags";
-import { Tag } from "@/types/product.types";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import LoadingDots from "@/component/Loading/LoadingDS";
-
-type DiscountType = "PERCENT" | "FIXED";
+import {
+  Product,
+  ProductColor,
+  ProductImage,
+  ProductSubCategory,
+} from "@/types/product.types";
 
 interface ProductFormData {
   title: string;
@@ -32,10 +36,9 @@ interface ProductFormData {
   sku?: string;
   basePrice: number;
   description?: string;
-  brand?: string;
   hasColorVariants: boolean;
   showColor: boolean;
-  discountType?: "PERCENT" | "fixed";
+  discountType?: "PERCENT" | "FIXED";
   discount: number;
   discountStart: string;
   discountEnd: string;
@@ -46,7 +49,6 @@ interface ProductFormData {
 
   selectedColors: number[];
   variantId: number | null;
-  materialId?: number | null;
 
   note: string;
   deliveryEstimate: string;
@@ -54,7 +56,6 @@ interface ProductFormData {
   dimension: string;
   shippingReturn: string;
   isActive: boolean;
-  isFeatured: boolean;
 }
 
 interface SizeDetail {
@@ -107,10 +108,14 @@ Returns:
 • Items must be unworn with original tags
 • Free returns for store credit`;
 
-const ProductAddLBL = () => {
-  const router = useRouter();
+const UpdateProductComp = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const productId = slug;
+
   const axiosSecure = useAxiosSecure();
-  const [isLoading, setIsLoading] = useState(false);
+  const axiosPublic = useAxiosPublic();
+
+  const [loading, setLoading] = useState(true);
 
   // Form state
   const [formData, setFormData] = useState<ProductFormData>({
@@ -119,7 +124,6 @@ const ProductAddLBL = () => {
     sku: "",
     basePrice: 0,
     description: "",
-    brand: "",
     hasColorVariants: true,
     showColor: true,
     discountType: "PERCENT",
@@ -133,7 +137,6 @@ const ProductAddLBL = () => {
 
     selectedColors: [],
     variantId: null,
-    materialId: null,
 
     note: "",
     deliveryEstimate: "3-5 business days",
@@ -141,8 +144,31 @@ const ProductAddLBL = () => {
     dimension: "",
     shippingReturn: defaultShippingReturn,
     isActive: true,
-    isFeatured: false,
   });
+
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isHydrating = React.useRef(true);
+
+  // fetch product
+  useEffect(() => {
+    if (!productId) return;
+    const fetchProduct = async () => {
+      try {
+        const { data } = await axiosPublic.get(`/product/${productId}`);
+        console.log(data, "hydration");
+        hydrateForm(data);
+        // Wait a tick for state to settle before allowing the "reset" effects to run
+        isHydrating.current = false;
+      } catch (err) {
+        toast.error("Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [productId]);
 
   // Hooks
   const { colors, isLoading: colorsLoading } = useFetchColors({});
@@ -151,22 +177,15 @@ const ProductAddLBL = () => {
     isActive: true,
   });
 
-  const { materials, isLoading: isMaterialLoading } = useFetchMaterials({});
   const { categoryList, isLoading: categoriesLoading } =
     useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
 
   const { subCategoryList, isLoading: subCategoriesLoading } =
     useFetchSubCategoriesByCategoryIds(formData.selectedCategoryIds);
 
-  const { tags, refetch } = useFetchTags();
-
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
-
   // Get sizes for selected variant
   const selectedVariant = variants.find((v) => v.id === formData.variantId);
-  // const availableSizes = selectedVariant?.sizes || [];
+  const availableSizes = selectedVariant?.sizes || [];
 
   // Sizes state
   const [sizeSelections, setSizeSelections] = useState<{
@@ -182,41 +201,145 @@ const ProductAddLBL = () => {
     Record<number, boolean>
   >({});
 
-  const tagExists = tags.some(
-    (tag: any) => tag.name.toLowerCase() === searchTerm.toLowerCase(),
-  );
+  //   form hydration / initial values
+  const hydrateForm = (product: Product) => {
+    const seriesSet = new Set<number>();
+    const categorySet = new Set<number>();
+    const subCategoryIds: number[] = [];
 
-  const filteredTags = tags.filter((tag: any) =>
-    tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+    product.subCategories.forEach((psc: ProductSubCategory) => {
+      const sub = psc.subCategory;
+      subCategoryIds.push(sub.id);
 
-  // Reset size selections when variant changes
-  useEffect(() => {
-    if (!formData.variantId) return;
+      if (sub.category) {
+        categorySet.add(sub.category.id);
 
-    const selectedVariant = variants.find((v) => v.id === formData.variantId);
-    if (!selectedVariant) return;
-
-    const newSizeSelections: { [colorId: number]: SizeDetail[] } = {};
-
-    formData.selectedColors.forEach((colorId) => {
-      if (selectedVariant.sizes) {
-        newSizeSelections[colorId] = selectedVariant.sizes.map((size) => ({
-          sizeId: size.id,
-          sku: "",
-          price: formData.basePrice || undefined,
-          quantity: 0,
-        }));
+        if (sub.category.series) {
+          seriesSet.add(sub.category.series.id);
+        }
       }
     });
 
-    setSizeSelections(newSizeSelections);
-  }, [
-    formData.variantId,
-    formData.selectedColors,
-    formData.basePrice,
-    variants,
-  ]);
+    // Get variant from first color's first size
+    const variantId = product?.colors?.[0]?.sizes?.[0]?.size?.variantId || null;
+
+    // BASIC DATA
+    setFormData({
+      title: product.title,
+      slug: product.slug,
+      sku: product.sku || "",
+      basePrice: product.basePrice,
+      description: product.description || "",
+      hasColorVariants: product.hasColorVariants,
+      showColor: product.showColor,
+      discountType: product.discountType,
+      discount: product.discount || 0,
+      discountStart: product.discountStart?.split("T")[0] || "",
+      discountEnd: product.discountEnd?.split("T")[0] || "",
+
+      selectedSeriesIds: Array.from(seriesSet),
+      selectedCategoryIds: Array.from(categorySet),
+      selectedSubCategoryIds: subCategoryIds,
+
+      selectedColors: product.colors?.map((c: ProductColor) => c.colorId) || [],
+      variantId: variantId, // This was already set above
+      note: product.note || "",
+      deliveryEstimate: product.deliveryEstimate || "",
+      productDetails: product.productDetails || "",
+      dimension: product.dimension || "",
+      shippingReturn: product.shippingReturn || "",
+      isActive: product.isActive,
+    });
+
+    // DEFAULT IMAGES
+    setDefaultImages(
+      product?.images?.map((img: any) => ({
+        id: img.id,
+        preview: img.image,
+        serialNo: img.serialNo,
+        colorId: null,
+        file: null,
+      })) ?? [],
+    );
+
+    // COLOR IMAGES + SIZES
+    const colorImgs: Record<number, any[]> = {};
+    const colorSizes: Record<number, any[]> = {};
+    const useDefault: Record<number, boolean> = {};
+
+    product.colors.forEach((c: any) => {
+      // Use the value from DB, default to true only if undefined
+      useDefault[c.colorId] = c.useDefaultImages ?? true;
+
+      colorImgs[c.colorId] =
+        c.images?.map((img: any) => ({
+          id: img.id,
+          preview: img.image,
+          file: null,
+        })) || [];
+
+      // price initialization:
+      colorSizes[c.colorId] =
+        c.sizes?.map((s: any) => ({
+          sizeId: s.sizeId,
+          sku: s.sku || "",
+          price: s.price || product.basePrice,
+          quantity: s.quantity || 0,
+        })) || [];
+    });
+
+    setColorUseDefault(useDefault);
+    setColorImages(colorImgs);
+    setSizeSelections(colorSizes); // This sets the actual size data
+  };
+
+  // colorwise size fetch
+  useEffect(() => {
+    // Skip during hydration
+    if (loading || isHydrating.current) return;
+
+    if (selectedVariant && formData.selectedColors.length > 0) {
+      setSizeSelections((prev) => {
+        const newSizeSelections = { ...prev };
+        let hasChanges = false;
+
+        formData.selectedColors.forEach((colorId) => {
+          const existingSizes = newSizeSelections[colorId] || [];
+          const existingSizeIds = existingSizes?.map((s) => s.sizeId);
+
+          //  if variant has new sizes that aren't in existing data
+          const newSizesNeeded = availableSizes.filter(
+            (size) => !existingSizeIds.includes(size.id),
+          );
+
+          if (!newSizeSelections[colorId]) {
+            // First time - initialize all sizes
+            newSizeSelections[colorId] = availableSizes?.map((size) => ({
+              sizeId: size.id,
+              sku: "",
+              price: formData.basePrice || undefined,
+              quantity: 0,
+            }));
+            hasChanges = true;
+          } else if (newSizesNeeded.length > 0) {
+            // Variant changed - add only NEW sizes, keep existing ones
+            newSizeSelections[colorId] = [
+              ...existingSizes,
+              ...newSizesNeeded?.map((size) => ({
+                sizeId: size.id,
+                sku: "",
+                price: formData.basePrice || undefined,
+                quantity: 0,
+              })),
+            ];
+            hasChanges = true;
+          }
+        });
+
+        return hasChanges ? newSizeSelections : prev;
+      });
+    }
+  }, [formData.selectedColors, selectedVariant, formData.variantId, loading]);
 
   // Slug generation
   const generateSlug = (value: string) =>
@@ -227,7 +350,6 @@ const ProductAddLBL = () => {
       .replace(/--+/g, "-")
       .trim();
 
-  // name change
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     setFormData((prev) => ({
@@ -261,7 +383,7 @@ const ProductAddLBL = () => {
     });
   };
 
-  // category toggle
+  // handle category toggle
   const handleCategoryToggle = (categoryId: number) => {
     setFormData((prev) => {
       const isSelected = prev.selectedCategoryIds.includes(categoryId);
@@ -285,7 +407,6 @@ const ProductAddLBL = () => {
     });
   };
 
-  // subcategory toggle
   const handleSubCategoryToggle = (subCategoryId: number) => {
     setFormData((prev) => {
       const isSelected = prev.selectedSubCategoryIds.includes(subCategoryId);
@@ -296,32 +417,44 @@ const ProductAddLBL = () => {
     });
   };
 
-  // color toggle
+  // handleColorToggle function
   const handleColorToggle = (colorId: number) => {
-    setFormData((prev) => {
-      const isSelected = prev.selectedColors.includes(colorId);
-      const newColors = isSelected
-        ? prev.selectedColors.filter((id) => id !== colorId)
-        : [...prev.selectedColors, colorId];
+    const isCurrentlySelected = formData.selectedColors.includes(colorId);
 
-      // Clean up size selections when color is removed
-      if (isSelected) {
-        const newSizeSelections = { ...sizeSelections };
-        delete newSizeSelections[colorId];
-        setSizeSelections(newSizeSelections);
+    if (isCurrentlySelected) {
+      // Remove color - but DON'T delete size data
+      setFormData((prev) => ({
+        ...prev,
+        selectedColors: prev.selectedColors.filter((id) => id !== colorId),
+      }));
+    } else {
+      // Add color - only initialize sizes if they don't exist
+      setFormData((prev) => ({
+        ...prev,
+        selectedColors: [...prev.selectedColors, colorId],
+      }));
+
+      // Initialize sizes if this color has no size data yet
+      if (!sizeSelections[colorId] && selectedVariant?.sizes) {
+        setSizeSelections((prev) => ({
+          ...prev,
+          [colorId]: (selectedVariant.sizes || [])?.map((size) => ({
+            sizeId: size.id,
+            sku: "",
+            price: formData.basePrice || undefined,
+            quantity: 0,
+          })),
+        }));
       }
 
-      return { ...prev, selectedColors: newColors };
-    });
-
-    // Initialize with default images when adding a color
-    if (!colorImages[colorId]) {
-      setColorImages((prev) => ({ ...prev, [colorId]: [] }));
-      setColorUseDefault((prev) => ({ ...prev, [colorId]: true }));
+      // Initialize images if needed
+      if (!colorImages[colorId]) {
+        setColorImages((prev) => ({ ...prev, [colorId]: [] }));
+        setColorUseDefault((prev) => ({ ...prev, [colorId]: true }));
+      }
     }
   };
 
-  // color image change
   const handleColorImagesChange = (
     colorId: number,
     images: ProductImageItem[],
@@ -329,7 +462,6 @@ const ProductAddLBL = () => {
     setColorImages((prev) => ({ ...prev, [colorId]: images }));
   };
 
-  // color use default change
   const handleColorUseDefaultChange = (
     colorId: number,
     useDefault: boolean,
@@ -361,34 +493,6 @@ const ProductAddLBL = () => {
     });
   };
 
-  // tags / add tag / remove tag / delete tag
-  const addTag = (tag: Tag) => {
-    if (selectedTags.length >= 10) return;
-
-    if (!selectedTags.find((t) => t.id === tag.id)) {
-      setSelectedTags((prev) => [...prev, tag]);
-    }
-  };
-
-  const removeTag = (id: number) => {
-    setSelectedTags((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const handleCreateTag = async () => {
-    if (!searchTerm.trim()) return;
-    if (selectedTags.length >= 10) return;
-
-    const res = await axiosSecure.post("tags", {
-      name: searchTerm.trim().toLowerCase(),
-    });
-
-    const newTag = res.data;
-
-    refetch();
-    setSelectedTags((prev) => [...prev, newTag]);
-    setSearchTerm("");
-  };
-
   // Get category/subcategory info for display
   const getSeriesName = (id: number) =>
     seriesList.find((s) => s.id === id)?.name || "";
@@ -397,15 +501,9 @@ const ProductAddLBL = () => {
   const getSubCategoryName = (id: number) =>
     subCategoryList.find((sc) => sc.id === id)?.name || "";
 
-  // Image upload function
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    try {
-      const response = await handleUploadWithCloudinary(file);
-      return response;
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      throw new Error("Failed to upload image");
-    }
+  const uploadIfNew = async (img: any) => {
+    if (!img.file) return img.preview;
+    return await handleUploadWithCloudinary(img.file);
   };
 
   // Form validation
@@ -460,161 +558,6 @@ const ProductAddLBL = () => {
     return null;
   };
 
-  ///////////////////////////////////////////////
-  // FORM SUBMIT //
-  ///////////////////////////////////////////////
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate form
-    const validationError = validateForm();
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Upload images first and get URLs
-      const uploadPromises = [
-        // Upload default images
-        ...defaultImages?.map(async (img) => {
-          if (img.file) {
-            const url = await uploadImageToCloudinary(img.file);
-            return { url, serialNo: img.serialNo };
-          }
-          return null;
-        }),
-        // Upload color-specific images
-        ...formData.selectedColors.flatMap((colorId) =>
-          !colorUseDefault[colorId]
-            ? (colorImages[colorId] || [])?.map(async (img) => {
-                if (img.file) {
-                  const url = await uploadImageToCloudinary(img.file);
-                  return { url, colorId };
-                }
-                return null;
-              })
-            : [],
-        ),
-      ];
-
-      const uploadedImages = (await Promise.all(uploadPromises)).filter(
-        Boolean,
-      ) as UploadedImage[];
-
-      // Separate default and color images
-      const defaultImageUrls = uploadedImages
-        .filter(
-          (img): img is Extract<UploadedImage, { serialNo: number }> =>
-            "serialNo" in img,
-        )
-        ?.map((img) => ({
-          image: img.url,
-          serialNo: img.serialNo,
-        }));
-
-      const colorImageMap = uploadedImages
-        .filter(
-          (img): img is Extract<UploadedImage, { colorId: number }> =>
-            "colorId" in img,
-        )
-        .reduce<ColorImageMap>((acc, img) => {
-          if (!acc[img.colorId]) acc[img.colorId] = [];
-          acc[img.colorId].push(img.url);
-          return acc;
-        }, {});
-
-      // Prepare color variants with sizes
-      const colorVariants: ProductColorCreateInput[] =
-        formData.selectedColors?.map((colorId) => {
-          const colorData: ProductColorCreateInput = {
-            colorId,
-          };
-
-          // Add images
-          if (!colorUseDefault[colorId] && colorImageMap[colorId]) {
-            colorData.images = [...colorImageMap[colorId]];
-            colorData.useDefaultImages = false;
-          } else if (colorUseDefault[colorId]) {
-            colorData.useDefaultImages = true;
-          }
-
-          // Add sizes
-          const colorSizes = sizeSelections[colorId] || [];
-          if (colorSizes.length > 0) {
-            // Filter out sizes with 0 quantity
-            const validSizes = colorSizes.filter((size) => size.quantity > 0);
-            if (validSizes.length > 0) {
-              colorData.sizes = validSizes;
-            }
-          }
-
-          return colorData;
-        });
-
-      const finalTags = selectedTags.map((t) => t.id);
-      console.log(finalTags, "finalTags");
-      // Prepare submit data
-      const submitData = {
-        title: formData.title,
-        slug: formData.slug,
-        sku: formData.sku || undefined,
-        basePrice: formData.basePrice,
-        description: formData.description || undefined,
-        hasColorVariants: formData.hasColorVariants,
-        showColor: formData.showColor,
-        discountType:
-          formData.discountType === "PERCENT"
-            ? "PERCENT"
-            : formData.discountType === "fixed"
-              ? "fixed"
-              : undefined,
-        discount: formData.discount,
-        discountStart: formData.discountStart
-          ? new Date(formData.discountStart)
-          : undefined,
-        discountEnd: formData.discountEnd
-          ? new Date(formData.discountEnd)
-          : undefined,
-        note: formData.note || undefined,
-        deliveryEstimate: formData.deliveryEstimate || undefined,
-        productDetails: formData.productDetails || undefined,
-        dimension: formData.dimension || undefined,
-        shippingReturn: formData.shippingReturn || undefined,
-        isActive: formData.isActive,
-        materialId: formData.materialId || undefined,
-        isFeatured: formData.isFeatured,
-        tags: finalTags,
-
-        // Subcategories connection
-        subCategories: [...formData.selectedSubCategoryIds],
-
-        // Colors with sizes
-        colors: colorVariants,
-
-        // Default product images
-        images: [...defaultImageUrls],
-      };
-
-      console.log(colorVariants, "Submit Data:", submitData);
-
-      // Make API call
-      const response = await axiosSecure.post("/products", submitData);
-      console.log(response.data);
-
-      toast.success("Product created successfully!");
-      // router.push("/admin/products");
-    } catch (error: any) {
-      console.error("Error:", error);
-      toast.error(error.response?.data?.message || "Failed to create product");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Calculate discounted price for display
   const discountedPrice = useMemo(() => {
     if (formData.discount <= 0) return formData.basePrice;
 
@@ -625,24 +568,113 @@ const ProductAddLBL = () => {
     }
   }, [formData.basePrice, formData.discount, formData.discountType]);
 
+  // update handling
+  // Update the handleUpdate function:
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate form
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Upload default images
+      const defaultImageUrls = await Promise.all(
+        defaultImages?.map(async (img) => ({
+          image: await uploadIfNew(img),
+          serialNo: img.serialNo,
+        })),
+      );
+
+      console.log(sizeSelections, "sizeSelections");
+
+      // Prepare colors with proper size data
+      const colorVariants = await Promise.all(
+        formData.selectedColors?.map(async (colorId) => {
+          const images = colorUseDefault[colorId]
+            ? []
+            : await Promise.all((colorImages[colorId] || [])?.map(uploadIfNew));
+
+          // Get sizes for this color, ensuring all required fields are present
+          const sizes = (sizeSelections[colorId] || [])
+            .filter((s) => s.sku != "")
+            ?.map((size) => ({
+              sizeId: size.sizeId,
+              sku: size.sku || "",
+              price: size.price || formData.basePrice,
+              quantity: size.quantity,
+            }));
+
+          return {
+            colorId,
+            useDefaultImages: colorUseDefault[colorId],
+            images,
+            sizes,
+          };
+        }),
+      );
+
+      const payload = {
+        ...formData,
+        discountStart: formData.discountStart
+          ? new Date(formData.discountStart)
+          : null,
+        discountEnd: formData.discountEnd
+          ? new Date(formData.discountEnd)
+          : null,
+        images: defaultImageUrls,
+        colors: colorVariants,
+        subCategories: formData.selectedSubCategoryIds,
+      };
+
+      console.log("Update payload:", payload);
+
+      await axiosSecure.patch(`/product/${productId}`, payload);
+
+      toast.success("Product updated successfully");
+      // router.push("/admin/products");
+    } catch (err: any) {
+      console.error("Update error:", err);
+      toast.error(err.response?.data?.message || "Update failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">
+            <LoadingDots></LoadingDots>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* page header */}
         <PageHeader
-          title="Add New Product"
-          subtitle="Create a new product with all details"
-          backLink="/admin"
+          title="Update Product"
+          subtitle="Edit existing product details"
+          backLink="/admin/products"
         />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleUpdate} className="space-y-6">
           {/* Basic Information */}
           <FormSection
             title="Basic Information"
             description="Product name, pricing, and stock"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* product name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Product Name *
@@ -657,7 +689,7 @@ const ProductAddLBL = () => {
                   required
                 />
               </div>
-              {/* slug */}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Slug
@@ -676,7 +708,7 @@ const ProductAddLBL = () => {
              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              {/* price */}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Price *
@@ -704,10 +736,33 @@ const ProductAddLBL = () => {
           {/* Discount */}
           <FormSection title="Discount" description="Set up product discount">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Discount */}
+              {/* Discount Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Discount (%)
+                  Discount Type
+                </label>
+                <select
+                  value={formData.discountType}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      discountType: e.target.value as "PERCENT" | "FIXED",
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="PERCENT">Percentage (%)</option>
+                  <option value="FIXED">Fixed Amount</option>
+                </select>
+              </div>
+
+              {/* Discount Value */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {formData.discountType === "PERCENT"
+                    ? "Discount (%)"
+                    : "Discount Amount"}
                 </label>
                 <input
                   type="number"
@@ -718,15 +773,30 @@ const ProductAddLBL = () => {
                       discount: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  placeholder="0"
+                  placeholder={
+                    formData.discountType === "PERCENT" ? "0 - 100" : "0.00"
+                  }
                   min="0"
-                  max="100"
+                  max={formData.discountType === "PERCENT" ? 100 : undefined}
+                  step="0.01"
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
-              {/* start date */}
+              {/* Final Price Preview */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Final Price
+                </label>
+                <input
+                  type="text"
+                  value={`৳${discountedPrice.toFixed(2)}`}
+                  disabled
+                  className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-700"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Date
@@ -745,7 +815,6 @@ const ProductAddLBL = () => {
                 />
               </div>
 
-              {/* end date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   End Date
@@ -783,7 +852,7 @@ const ProductAddLBL = () => {
                       key={s.id}
                       type="button"
                       onClick={() => handleSeriesToggle(s.id)}
-                      className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all 
+                      className={`px-4 py-2 rounded-lg gray-border text-sm font-medium transition-all 
                         ${
                           formData.selectedSeriesIds.includes(s.id)
                             ? "border-blue-200 bg-blue-200 text-blue-200-foreground"
@@ -814,7 +883,7 @@ const ProductAddLBL = () => {
                           key={c.id}
                           type="button"
                           onClick={() => handleCategoryToggle(c.id)}
-                          className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                          className={`px-4 py-2 rounded-lg gray-border text-sm font-medium transition-all ${
                             formData.selectedCategoryIds.includes(c.id)
                               ? "border-blue-200 bg-blue-200 text-blue-200-foreground"
                               : "border-border hover:border-muted-foreground"
@@ -852,7 +921,7 @@ const ProductAddLBL = () => {
                           key={sc.id}
                           type="button"
                           onClick={() => handleSubCategoryToggle(sc.id)}
-                          className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                          className={`px-4 py-2 rounded-lg gray-border text-sm font-medium transition-all ${
                             formData.selectedSubCategoryIds.includes(sc.id)
                               ? "border-blue-200 bg-blue-200 text-blue-200-foreground"
                               : "border-border hover:border-muted-foreground"
@@ -923,7 +992,7 @@ const ProductAddLBL = () => {
                     key={color.id}
                     type="button"
                     onClick={() => handleColorToggle(color.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg gray-border transition-all ${
                       formData.selectedColors.includes(color.id)
                         ? "border-blue-200 bg-blue-200"
                         : "border-border hover:border-muted-foreground"
@@ -985,20 +1054,64 @@ const ProductAddLBL = () => {
             description="Select variant type and manage sizes for each color"
           >
             <div className="space-y-5">
+              {/* variant  */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Variant Type *
                 </label>
+                {/* In the variant dropdown onChange handler: */}
                 <select
                   value={formData.variantId || ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const newVariantId = e.target.value
+                      ? Number(e.target.value)
+                      : null;
+                    const newVariant = variants.find(
+                      (v) => v.id === newVariantId,
+                    );
+
                     setFormData((prev) => ({
                       ...prev,
-                      variantId: e.target.value ? Number(e.target.value) : null,
-                    }))
-                  }
+                      variantId: newVariantId,
+                    }));
+
+                    // Update sizes for all selected colors to include new sizes from variant
+                    if (newVariant?.sizes) {
+                      setSizeSelections((prev) => {
+                        const updated = { ...prev };
+                        let hasChanges = false;
+
+                        formData.selectedColors.forEach((colorId) => {
+                          const existingSizes = updated[colorId] || [];
+                          const existingSizeIds = new Set(
+                            existingSizes?.map((s) => s.sizeId),
+                          );
+
+                          // Add new sizes that don't exist yet
+                          const newSizes = newVariant?.sizes?.filter(
+                            (size) => !existingSizeIds.has(size.id),
+                          );
+
+                          if (newSizes && newSizes.length > 0) {
+                            updated[colorId] = [
+                              ...existingSizes,
+                              ...newSizes?.map((size) => ({
+                                sizeId: size.id,
+                                sku: "",
+                                price: formData.basePrice || undefined,
+                                quantity: 0,
+                              })),
+                            ];
+                            hasChanges = true;
+                          }
+                        });
+
+                        return hasChanges ? updated : prev;
+                      });
+                    }
+                  }}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500"
+     focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={variantsLoading}
                   required={formData.hasColorVariants}
                 >
@@ -1010,7 +1123,7 @@ const ProductAddLBL = () => {
                   ))}
                 </select>
               </div>
-
+              {/* Variant & Sizes section JSX */}
               {formData.variantId && formData.selectedColors.length > 0 && (
                 <div className="space-y-6">
                   <h4 className="text-sm font-medium text-gray-700">
@@ -1019,8 +1132,6 @@ const ProductAddLBL = () => {
                   {formData.selectedColors?.map((colorId) => {
                     const color = colors.find((c) => c.id === colorId);
                     const colorSizes = sizeSelections[colorId] || [];
-
-                    // console.log(colorSizes, "colorSizes");
 
                     return (
                       <div
@@ -1038,7 +1149,7 @@ const ProductAddLBL = () => {
                         {colorSizes.length > 0 ? (
                           <div className="space-y-3">
                             {colorSizes?.map((sizeDetail, index) => {
-                              const size = selectedVariant?.sizes?.find(
+                              const size = availableSizes.find(
                                 (s) => s.id === sizeDetail.sizeId,
                               );
 
@@ -1049,7 +1160,8 @@ const ProductAddLBL = () => {
                                 >
                                   <div className="col-span-1">
                                     <span className="text-sm font-medium">
-                                      {size?.name}
+                                      {size?.name ||
+                                        `Size ${sizeDetail.sizeId}`}
                                     </span>
                                   </div>
 
@@ -1074,7 +1186,9 @@ const ProductAddLBL = () => {
                                     <input
                                       type="number"
                                       placeholder="Price"
-                                      value={sizeDetail.price || ""}
+                                      value={
+                                        sizeDetail.price || formData.basePrice
+                                      }
                                       onChange={(e) =>
                                         handleSizeFieldChange(
                                           colorId,
@@ -1093,7 +1207,7 @@ const ProductAddLBL = () => {
                                     <input
                                       type="number"
                                       placeholder="Quantity"
-                                      value={sizeDetail.quantity || ""}
+                                      value={sizeDetail.quantity || 0}
                                       onChange={(e) =>
                                         handleSizeFieldChange(
                                           colorId,
@@ -1104,13 +1218,14 @@ const ProductAddLBL = () => {
                                       }
                                       min="0"
                                       className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                                      // required
                                     />
                                   </div>
 
                                   <div className="col-span-1 text-sm text-gray-500">
                                     {sizeDetail.price
-                                      ? `৳${sizeDetail.price}`
+                                      ? `৳${Number(sizeDetail.price).toFixed(
+                                          2,
+                                        )}`
                                       : `৳${formData.basePrice.toFixed(2)}`}
                                   </div>
                                 </div>
@@ -1136,87 +1251,6 @@ const ProductAddLBL = () => {
             description="Optional product information"
           >
             <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Material */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Material
-                  </label>
-                  <select
-                    value={formData.materialId || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        materialId: e.target.value
-                          ? Number(e.target.value)
-                          : null,
-                      }))
-                    }
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">-- Select Material --</option>
-                    {materials?.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div
-                // onBlur={() => setShowDropdown(false)}
-                className="relative"
-              >
-                <div
-                  className="border rounded-md p-2 flex flex-wrap gap-2 cursor-text"
-                  onClick={() => setShowDropdown(true)}
-                >
-                  {selectedTags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="bg-gray-200 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-                    >
-                      {tag.name}
-                      <button onClick={() => removeTag(tag.id)}>×</button>
-                    </span>
-                  ))}
-
-                  <input
-                    type="text"
-                    className="flex-1 outline-none text-sm"
-                    placeholder="Add tags..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onFocus={() => setShowDropdown(true)}
-                  />
-                </div>
-
-                {showDropdown && (
-                  <div className=" z-10 mt-1 w-full bg-white border rounded-md max-h-60 overflow-y-auto shadow">
-                    {filteredTags.map((tag: any) => (
-                      <div
-                        key={tag.id}
-                        onClick={() => addTag(tag)}
-                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                      >
-                        {tag.name}
-                      </div>
-                    ))}
-
-                    {/* Create Option */}
-                    {searchTerm && !tagExists && (
-                      <div
-                        onClick={handleCreateTag}
-                        className="px-3 py-2 text-sm text-blue-600 hover:bg-gray-100 cursor-pointer"
-                      >
-                        + Create "{searchTerm}"
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Note (Internal)
@@ -1306,7 +1340,7 @@ const ProductAddLBL = () => {
                   }
                   rows={6}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono text-sm"
+             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono"
                 />
               </div>
             </div>
@@ -1314,41 +1348,24 @@ const ProductAddLBL = () => {
 
           {/* Status */}
           <FormSection title="Status">
-            <div className="flex items-center gap-2 col-span-1 md:col-span-2">
-              <input
-                type="checkbox"
-                checked={formData.isActive}
+            <div className="flex items-center gap-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1 mb-0">
+                Product Status
+              </label>
+              <select
+                value={formData.isActive ? "1" : "0"}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    isActive: e.target.checked,
+                    isActive: e.target.value === "1",
                   }))
                 }
-                id="isFeatured"
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="isFeatured" className="text-sm text-gray-700">
-                Active (visible to customers)
-              </label>
-            </div>
-
-            {/* Featured toggle */}
-            <div className="flex items-center gap-2 col-span-1 md:col-span-2">
-              <input
-                type="checkbox"
-                checked={formData.isFeatured}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    isFeatured: e.target.checked,
-                  }))
-                }
-                id="isFeatured"
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="isFeatured" className="text-sm text-gray-700">
-                Featured Product (show in featured product)
-              </label>
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm
+             focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+              </select>
             </div>
           </FormSection>
 
@@ -1356,23 +1373,24 @@ const ProductAddLBL = () => {
           <div className="flex justify-end gap-3 pt-6">
             <button
               type="button"
-              onClick={() => router.push("/admin")}
+              onClick={() => router.push("/")}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-md
                border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
             >
               <X className="w-4 h-4" />
               Cancel
             </button>
-
+            {/* submit button */}
             <button
               type="submit"
               disabled={isLoading}
               className="inline-flex items-center gap-2 px-5 py-2 rounded-md
-               bg-blue-600 text-white hover:bg-blue-700 transition
-               disabled:opacity-50"
+   bg-blue-600 text-white hover:bg-blue-700 transition
+   disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              {isLoading ? "Creating..." : "Create Product"}
+              {isLoading ? "Updating..." : "Update Product"}{" "}
+              {/* Changed here */}
             </button>
           </div>
         </form>
@@ -1382,4 +1400,4 @@ const ProductAddLBL = () => {
   );
 };
 
-export default ProductAddLBL;
+export default UpdateProductComp;

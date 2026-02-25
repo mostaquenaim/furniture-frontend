@@ -105,7 +105,6 @@ const useFetchCarts = (options?: UseFetchCartsOptions): UseFetchCartsReturn => {
 
       // Fall back to guest cart
       const visitorId = await getVisitorId();
-      devLog("Fetching guest cart", visitorId);
 
       const res = await axiosPublic.get<CartResponse>(
         `/guest/cart/items/${visitorId}`,

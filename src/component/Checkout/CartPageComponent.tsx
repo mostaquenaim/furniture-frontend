@@ -15,6 +15,8 @@ import useCartCount from "@/hooks/Cart/useCartCount";
 import { useEffect, useMemo, useState } from "react";
 import { RelatedProduct } from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
+import LoadingDots from "../Loading/LoadingDS";
+import { FullScreenCenter } from "../Screen/FullScreenCenter";
 
 const CartPageComponent = () => {
   const { cart, isLoading, isFetching, refetch } = useFetchCarts();
@@ -69,7 +71,9 @@ const CartPageComponent = () => {
 
   if (isLoading || isFetching) {
     return (
-      <div className="max-w-[1500px] mx-auto p-4 lg:p-8">Loading cart...</div>
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
     );
   }
 

@@ -31,8 +31,6 @@ const useFetchSubCategoriesByCategoryIds = (categoryIds: number[]) => {
     fetchAllActive();
   }, [axiosSecure]);
 
-  // Use useMemo to filter the list whenever seriesIds change 
-  // without re-fetching from the server
   const filteredCategories = useMemo(() => {
     if (!categoryIds || categoryIds.length === 0) return [];
     

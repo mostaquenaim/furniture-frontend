@@ -1,0 +1,1782 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
+import React, { useState, useMemo, useEffect } from "react";
+import { Save, X } from "lucide-react";
+import { PageHeader } from "@/component/PageHeader/PageHeader";
+import { FormSection } from "@/component/admin/Product/FormSection";
+import {
+  DefaultImageUploader,
+  ColorImageUploader,
+  ProductImageItem,
+} from "@/component/admin/Product/ImageUploader";
+import { useParams, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
+import useFetchVariants from "@/hooks/Attributes/useFetchVariants";
+import useFetchColors from "@/hooks/Attributes/useFetchColors";
+import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCategoriesBySeriesIds";
+import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/Subcategories/useFetchSubCategoriesByCategoryIds";
+import GotoArrows from "@/component/Arrow/GotoArrows";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
+import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
+import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
+import useFetchTags from "@/hooks/Tags/useFetchTags";
+import LoadingDots from "@/component/Loading/LoadingDS";
+import {
+  Product,
+  ProductColor,
+  ProductSubCategory,
+  Tag,
+} from "@/types/product.types";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface ProductFormData {
+  title: string;
+  slug: string;
+  sku?: string;
+  basePrice: number;
+  description?: string;
+  brand?: string;
+  hasColorVariants: boolean;
+  showColor: boolean;
+  discountType?: "PERCENT" | "FIXED";
+  discount: number;
+  discountStart: string;
+  discountEnd: string;
+
+  selectedSeriesIds: number[];
+  selectedCategoryIds: number[];
+  selectedSubCategoryIds: number[];
+
+  selectedColors: number[];
+  variantId: number | null;
+  materialId?: number | null;
+
+  note: string;
+  deliveryEstimate: string;
+  productDetails: string;
+  dimension: string;
+  shippingReturn: string;
+  isActive: boolean;
+  isFeatured: boolean;
+}
+
+interface SizeDetail {
+  sizeId: number;
+  sku?: string;
+  price?: number;
+  quantity: number;
+  discountType?: "PERCENT" | "FIXED" | null; // Add discount fields
+  discount?: number;
+}
+
+type UploadedImage =
+  | { url: string; serialNo: number; colorId?: never }
+  | { url: string; colorId: number; serialNo?: never };
+
+type ColorImageMap = Record<number, string[]>;
+
+type ProductColorCreateInput = {
+  colorId: number;
+  sizes?: { sizeId: number; sku?: string; price?: number; quantity: number }[];
+  useDefaultImages?: boolean;
+  images?: string[];
+};
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const defaultShippingReturn = `Shipping:
+• Standard shipping: 5-7 business days
+• Express shipping: 2-3 business days
+• Free shipping on orders over ৳50
+
+Returns:
+• 30-day return policy
+• Items must be unworn with original tags
+• Free returns for store credit`;
+
+const initialFormData: ProductFormData = {
+  title: "",
+  slug: "",
+  sku: "",
+  basePrice: 0,
+  description: "",
+  brand: "",
+  hasColorVariants: true,
+  showColor: true,
+  discountType: "PERCENT",
+  discount: 0,
+  discountStart: new Date().toISOString().split("T")[0],
+  discountEnd: new Date().toISOString().split("T")[0],
+  selectedSeriesIds: [],
+  selectedCategoryIds: [],
+  selectedSubCategoryIds: [],
+  selectedColors: [],
+  variantId: null,
+  materialId: null,
+  note: "",
+  deliveryEstimate: "3-5 business days",
+  productDetails: "",
+  dimension: "",
+  shippingReturn: defaultShippingReturn,
+  isActive: true,
+  isFeatured: false,
+};
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+interface ProductFormProps {
+  /** Pass a productId / slug to switch to "edit" mode; omit for "create" mode */
+  propProductId?: string;
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+const ProductForm = ({ propProductId }: ProductFormProps) => {
+  const params = useParams();
+  const productId = propProductId || (params?.slug as string);
+  const isEditMode = Boolean(productId);
+  const router = useRouter();
+  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
+
+  // Loading states
+  const [pageLoading, setPageLoading] = useState(isEditMode); // only true in edit mode while fetching
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Hydration guard – prevents size-reset effect from running during initial data load
+  const isHydrating = React.useRef(isEditMode);
+
+  // ─── Form state ──────────────────────────────────────────────────────────
+  const [formData, setFormData] = useState<ProductFormData>(initialFormData);
+
+  // ─── Tag state ───────────────────────────────────────────────────────────
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // ─── Image / size state ──────────────────────────────────────────────────
+  const [sizeSelections, setSizeSelections] = useState<{
+    [colorId: number]: SizeDetail[];
+  }>({});
+  const [defaultImages, setDefaultImages] = useState<ProductImageItem[]>([]);
+  const [colorImages, setColorImages] = useState<
+    Record<number, ProductImageItem[]>
+  >({});
+  const [colorUseDefault, setColorUseDefault] = useState<
+    Record<number, boolean>
+  >({});
+
+  // ─── Hooks ───────────────────────────────────────────────────────────────
+  const { colors, isLoading: colorsLoading } = useFetchColors({});
+  const { variants, isLoading: variantsLoading } = useFetchVariants({});
+  const { seriesList } = useFetchSeries({ isActive: true });
+  const { materials } = useFetchMaterials({});
+  const { tags, refetch: refetchTags } = useFetchTags();
+
+  const { categoryList, isLoading: categoriesLoading } =
+    useFetchCategoriesBySeriesIds(formData.selectedSeriesIds);
+  const { subCategoryList, isLoading: subCategoriesLoading } =
+    useFetchSubCategoriesByCategoryIds(formData.selectedCategoryIds);
+
+  const selectedVariant = variants.find((v) => v.id === formData.variantId);
+  const availableSizes = selectedVariant?.sizes || [];
+
+  // ─── Fetch product for edit mode ─────────────────────────────────────────
+  useEffect(() => {
+    if (!isEditMode || !productId) return;
+
+    const fetchProduct = async () => {
+      try {
+        const { data } = await axiosPublic.get(`/product/${productId}`);
+        hydrateForm(data);
+        isHydrating.current = false;
+      } catch {
+        toast.error("Failed to load product");
+      } finally {
+        setPageLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  // ─── Hydrate form with existing product data ──────────────────────────────
+  const hydrateForm = (product: Product) => {
+    const seriesSet = new Set<number>();
+    const categorySet = new Set<number>();
+    const subCategoryIds: number[] = [];
+
+    product.subCategories.forEach((psc: ProductSubCategory) => {
+      const sub = psc.subCategory;
+      subCategoryIds.push(sub.id);
+      if (sub.category) {
+        categorySet.add(sub.category.id);
+        if (sub.category.series) seriesSet.add(sub.category.series.id);
+      }
+    });
+
+    const variantId = product?.colors?.[0]?.sizes?.[0]?.size?.variantId || null;
+
+    setFormData({
+      title: product.title,
+      slug: product.slug,
+      sku: product.sku || "",
+      basePrice: product.basePrice,
+      description: product.description || "",
+      brand: product.brand || "",
+      hasColorVariants: product.hasColorVariants,
+      showColor: product.showColor,
+      discountType: product.discountType ?? "PERCENT",
+      discount: product.discount || 0,
+      discountStart: product.discountStart?.split("T")[0] || "",
+      discountEnd: product.discountEnd?.split("T")[0] || "",
+      selectedSeriesIds: Array.from(seriesSet),
+      selectedCategoryIds: Array.from(categorySet),
+      selectedSubCategoryIds: subCategoryIds,
+      selectedColors: product.colors?.map((c: ProductColor) => c.colorId) || [],
+      variantId,
+      materialId: product.materialId || null,
+      note: product.note || "",
+      deliveryEstimate: product.deliveryEstimate || "",
+      productDetails: product.productDetails || "",
+      dimension: product.dimension || "",
+      shippingReturn: product.shippingReturn || "",
+      isActive: product.isActive,
+      isFeatured: product.isFeatured ?? false,
+    });
+
+    setDefaultImages(
+      product?.images?.map((img: any) => ({
+        id: img.id,
+        preview: img.image,
+        serialNo: img.serialNo,
+        colorId: null,
+        file: null,
+      })) ?? [],
+    );
+
+    // Tags
+    if (product.tags?.length) setSelectedTags(product.tags);
+
+    // Color images & sizes
+    const colorImgs: Record<number, any[]> = {};
+    const colorSizes: Record<number, any[]> = {};
+    const useDefault: Record<number, boolean> = {};
+
+    product.colors.forEach((c: any) => {
+      useDefault[c.colorId] = c.useDefaultImages ?? true;
+      colorImgs[c.colorId] =
+        c.images?.map((img: any) => ({
+          id: img.id,
+          preview: img.image,
+          file: null,
+        })) || [];
+      colorSizes[c.colorId] =
+        c.sizes?.map((s: any) => ({
+          sizeId: s.sizeId,
+          sku: s.sku || "",
+          price: s.price || product.basePrice,
+          quantity: s.quantity || 0,
+          discountType: s.discountType || null, // Add this
+          discount: s.discount || 0, // Add this
+        })) || [];
+    });
+
+    setColorUseDefault(useDefault);
+    setColorImages(colorImgs);
+    setSizeSelections(colorSizes);
+  };
+
+  // ─── Sync sizes when variant / colors change (create mode) ───────────────
+  useEffect(() => {
+    if (isEditMode) {
+      // In edit mode, skip effect during hydration
+      if (pageLoading || isHydrating.current) return;
+    } else {
+      // In create mode, run every time
+      if (!formData.variantId) return;
+    }
+
+    if (!selectedVariant) return;
+
+    setSizeSelections((prev) => {
+      const next = { ...prev };
+      let changed = false;
+
+      formData.selectedColors.forEach((colorId) => {
+        const existing = next[colorId] || [];
+        const existingIds = new Set(existing.map((s) => s.sizeId));
+        const missing = availableSizes.filter((s) => !existingIds.has(s.id));
+
+        if (!next[colorId]) {
+          next[colorId] = availableSizes.map((s) => ({
+            sizeId: s.id,
+            sku: "",
+            price: formData.basePrice || undefined,
+            quantity: 0,
+            discountType: null,
+            discount: 0,
+          }));
+          changed = true;
+        } else if (missing.length > 0) {
+          next[colorId] = [
+            ...existing,
+            ...missing.map((s) => ({
+              sizeId: s.id,
+              sku: "",
+              price: formData.basePrice || undefined,
+              quantity: 0,
+              discountType: null,
+              discount: 0,
+            })),
+          ];
+          changed = true;
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [
+    formData.selectedColors,
+    selectedVariant,
+    formData.variantId,
+    pageLoading,
+  ]);
+
+  // Sync product discount to sizes when product discount changes (but not vice versa)
+  useEffect(() => {
+    // Skip during hydration or if no variant selected
+    if (isHydrating.current || !formData.variantId) return;
+
+    setSizeSelections((prev) => {
+      const next = { ...prev };
+      let changed = false;
+
+      formData.selectedColors.forEach((colorId) => {
+        if (next[colorId]) {
+          next[colorId] = next[colorId].map((size) => {
+            // Only update if size doesn't have its own discount
+            if (!size.discountType || size.discountType === null) {
+              changed = true;
+              return {
+                ...size,
+                discountType: formData.discountType,
+                discount: formData.discount,
+              };
+            }
+            return size;
+          });
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [
+    formData.discountType,
+    formData.discount,
+    formData.selectedColors,
+    formData.variantId,
+  ]);
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+  const generateSlug = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/--+/g, "-")
+      .trim();
+
+  // calculate discounted price
+  const calculateSizeDiscountedPrice = (size: SizeDetail) => {
+    const basePrice = size.price || formData.basePrice;
+
+    if (!size.discount || size.discount <= 0 || !size.discountType) {
+      return basePrice;
+    }
+
+    if (size.discountType === "PERCENT") {
+      return basePrice * (1 - size.discount / 100);
+    } else {
+      return Math.max(0, basePrice - size.discount);
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    setFormData((prev) => ({ ...prev, title, slug: generateSlug(title) }));
+  };
+
+  const getSeriesName = (id: number) =>
+    seriesList.find((s) => s.id === id)?.name || "";
+  const getCategoryName = (id: number) =>
+    categoryList.find((c) => c.id === id)?.name || "";
+
+  // ─── Toggle handlers ─────────────────────────────────────────────────────
+  const handleSeriesToggle = (seriesId: number) => {
+    setFormData((prev) => {
+      const isSelected = prev.selectedSeriesIds.includes(seriesId);
+      const newSeriesIds = isSelected
+        ? prev.selectedSeriesIds.filter((id) => id !== seriesId)
+        : [...prev.selectedSeriesIds, seriesId];
+
+      const validCategoryIds = categoryList
+        .filter((c) => newSeriesIds.includes(c.seriesId))
+        .map((c) => c.id);
+
+      return {
+        ...prev,
+        selectedSeriesIds: newSeriesIds,
+        selectedCategoryIds: prev.selectedCategoryIds.filter((id) =>
+          validCategoryIds.includes(id),
+        ),
+      };
+    });
+  };
+
+  const handleCategoryToggle = (categoryId: number) => {
+    setFormData((prev) => {
+      const isSelected = prev.selectedCategoryIds.includes(categoryId);
+      const newCategoryIds = isSelected
+        ? prev.selectedCategoryIds.filter((id) => id !== categoryId)
+        : [...prev.selectedCategoryIds, categoryId];
+
+      const validSubCategoryIds = subCategoryList
+        .filter((sc) => newCategoryIds.includes(sc.categoryId))
+        .map((sc) => sc.id);
+
+      return {
+        ...prev,
+        selectedCategoryIds: newCategoryIds,
+        selectedSubCategoryIds: prev.selectedSubCategoryIds.filter((id) =>
+          validSubCategoryIds.includes(id),
+        ),
+      };
+    });
+  };
+
+  const handleSubCategoryToggle = (subCategoryId: number) => {
+    setFormData((prev) => {
+      const isSelected = prev.selectedSubCategoryIds.includes(subCategoryId);
+      return {
+        ...prev,
+        selectedSubCategoryIds: isSelected
+          ? prev.selectedSubCategoryIds.filter((id) => id !== subCategoryId)
+          : [...prev.selectedSubCategoryIds, subCategoryId],
+      };
+    });
+  };
+
+  const handleColorToggle = (colorId: number) => {
+    const isSelected = formData.selectedColors.includes(colorId);
+
+    setFormData((prev) => ({
+      ...prev,
+      selectedColors: isSelected
+        ? prev.selectedColors.filter((id) => id !== colorId)
+        : [...prev.selectedColors, colorId],
+    }));
+
+    if (!isSelected) {
+      // Init sizes if not already present
+      if (!sizeSelections[colorId] && selectedVariant?.sizes) {
+        setSizeSelections((prev) => ({
+          ...prev,
+          [colorId]: (selectedVariant.sizes || []).map((s) => ({
+            sizeId: s.id,
+            sku: "",
+            price: formData.basePrice || undefined,
+            quantity: 0,
+            discountType: null, // Add this
+            discount: 0, // Add this
+          })),
+        }));
+      }
+      if (!colorImages[colorId]) {
+        setColorImages((prev) => ({ ...prev, [colorId]: [] }));
+        setColorUseDefault((prev) => ({ ...prev, [colorId]: true }));
+      }
+    } else if (!isEditMode) {
+      // In create mode, clean up sizes on deselect
+      setSizeSelections((prev) => {
+        const next = { ...prev };
+        delete next[colorId];
+        return next;
+      });
+    }
+  };
+
+  const handleColorImagesChange = (
+    colorId: number,
+    images: ProductImageItem[],
+  ) => setColorImages((prev) => ({ ...prev, [colorId]: images }));
+
+  const handleColorUseDefaultChange = (colorId: number, useDefault: boolean) =>
+    setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
+
+  const handleSizeFieldChange = (
+    colorId: number,
+    sizeId: number,
+    field: keyof SizeDetail,
+    value: string | number,
+  ) => {
+    setSizeSelections((prev) => {
+      const next = { ...prev };
+      if (next[colorId]) {
+        const idx = next[colorId].findIndex((s) => s.sizeId === sizeId);
+        if (idx !== -1) {
+          next[colorId][idx] = {
+            ...next[colorId][idx],
+            [field]:
+              field === "quantity" || field === "discount"
+                ? Number(value)
+                : value,
+          };
+        }
+      }
+      return next;
+    });
+  };
+
+  // ─── Tag handlers ─────────────────────────────────────────────────────────
+  const filteredTags = tags.filter((tag: any) =>
+    tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+  const tagExists = tags.some(
+    (tag: any) => tag.name.toLowerCase() === searchTerm.toLowerCase(),
+  );
+
+  const addTag = (tag: Tag) => {
+    if (selectedTags.length >= 10 || selectedTags.find((t) => t.id === tag.id))
+      return;
+    setSelectedTags((prev) => [...prev, tag]);
+  };
+
+  const removeTag = (id: number) =>
+    setSelectedTags((prev) => prev.filter((t) => t.id !== id));
+
+  const handleCreateTag = async () => {
+    if (!searchTerm.trim() || selectedTags.length >= 10) return;
+    const res = await axiosSecure.post("tags", {
+      name: searchTerm.trim().toLowerCase(),
+    });
+    refetchTags();
+    setSelectedTags((prev) => [...prev, res.data]);
+    setSearchTerm("");
+  };
+
+  // ─── Image upload helper ─────────────────────────────────────────────────
+  const uploadIfNew = async (img: ProductImageItem): Promise<string> => {
+    if (!img.file) return img.preview as string;
+    return await handleUploadWithCloudinary(img.file);
+  };
+
+  // ─── Validation ──────────────────────────────────────────────────────────
+  const validateForm = (): string | null => {
+    if (!formData.title.trim()) return "Product title is required";
+    if (formData.basePrice <= 0) return "Price must be greater than 0";
+    if (formData.selectedSubCategoryIds.length === 0)
+      return "Please select at least one subcategory";
+
+    const hasImages =
+      defaultImages.length > 0 ||
+      Object.values(colorImages).some((imgs) => imgs.length > 0);
+    if (!hasImages) return "Please upload at least one product image";
+
+    if (formData.hasColorVariants && !formData.variantId)
+      return "Please select a variant type";
+
+    if (formData.hasColorVariants) {
+      for (const colorId of formData.selectedColors) {
+        const hasValidSize = (sizeSelections[colorId] || []).some(
+          (s) => s.quantity > 0,
+        );
+        if (!hasValidSize) {
+          const color = colors.find((c) => c.id === colorId);
+          return `Color "${color?.name}" must have at least one size with quantity > 0`;
+        }
+      }
+    }
+
+    // Validate discount dates
+    if (formData.discount > 0) {
+      if (new Date(formData.discountStart) > new Date(formData.discountEnd)) {
+        return "Discount end date must be after start date";
+      }
+    }
+
+    // Validate size-specific discounts
+    for (const colorId of formData.selectedColors) {
+      const sizes = sizeSelections[colorId] || [];
+      for (const size of sizes) {
+        if (size.discountType && size.discount) {
+          if (size.discountType === "PERCENT" && size.discount > 100) {
+            return `Size discount percentage cannot exceed 100%`;
+          }
+          if (
+            size.discountType === "FIXED" &&
+            size.discount > (size.price || formData.basePrice)
+          ) {
+            return `Fixed discount cannot exceed the price`;
+          }
+        }
+      }
+    }
+
+    return null;
+  };
+
+  // ─── Discounted price preview ─────────────────────────────────────────────
+  const discountedPrice = useMemo(() => {
+    if (formData.discount <= 0) return formData.basePrice;
+    if (formData.discountType === "PERCENT") {
+      return formData.basePrice * (1 - formData.discount / 100);
+    }
+    return Math.max(0, formData.basePrice - formData.discount);
+  }, [formData.basePrice, formData.discount, formData.discountType]);
+
+  // ─── Submit ───────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (isEditMode) {
+        // ── UPDATE ──
+        const defaultImageUrls = await Promise.all(
+          defaultImages.map(async (img) => ({
+            image: await uploadIfNew(img),
+            serialNo: img.serialNo,
+          })),
+        );
+
+        const colorVariants = await Promise.all(
+          formData.selectedColors.map(async (colorId) => {
+            const images = colorUseDefault[colorId]
+              ? []
+              : await Promise.all(
+                  (colorImages[colorId] || []).map(uploadIfNew),
+                );
+
+            const sizes = (sizeSelections[colorId] || [])
+              .filter((s) => s.sku !== "")
+              .map((size) => ({
+                sizeId: size.sizeId,
+                sku: size.sku || "",
+                price: size.price || formData.basePrice,
+                quantity: size.quantity,
+                discountType: size.discountType, // Add this
+                discount: size.discount, // Add this
+              }));
+
+            return {
+              colorId,
+              useDefaultImages: colorUseDefault[colorId],
+              images,
+              sizes,
+            };
+          }),
+        );
+
+        const payload = {
+          ...formData,
+          discountStart: formData.discountStart
+            ? new Date(formData.discountStart)
+            : null,
+          discountEnd: formData.discountEnd
+            ? new Date(formData.discountEnd)
+            : null,
+          images: defaultImageUrls,
+          colors: colorVariants,
+          subCategories: formData.selectedSubCategoryIds,
+          tags: selectedTags.map((t) => t.id),
+        };
+
+        await axiosSecure.patch(`/product/${productId}`, payload);
+        toast.success("Product updated successfully");
+      } else {
+        // ── CREATE ──
+        const uploadPromises = [
+          ...defaultImages.map(async (img) => {
+            if (!img.file) return null;
+            const url = await handleUploadWithCloudinary(img.file);
+            return { url, serialNo: img.serialNo };
+          }),
+          ...formData.selectedColors.flatMap((colorId) =>
+            colorUseDefault[colorId]
+              ? []
+              : (colorImages[colorId] || []).map(async (img) => {
+                  if (!img.file) return null;
+                  const url = await handleUploadWithCloudinary(img.file);
+                  return { url, colorId };
+                }),
+          ),
+        ];
+
+        const uploadedImages = (await Promise.all(uploadPromises)).filter(
+          Boolean,
+        ) as UploadedImage[];
+
+        const defaultImageUrls = uploadedImages
+          .filter(
+            (img): img is Extract<UploadedImage, { serialNo: number }> =>
+              "serialNo" in img,
+          )
+          .map((img) => ({ image: img.url, serialNo: img.serialNo }));
+
+        const colorImageMap = uploadedImages
+          .filter(
+            (img): img is Extract<UploadedImage, { colorId: number }> =>
+              "colorId" in img,
+          )
+          .reduce<ColorImageMap>((acc, img) => {
+            if (!acc[img.colorId]) acc[img.colorId] = [];
+            acc[img.colorId].push(img.url);
+            return acc;
+          }, {});
+
+        const colorVariants: ProductColorCreateInput[] =
+          formData.selectedColors.map((colorId) => {
+            const colorData: ProductColorCreateInput = { colorId };
+
+            if (!colorUseDefault[colorId] && colorImageMap[colorId]) {
+              colorData.images = [...colorImageMap[colorId]];
+              colorData.useDefaultImages = false;
+            } else {
+              colorData.useDefaultImages = true;
+            }
+
+            const validSizes = (sizeSelections[colorId] || []).filter(
+              (s) => s.quantity > 0,
+            );
+            if (validSizes.length > 0) {
+              colorData.sizes = validSizes.map((size) => ({
+                sizeId: size.sizeId,
+                sku: size.sku || "",
+                price: size.price || formData.basePrice,
+                quantity: size.quantity,
+                discountType: size.discountType,
+                discount: size.discount,
+              }));
+            }
+
+            return colorData;
+          });
+
+        const submitData = {
+          title: formData.title,
+          slug: formData.slug,
+          sku: formData.sku || undefined,
+          basePrice: formData.basePrice,
+          description: formData.description || undefined,
+          brand: formData.brand || undefined,
+          hasColorVariants: formData.hasColorVariants,
+          showColor: formData.showColor,
+          discountType: formData.discountType,
+          discount: formData.discount,
+          discountStart: formData.discountStart
+            ? new Date(formData.discountStart)
+            : undefined,
+          discountEnd: formData.discountEnd
+            ? new Date(formData.discountEnd)
+            : undefined,
+          note: formData.note || undefined,
+          deliveryEstimate: formData.deliveryEstimate || undefined,
+          productDetails: formData.productDetails || undefined,
+          dimension: formData.dimension || undefined,
+          shippingReturn: formData.shippingReturn || undefined,
+          isActive: formData.isActive,
+          materialId: formData.materialId || undefined,
+          isFeatured: formData.isFeatured,
+          tags: selectedTags.map((t) => t.id),
+          subCategories: [...formData.selectedSubCategoryIds],
+          colors: colorVariants,
+          images: [...defaultImageUrls],
+        };
+
+        await axiosSecure.post("/products", submitData);
+        toast.success("Product created successfully!");
+      }
+    } catch (error: any) {
+      console.error("Error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          (isEditMode ? "Update failed" : "Failed to create product"),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ─── Loading screen (edit mode only) ─────────────────────────────────────
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+          <p className="mt-4 text-gray-600">
+            <LoadingDots />
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PageHeader
+          title={isEditMode ? "Update Product" : "Add New Product"}
+          subtitle={
+            isEditMode
+              ? "Edit existing product details"
+              : "Create a new product with all details"
+          }
+          backLink={isEditMode ? "/admin/products" : "/admin"}
+        />
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* ── Basic Information ── */}
+          <FormSection
+            title="Basic Information"
+            description="Product name, pricing, and stock"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={handleNameChange}
+                  placeholder="Enter product name"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Slug
+                </label>
+                <input
+                  type="text"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      slug: generateSlug(e.target.value),
+                    }))
+                  }
+                  placeholder="product-slug"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price *
+                </label>
+                <input
+                  type="number"
+                  value={formData.basePrice || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      basePrice: parseFloat(e.target.value) || 0,
+                    }))
+                  }
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+            </div>
+          </FormSection>
+
+          {/* ── Discount ── */}
+          <FormSection
+            title="Discount"
+            description="Set up product discount (applies to all sizes by default)"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {isEditMode && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Default Discount Type
+                  </label>
+                  <select
+                    value={formData.discountType}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        discountType: e.target.value as "PERCENT" | "FIXED",
+                      }))
+                    }
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="PERCENT">Percentage (%)</option>
+                    <option value="FIXED">Fixed Amount</option>
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {isEditMode && formData.discountType === "FIXED"
+                    ? "Default Discount Amount"
+                    : "Default Discount (%)"}
+                </label>
+                <input
+                  type="number"
+                  value={formData.discount || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      discount: parseFloat(e.target.value) || 0,
+                    }))
+                  }
+                  placeholder="0"
+                  min="0"
+                  max={
+                    !isEditMode || formData.discountType === "PERCENT"
+                      ? 100
+                      : undefined
+                  }
+                  step="0.01"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This applies to all sizes by default. Override per size below.
+                </p>
+              </div>
+
+              {isEditMode && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Default Final Price
+                  </label>
+                  <input
+                    type="text"
+                    value={`৳${discountedPrice.toFixed(2)}`}
+                    disabled
+                    className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-700"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.discountStart}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      discountStart: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.discountEnd}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      discountEnd: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </FormSection>
+
+          {/* ── Categories ── */}
+          <FormSection
+            title="Categories"
+            description="Select multiple series, categories, and subcategories"
+          >
+            <div className="space-y-6">
+              {/* Series */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Series (select multiple)
+                </label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {seriesList?.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handleSeriesToggle(s.id)}
+                      className={`px-4 py-2 rounded-lg gray-border text-sm font-medium transition-all ${
+                        formData.selectedSeriesIds.includes(s.id)
+                          ? "border-blue-200 bg-blue-200 text-blue-200-foreground"
+                          : "border-border hover:border-muted-foreground"
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Categories */}
+              {formData.selectedSeriesIds.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Categories (select multiple)
+                  </label>
+                  {categoriesLoading ? (
+                    <div className="text-muted-foreground text-sm">
+                      <LoadingDots />
+                    </div>
+                  ) : categoryList.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {categoryList?.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => handleCategoryToggle(c.id)}
+                          className={`px-4 py-2 rounded-lg gray-border text-sm font-medium transition-all ${
+                            formData.selectedCategoryIds.includes(c.id)
+                              ? "border-blue-200 bg-blue-200 text-blue-200-foreground"
+                              : "border-border hover:border-muted-foreground"
+                          }`}
+                        >
+                          <span className="text-xs opacity-60 mr-1">
+                            {getSeriesName(c.seriesId)}:
+                          </span>
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground text-sm">
+                      No categories available
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Subcategories */}
+              {formData.selectedCategoryIds.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Subcategories (select multiple) *
+                  </label>
+                  {subCategoriesLoading ? (
+                    <div className="text-muted-foreground text-sm">
+                      <LoadingDots />
+                    </div>
+                  ) : subCategoryList.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {subCategoryList?.map((sc) => (
+                        <button
+                          key={sc.id}
+                          type="button"
+                          onClick={() => handleSubCategoryToggle(sc.id)}
+                          className={`px-4 py-2 rounded-lg gray-border text-sm font-medium transition-all ${
+                            formData.selectedSubCategoryIds.includes(sc.id)
+                              ? "border-blue-200 bg-blue-200 text-blue-200-foreground"
+                              : "border-border hover:border-muted-foreground"
+                          }`}
+                        >
+                          <span className="text-xs opacity-60 mr-1">
+                            {getCategoryName(sc.categoryId)}:
+                          </span>
+                          {sc.name}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground text-sm">
+                      No subcategories available
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Selected summary */}
+              {formData.selectedSubCategoryIds.length > 0 && (
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Selected subcategories:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.selectedSubCategoryIds.map((id) => {
+                      const sc = subCategoryList.find((s) => s.id === id);
+                      const cat = categoryList.find(
+                        (c) => c.id === sc?.categoryId,
+                      );
+                      return sc ? (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium"
+                        >
+                          {cat?.name} → {sc.name}
+                          <button
+                            type="button"
+                            onClick={() => handleSubCategoryToggle(id)}
+                            className="hover:bg-primary/20 rounded-full p-0.5"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </FormSection>
+
+          {/* ── Colors ── */}
+          <FormSection
+            title="Colors"
+            description="Select available colors for this product"
+          >
+            {colorsLoading ? (
+              <div className="text-muted-foreground">
+                <LoadingDots />
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {colors?.map((color) => (
+                  <button
+                    key={color.id}
+                    type="button"
+                    onClick={() => handleColorToggle(color.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg gray-border transition-all ${
+                      formData.selectedColors.includes(color.id)
+                        ? "border-blue-200 bg-blue-200"
+                        : "border-border hover:border-muted-foreground"
+                    }`}
+                  >
+                    <div
+                      className="w-5 h-5 rounded-full border border-border shadow-sm"
+                      style={{ backgroundColor: color.hexCode }}
+                    />
+                    <span className="text-sm font-medium">{color.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </FormSection>
+
+          {/* ── Product Images ── */}
+          <FormSection
+            title="Product Images"
+            description="Upload default images and optionally add color-specific images"
+          >
+            <div className="space-y-6">
+              <DefaultImageUploader
+                images={defaultImages}
+                onImagesChange={setDefaultImages}
+              />
+
+              {formData.selectedColors.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-foreground">
+                    Color-specific Images
+                  </h4>
+                  {formData.selectedColors.map((colorId) => {
+                    const color = colors.find((c) => c.id === colorId);
+                    if (!color) return null;
+                    return (
+                      <ColorImageUploader
+                        key={colorId}
+                        colorId={colorId}
+                        color={color}
+                        images={colorImages[colorId] || []}
+                        defaultImages={defaultImages}
+                        useDefault={colorUseDefault[colorId] ?? true}
+                        onImagesChange={handleColorImagesChange}
+                        onUseDefaultChange={handleColorUseDefaultChange}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </FormSection>
+
+          {/* ── Variant & Sizes ── */}
+          <FormSection
+            title="Variant & Sizes"
+            description="Select variant type and manage sizes for each color"
+          >
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Variant Type *
+                </label>
+                <select
+                  value={formData.variantId || ""}
+                  onChange={(e) => {
+                    const newVariantId = e.target.value
+                      ? Number(e.target.value)
+                      : null;
+                    const newVariant = variants.find(
+                      (v) => v.id === newVariantId,
+                    );
+
+                    setFormData((prev) => ({
+                      ...prev,
+                      variantId: newVariantId,
+                    }));
+
+                    if (newVariant?.sizes) {
+                      setSizeSelections((prev) => {
+                        const next = { ...prev };
+                        let changed = false;
+                        formData.selectedColors.forEach((colorId) => {
+                          const existing = next[colorId] || [];
+                          const existingIds = new Set(
+                            existing.map((s) => s.sizeId),
+                          );
+                          const missing = newVariant.sizes!.filter(
+                            (s) => !existingIds.has(s.id),
+                          );
+                          if (missing.length > 0) {
+                            next[colorId] = [
+                              ...existing,
+                              ...missing.map((s) => ({
+                                sizeId: s.id,
+                                sku: "",
+                                price: formData.basePrice || undefined,
+                                quantity: 0,
+                              })),
+                            ];
+                            changed = true;
+                          }
+                        });
+                        return changed ? next : prev;
+                      });
+                    }
+                  }}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={variantsLoading}
+                  required={formData.hasColorVariants}
+                >
+                  <option value="">-- Select Variant --</option>
+                  {variants?.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formData.variantId && formData.selectedColors.length > 0 && (
+                <div className="space-y-6">
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Size Management per Color
+                  </h4>
+                  {formData.selectedColors.map((colorId) => {
+                    const color = colors.find((c) => c.id === colorId);
+                    const colorSizes = sizeSelections[colorId] || [];
+
+                    return (
+                      <div
+                        key={colorId}
+                        className="gray-border rounded-lg p-4 bg-gray-50"
+                      >
+                        <div className="flex items-center gap-2 mb-4">
+                          <div
+                            className="w-4 h-4 rounded-full gray-border shadow-sm"
+                            style={{ backgroundColor: color?.hexCode }}
+                          />
+                          <h5 className="font-medium">{color?.name} Sizes</h5>
+                        </div>
+
+                        {colorSizes.length > 0 ? (
+                          <div className="space-y-4">
+                            {/* Header */}
+                            <div className="grid grid-cols-1 md:grid-cols-8 gap-3 text-xs font-medium text-gray-500 px-2">
+                              <div className="col-span-1">Size</div>
+                              <div className="col-span-1">SKU</div>
+                              <div className="col-span-1">Price</div>
+                              <div className="col-span-1">Discount Type</div>
+                              <div className="col-span-1">Discount</div>
+                              <div className="col-span-1">Quantity</div>
+                              <div className="col-span-1">Final Price</div>
+                              <div className="col-span-1">Action</div>
+                            </div>
+
+                            {colorSizes.map((sizeDetail) => {
+                              const size = availableSizes.find(
+                                (s) => s.id === sizeDetail.sizeId,
+                              );
+                              const finalPrice =
+                                calculateSizeDiscountedPrice(sizeDetail);
+                              const hasCustomDiscount =
+                                sizeDetail.discountType !== null &&
+                                (sizeDetail.discountType !==
+                                  formData.discountType ||
+                                  sizeDetail.discount !== formData.discount);
+
+                              return (
+                                <div
+                                  key={sizeDetail.sizeId}
+                                  className={`grid grid-cols-1 md:grid-cols-8 gap-3 items-center border-b border-gray-200 pb-3 last:border-0 ${
+                                    hasCustomDiscount ? "bg-blue-50" : ""
+                                  }`}
+                                >
+                                  <div className="col-span-1">
+                                    <span className="text-sm font-medium">
+                                      {size?.name ||
+                                        `Size ${sizeDetail.sizeId}`}
+                                    </span>
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <input
+                                      type="text"
+                                      placeholder="SKU"
+                                      value={sizeDetail.sku || ""}
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "sku",
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <input
+                                      type="number"
+                                      placeholder="Price"
+                                      value={
+                                        sizeDetail.price || formData.basePrice
+                                      }
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "price",
+                                          e.target.value,
+                                        )
+                                      }
+                                      min="0"
+                                      step="0.01"
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <select
+                                      value={sizeDetail.discountType || ""}
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "discountType",
+                                          e.target.value || null,
+                                        )
+                                      }
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                                    >
+                                      <option value="">
+                                        Use Product Default
+                                      </option>
+                                      <option value="PERCENT">%</option>
+                                      <option value="FIXED">Fixed</option>
+                                    </select>
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <input
+                                      type="number"
+                                      placeholder={
+                                        sizeDetail.discountType === "PERCENT"
+                                          ? "%"
+                                          : "Amount"
+                                      }
+                                      value={sizeDetail.discount || ""}
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "discount",
+                                          e.target.value,
+                                        )
+                                      }
+                                      min="0"
+                                      max={
+                                        sizeDetail.discountType === "PERCENT"
+                                          ? 100
+                                          : undefined
+                                      }
+                                      step="0.01"
+                                      disabled={!sizeDetail.discountType}
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    />
+                                  </div>
+
+                                  <div className="col-span-1">
+                                    <input
+                                      type="number"
+                                      placeholder="Quantity"
+                                      value={sizeDetail.quantity || 0}
+                                      onChange={(e) =>
+                                        handleSizeFieldChange(
+                                          colorId,
+                                          sizeDetail.sizeId,
+                                          "quantity",
+                                          e.target.value,
+                                        )
+                                      }
+                                      min="0"
+                                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="col-span-1 text-sm font-medium text-green-600">
+                                    ৳{finalPrice.toFixed(2)}
+                                  </div>
+
+                                  {/* Reset button */}
+                                  {hasCustomDiscount && (
+                                    <div className="col-span-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          handleSizeFieldChange(
+                                            colorId,
+                                            sizeDetail.sizeId,
+                                            "discountType",
+                                            null,
+                                          );
+                                          handleSizeFieldChange(
+                                            colorId,
+                                            sizeDetail.sizeId,
+                                            "discount",
+                                            0,
+                                          );
+                                        }}
+                                        className="text-xs text-blue-600 hover:text-blue-800 underline"
+                                      >
+                                        Reset to default
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic">
+                            No sizes available for this variant
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </FormSection>
+
+          {/* ── Additional Details ── */}
+          <FormSection
+            title="Additional Details"
+            description="Optional product information"
+          >
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Material */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Material
+                  </label>
+                  <select
+                    value={formData.materialId || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        materialId: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      }))
+                    }
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">-- Select Material --</option>
+                    {materials?.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div className="relative">
+                <div
+                  className="gray-border rounded-md p-2 flex flex-wrap gap-2 cursor-text"
+                  onClick={() => setShowDropdown(true)}
+                >
+                  {selectedTags.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="bg-gray-200 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                    >
+                      {tag.name}
+                      <button type="button" onClick={() => removeTag(tag.id)}>
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    type="text"
+                    className="flex-1 outline-none text-sm"
+                    placeholder="Add tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => setShowDropdown(true)}
+                  />
+                </div>
+
+                {showDropdown && (
+                  <div className="z-10 mt-1 w-full bg-white gray-border rounded-md max-h-60 overflow-y-auto shadow">
+                    {filteredTags.map((tag: any) => (
+                      <div
+                        key={tag.id}
+                        onClick={() => addTag(tag)}
+                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+                    {searchTerm && !tagExists && (
+                      <div
+                        onClick={handleCreateTag}
+                        className="px-3 py-2 text-sm text-blue-600 hover:bg-gray-100 cursor-pointer"
+                      >
+                        + Create "{searchTerm}"
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Note */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Note (Internal)
+                </label>
+                <textarea
+                  value={formData.note}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, note: e.target.value }))
+                  }
+                  placeholder="Internal notes about this product..."
+                  rows={2}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Estimated Delivery
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.deliveryEstimate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        deliveryEstimate: e.target.value,
+                      }))
+                    }
+                    placeholder="3-5 business days"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Dimensions (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.dimension}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        dimension: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., 10x20x5 cm"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Details (Optional)
+                </label>
+                <textarea
+                  value={formData.productDetails}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      productDetails: e.target.value,
+                    }))
+                  }
+                  placeholder="Detailed product description, materials, care instructions..."
+                  rows={4}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Shipping & Return Policy
+                </label>
+                <textarea
+                  value={formData.shippingReturn}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      shippingReturn: e.target.value,
+                    }))
+                  }
+                  rows={6}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono"
+                />
+              </div>
+            </div>
+          </FormSection>
+
+          {/* ── Status ── */}
+          <FormSection title="Status">
+            {isEditMode ? (
+              <div className="flex items-center gap-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Product Status
+                </label>
+                <select
+                  value={formData.isActive ? "1" : "0"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      isActive: e.target.value === "1",
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="1">Active</option>
+                  <option value="0">Inactive</option>
+                </select>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isActive: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="isActive" className="text-sm text-gray-700">
+                    Active (visible to customers)
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isFeatured"
+                    checked={formData.isFeatured}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isFeatured: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="isFeatured" className="text-sm text-gray-700">
+                    Featured Product (show in featured product)
+                  </label>
+                </div>
+              </>
+            )}
+          </FormSection>
+
+          {/* ── Actions ── */}
+          <div className="flex justify-end gap-3 pt-6">
+            <button
+              type="button"
+              onClick={() =>
+                router.push(isEditMode ? "/admin/products" : "/admin")
+              }
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {isSubmitting
+                ? isEditMode
+                  ? "Updating..."
+                  : "Creating..."
+                : isEditMode
+                  ? "Update Product"
+                  : "Create Product"}
+            </button>
+          </div>
+        </form>
+
+        <GotoArrows />
+      </div>
+    </div>
+  );
+};
+
+export default ProductForm;

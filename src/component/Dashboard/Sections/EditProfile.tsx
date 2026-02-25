@@ -116,7 +116,7 @@ const EditProfile = ({ user, loading }: { user: any; loading: boolean }) => {
   if (loading)
     return (
       <div className="p-20 text-center animate-pulse">
-        Loading Sakigai Account...
+        <LoadingDots />
       </div>
     );
 

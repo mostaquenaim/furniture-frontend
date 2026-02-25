@@ -61,6 +61,7 @@ const CheckoutPageComponent = () => {
     phone: "",
     districtId: "" as number | "",
     fullAddress: "",
+    postCode: "",
   });
 
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
@@ -134,6 +135,11 @@ const CheckoutPageComponent = () => {
       return;
     }
 
+    if (!address.postCode) {  
+      toast.error("Please enter postcode");
+      return;
+    }
+
     try {
       setPlacingOrder(true);
 
@@ -154,7 +160,23 @@ const CheckoutPageComponent = () => {
         return;
       }
 
-      // ONLINE PAYMENT FLOW (later)
+      if (paymentMethod === "online") {
+        const { data } = await axiosSecure.post(`/orders/create`, {
+          cartId: cart.id,
+          address,
+          paymentMethod: "ONLINE",
+        });
+
+        const orderId = data?.orderId;
+
+        if (!orderId) {
+          toast.error("Order creation failed");
+          return;
+        }
+
+        router.push(`/checkout/payment?orderId=${orderId}`);
+        return;
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Order failed");
     } finally {
@@ -251,6 +273,26 @@ const CheckoutPageComponent = () => {
                 }
                 className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-gray-900 transition-colors resize-none"
                 placeholder="House, Road, Area"
+              />
+            </div>
+
+            {/* Postcode */}
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wide block mb-3">
+                Postcode*
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{4,6}" // 4–6 digits
+                value={address.postCode}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, ""); // numbers only
+                  if (value.length > 6) return; // max 6 digits
+                  setAddress((prev) => ({ ...prev, postCode: value }));
+                }}
+                className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-gray-900 transition-colors"
+                placeholder="Enter postcode"
               />
             </div>
 

@@ -16,7 +16,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
 import LoadingDots from "../Loading/LoadingDS";
-import { Cart, CartItem, Review } from "@/types/product.types";
+import { CartItem, Review } from "@/types/product.types";
 import Title from "../Headers/Title";
 import ShowProductsFlex from "./ShowProductsFlex";
 import LikeItShareIt from "./LikeItShareIt";
@@ -32,9 +32,9 @@ import useFetchCarts from "@/hooks/Cart/useCarts";
 import useFetchRelatedProducts from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview";
-import { devLog } from "@/utils/devlog";
 import { getVisitorId } from "@/utils/visitor";
 import useIsWished from "@/hooks/Wish/useIsWished";
+import { FullScreenCenter } from "../Screen/FullScreenCenter";
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -426,7 +426,9 @@ export default function ShowEachProduct() {
 
   if (isLoading)
     return (
-      <div className="p-20 text-center animate-pulse">Loading Product</div>
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
     );
   if (!product)
     return <div className="p-20 text-center">Product Not Found</div>;
@@ -434,18 +436,7 @@ export default function ShowEachProduct() {
   // Price Calculation
   const basePrice = product.basePrice || currentVariant?.size?.price;
 
-  const discountedPrice = product.price;
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingDots></LoadingDots>
-      </div>
-    );
-  }
-
-  if (!product)
-    return <div className="text-center py-20">Product not found.</div>;
+  const discountedPrice = currentVariant?.size?.price || product.price;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-8 font-sans text-[#222222]">

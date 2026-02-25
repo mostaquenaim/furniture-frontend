@@ -1,16 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useCallback } from "react";
 import {
-  Upload,
   X,
   GripVertical,
   Plus,
   Copy,
   Image as ImageIcon,
 } from "lucide-react";
-import { Color } from "@/hooks/Attributes/useFetchColors";
-import { optimizeImage, formatFileSize } from "@/utils/imageOptimizer";
+import { optimizeImage } from "@/utils/imageOptimizer";
 import toast from "react-hot-toast";
+import { Color } from "@/types/product.types";
 
 export interface ProductImageItem {
   id: string;
@@ -102,7 +101,7 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
   };
 
   return (
-    <div className="border border-border rounded-lg p-4 bg-muted/30">
+    <div className="gray-border rounded-lg p-4 bg-muted/30">
       <div className="flex items-center gap-3 mb-4">
         <ImageIcon className="w-5 h-5 text-primary" />
         <span className="font-medium text-foreground">
@@ -121,7 +120,7 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
             onDragStart={() => handleDragStart(index)}
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
-            className={`group relative aspect-square rounded-lg overflow-hidden border-2 border-border bg-background cursor-move ${
+            className={`group relative aspect-square rounded-lg overflow-hidden gray-border bg-background cursor-move ${
               draggedIndex === index ? "opacity-50" : ""
             }`}
           >
@@ -155,7 +154,7 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
         ))}
 
         <label
-          className={`aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-accent/50 transition-all ${
+          className={`aspect-square gray-border border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-accent/50 transition-all ${
             isOptimizing ? "opacity-50 pointer-events-none" : ""
           }`}
         >
@@ -290,11 +289,11 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
   };
 
   return (
-    <div className="border border-border rounded-lg p-4 bg-muted/30">
+    <div className="gray-border rounded-lg p-4 bg-muted/30">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-6 h-6 rounded-full border-2 border-border shadow-sm"
+            className="w-6 h-6 rounded-full border border-border shadow-sm"
             style={{ backgroundColor: color.hexCode }}
           />
           <span className="font-medium text-foreground">{color.name}</span>
@@ -320,7 +319,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
               type="checkbox"
               checked={useDefault}
               onChange={(e) => onUseDefaultChange(colorId, e.target.checked)}
-              className="w-4 h-4 rounded border-border"
+              className="w-4 h-4 rounded gray-border"
             />
             <span className="text-muted-foreground">Use default images</span>
           </label>
@@ -328,7 +327,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
       </div>
 
       {useDefault ? (
-        <div className="text-sm text-muted-foreground italic p-4 border border-dashed border-border rounded-lg text-center">
+        <div className="text-sm text-muted-foreground italic p-4 gray-border border-dashed rounded-lg text-center">
           Using {defaultImages.length} default image(s). Uncheck to upload
           color-specific images.
         </div>
@@ -341,7 +340,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
-              className={`group relative aspect-square rounded-lg overflow-hidden border-2 border-border bg-background cursor-move ${
+              className={`group relative aspect-square rounded-lg overflow-hidden gray-border bg-background cursor-move ${
                 draggedIndex === index ? "opacity-50" : ""
               }`}
             >
@@ -367,7 +366,7 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
           ))}
 
           <label
-            className={`aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-accent/50 transition-all ${
+            className={`aspect-square gray-border border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-accent/50 transition-all ${
               isOptimizing ? "opacity-50 pointer-events-none" : ""
             }`}
           >

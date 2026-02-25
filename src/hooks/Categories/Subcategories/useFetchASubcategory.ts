@@ -18,7 +18,7 @@ const useFetchASubcategory = ({
       console.log(res.data, "subcategory");
       return res.data;
     },
-    enabled: !!categorySlug && enabled, // only fetch if categorySlug exists and enabled
+    enabled: !!categorySlug && enabled,
     retry: 1, // retry once on failure
   });
 
