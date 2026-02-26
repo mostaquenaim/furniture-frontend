@@ -7,7 +7,13 @@ import { useEffect, useState } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import Link from "next/link";
-import { FiStar, FiCheckCircle } from "react-icons/fi";
+import {
+  FiStar,
+  FiCheckCircle,
+  FiPackage,
+  FiTruck,
+  FiCreditCard,
+} from "react-icons/fi";
 import { toast } from "react-hot-toast";
 
 const OrderDetails = () => {
@@ -27,13 +33,11 @@ const OrderDetails = () => {
 
   useEffect(() => {
     if (!orderId) return;
-
     const fetchOrder = async () => {
       try {
         const res = await axiosSecure.get(
           `orders/track/${orderId}?details=true`,
         );
-        console.log(res.data, "order");
         setOrder(res.data);
       } catch (err) {
         console.error(err);
@@ -41,30 +45,24 @@ const OrderDetails = () => {
         setLoading(false);
       }
     };
-
     fetchOrder();
   }, [orderId, axiosSecure]);
 
   const handleOpenReview = (item: any) => {
-    console.log(item, 'selected');
     setSelectedItem(item);
     setIsReviewModalOpen(true);
   };
 
   const submitReview = async () => {
     if (!comment.trim()) return toast.error("Please write a comment");
-
     setSubmittingReview(true);
     try {
       await axiosSecure.post(`/reviews/${selectedItem.id}`, {
-        // orderId: order.id,
-        // productId: selectedItem.productId, // Ensure your item object has productId
         rating,
         comment,
       });
       toast.success("Review submitted successfully!");
       setIsReviewModalOpen(false);
-      // Refresh order data to update "Reviewed" status
       const res = await axiosSecure.get(`orders/track/${orderId}?details=true`);
       setOrder(res.data);
     } catch (err: any) {
@@ -74,178 +72,223 @@ const OrderDetails = () => {
     }
   };
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <LoadingDots />
       </div>
     );
-  }
-
-  if (!order) {
+  if (!order)
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <h2 className="text-xl font-serif italic text-gray-500">
-          Order not found
-        </h2>
-        <Link
-          href="/orders"
-          className="mt-6 text-xs uppercase tracking-widest border-b border-black"
-        >
-          Back to orders
-        </Link>
+        Order not found
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#262626]">
       <div className="max-w-5xl mx-auto px-6 py-12">
-        {/* Header */}
-        <header className="mb-10 border-b border-gray-100 pb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-3">
-              Order Details
-            </p>
-            <h1 className="text-3xl font-serif italic">
-              Order #{order.orderNumber}
-            </h1>
-            <p className="text-sm text-gray-500 mt-2">
-              Placed on {order.orderDate}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] uppercase tracking-widest font-medium text-gray-400">
-              Status
-            </span>
-            <span className="text-xs uppercase tracking-widest px-4 py-1.5 border border-[#262626] bg-[#262626] text-white">
-              {order.status}
-            </span>
+        {/* Header Area */}
+        <header className="mb-12 border-b border-gray-100 pb-8">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-3">
+                Order Tracking
+              </p>
+              <h1 className="text-3xl font-serif italic">
+                {order.orderNumber}
+              </h1>
+              <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                <p>Placed: {order.orderDate}</p>
+                {order.estimatedDelivery && (
+                  <p className="text-black font-medium">
+                    • Est. Delivery: {order.estimatedDelivery}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <span className="text-xs uppercase tracking-widest px-4 py-2 border border-black bg-black text-white">
+                {order.status}
+              </span>
+              <span
+                className={`text-xs uppercase tracking-widest px-4 py-2 border ${order.payment.status === "PAID" ? "border-green-600 text-green-600" : "border-orange-500 text-orange-500"}`}
+              >
+                Payment: {order.payment.status}
+              </span>
+            </div>
           </div>
         </header>
 
-        {/* Items Section */}
-        <section className="mb-16">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-8 text-gray-500 border-b border-gray-50 pb-2">
-            Purchased Items
-          </h2>
-
-          <div className="divide-y divide-gray-100">
-            {order.items.map((item: any) => (
+        {/* Order Progress Stepper */}
+        <section className="mb-16 bg-white border border-gray-100 p-8">
+          <div className="relative flex justify-between">
+            {order.trackingEvents.map((event: any, idx: number) => (
               <div
-                key={item.id}
-                className="py-8 flex flex-col sm:flex-row gap-8 first:pt-0"
+                key={idx}
+                className="flex flex-col items-center relative z-10 w-full"
               >
-                <div className="relative group overflow-hidden w-28 h-36 bg-gray-50 border border-gray-100">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center mb-3 transition-colors duration-500 ${event.completed ? "bg-black text-white" : "bg-gray-100 text-gray-400"}`}
+                >
+                  {event.completed ? (
+                    <FiCheckCircle size={16} />
+                  ) : (
+                    <div className="w-2 h-2 rounded-full bg-current" />
+                  )}
+                </div>
+                <p
+                  className={`text-[10px] uppercase tracking-tighter font-bold text-center ${event.current ? "text-black" : "text-gray-400"}`}
+                >
+                  {event.status}
+                </p>
+                <p className="text-[9px] text-gray-400 mt-1">{event.date}</p>
+
+                {/* Connecting Line */}
+                {idx !== order.trackingEvents.length - 1 && (
+                  <div
+                    className={`absolute top-4 left-[50%] w-full h-[1px] -z-10 ${event.completed ? "bg-black" : "bg-gray-100"}`}
                   />
-                </div>
-
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start">
-                      <Link href={`/products/${item.slug}`} className="font-serif text-lg leading-snug">
-                        {item.name}
-                      </Link>
-                      <p className="text-sm font-medium">৳{item.subtotal}</p>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider">
-                      Qty: {item.quantity} &nbsp; | &nbsp; Price: ৳{item.price}
-                    </p>
-                  </div>
-
-                  {/* Review Logic */}
-                  <div className="mt-6">
-                    {order.status === "DELIVERED" ||
-                    order.status === "Completed" ? (
-                      item.isReviewed ? (
-                        <div className="flex items-center gap-2 text-green-600">
-                          <FiCheckCircle size={14} />
-                          <span className="text-[10px] uppercase tracking-widest font-semibold">
-                            Reviewed
-                          </span>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => handleOpenReview(item)}
-                          className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-semibold border border-black px-4 py-2 hover:bg-black hover:text-white transition-all duration-300"
-                        >
-                          <FiStar size={12} /> Write a Review
-                        </button>
-                      )
-                    ) : (
-                      <p className="text-[10px] italic text-gray-400">
-                        Review available after delivery
-                      </p>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             ))}
           </div>
         </section>
 
-        {/* Order Info Grid */}
-        <section className="grid md:grid-cols-2 gap-16 border-t border-gray-100 pt-12">
-          {/* Shipping */}
-          <div>
-            <h3 className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-6 text-gray-500">
-              Shipping Details
-            </h3>
-            <div className="text-sm text-gray-600 space-y-2 font-light tracking-wide leading-relaxed">
-              <p className="font-medium text-[#262626] uppercase text-xs tracking-widest">
-                {order.shippingAddress?.name}
-              </p>
-              <p>{order.shippingAddress?.phone}</p>
-              <p>{order.shippingAddress?.address}</p>
-              <p>{order.shippingAddress?.district}</p>
-            </div>
-          </div>
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Main Content - Items */}
+          <div className="lg:col-span-2">
+            <h2 className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-6 text-gray-500 border-b border-gray-50 pb-2">
+              Purchased Items ({order.items.length})
+            </h2>
+            <div className="divide-y divide-gray-100">
+              {order.items.map((item: any) => (
+                <div key={item.id} className="py-8 flex gap-6 first:pt-0">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-24 h-32 object-cover bg-gray-50"
+                  />
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <Link
+                        href={`/products/${item.slug}`}
+                        className="font-serif text-lg hover:underline"
+                      >
+                        {item.name}
+                      </Link>
+                      <p className="font-medium">৳{item.subtotal}</p>
+                    </div>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-[11px] text-gray-500 uppercase tracking-widest">
+                        Color: {item.color} | Size: {item.size}
+                      </p>
+                      <p className="text-[11px] text-gray-400 uppercase tracking-widest font-light">
+                        SKU: {item.sku}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Qty: {item.quantity} × ৳{item.price}
+                      </p>
+                    </div>
 
-          {/* Summary */}
-          <div className="bg-[#f9f9f9] p-8">
-            <h3 className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-6 text-gray-500">
-              Financial Summary
-            </h3>
-            <div className="space-y-4 text-sm font-light">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Subtotal</span>
-                <span>৳{order.subtotal}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Shipping Fee</span>
-                <span>৳{order.deliveryCharge}</span>
-              </div>
-              {order.discount > 0 && (
-                <div className="flex justify-between text-red-500 italic">
-                  <span>Discount Applied</span>
-                  <span>-৳{order.discount}</span>
+                    <div className="mt-6">
+                      {order.status === "DELIVERED" || item.isReviewed ? (
+                        item.isReviewed ? (
+                          <span className="inline-flex items-center gap-2 text-green-600 text-[10px] uppercase tracking-widest font-bold">
+                            <FiCheckCircle /> Reviewed
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleOpenReview(item)}
+                            className="text-[10px] uppercase tracking-widest font-bold border border-black px-4 py-2 hover:bg-black hover:text-white transition-all"
+                          >
+                            Write a Review
+                          </button>
+                        )
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              )}
-              <div className="border-t border-gray-200 pt-4 flex justify-between font-semibold text-lg">
-                <span className="font-serif">Total Amount</span>
-                <span>৳{order.total}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar - Summary & Shipping */}
+          <div className="space-y-10">
+            {/* Payment Info */}
+            <div className="bg-[#f9f9f9] p-6 border border-gray-100">
+              <h3 className="text-[11px] uppercase tracking-widest font-bold mb-4 flex items-center gap-2 text-gray-500">
+                <FiCreditCard /> Payment Information
+              </h3>
+              <div className="text-xs space-y-3 font-light">
+                <div className="flex justify-between">
+                  <span>Method</span>
+                  <span className="font-medium">{order.payment.method}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Status</span>
+                  <span className="text-green-600 font-medium">
+                    {order.payment.status}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-gray-200">
+                  <p className="text-[9px] text-gray-400 uppercase mb-1">
+                    Transaction ID
+                  </p>
+                  <p className="break-all font-mono text-[10px]">
+                    {order.payment.transactionId}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Shipping Info */}
+            <div className="p-6">
+              <h3 className="text-[11px] uppercase tracking-widest font-bold mb-4 flex items-center gap-2 text-gray-500">
+                <FiTruck /> Shipping Address
+              </h3>
+              <div className="text-xs space-y-1 leading-relaxed text-gray-600">
+                <p className="font-bold text-black uppercase tracking-tighter mb-2">
+                  {order.shippingAddress.name}
+                </p>
+                <p>{order.shippingAddress.phone}</p>
+                <p>{order.shippingAddress.address}</p>
+                <p className="uppercase">{order.shippingAddress.district}</p>
+              </div>
+            </div>
+
+            {/* Financial Summary */}
+            <div className="p-6 bg-[#262626] text-white">
+              <h3 className="text-[11px] uppercase tracking-widest font-bold mb-6 opacity-60">
+                Order Summary
+              </h3>
+              <div className="space-y-4 text-xs">
+                <div className="flex justify-between opacity-80">
+                  <span>Subtotal</span>
+                  <span>৳{order.subtotal}</span>
+                </div>
+                <div className="flex justify-between opacity-80">
+                  <span>Delivery Charge</span>
+                  <span>৳{order.deliveryCharge}</span>
+                </div>
+                {order.discount > 0 && (
+                  <div className="flex justify-between text-red-400">
+                    <span>Discount</span>
+                    <span>-৳{order.discount}</span>
+                  </div>
+                )}
+                <div className="pt-4 border-t border-white/10 flex justify-between text-base font-serif italic">
+                  <span>Grand Total</span>
+                  <span>৳{order.total}</span>
+                </div>
               </div>
             </div>
           </div>
-        </section>
-
-        <div className="mt-20 text-center">
-          <Link
-            href="/dashboard?activeItem=orders"
-            className="text-[10px] uppercase tracking-[0.3em] border-b border-black pb-1 hover:text-gray-400 transition-colors"
-          >
-            Return to Orders
-          </Link>
         </div>
       </div>
 
-      {/* --- Review Modal UI --- */}
       {isReviewModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white w-full max-w-lg p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
             <div className="flex justify-between items-start mb-6">
               <h2 className="text-xl font-serif italic">Review Product</h2>
