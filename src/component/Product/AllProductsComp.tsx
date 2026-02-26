@@ -65,6 +65,8 @@ const AllProductsComp = () => {
     order: sortParams.order,
   });
 
+  console.log(products[0]);
+
   const totalPages = meta?.totalPages || 1;
   const totalProducts = meta?.total || 0;
 

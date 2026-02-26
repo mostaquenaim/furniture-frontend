@@ -51,8 +51,6 @@ const EditProfile = ({ user, loading }: { user: any; loading: boolean }) => {
       if (!userLoading) {
         const response = await axiosSecure.put(`/users/update`, formData);
 
-        console.log(response.data, "response-data");
-
         // If backend says OTP is needed (Email/Phone change)
         if (response.data.status === "OTP_REQUIRED") {
           setShowOtp(true);

@@ -434,7 +434,7 @@ export default function ShowEachProduct() {
     return <div className="p-20 text-center">Product Not Found</div>;
 
   // Price Calculation
-  const basePrice = product.basePrice || currentVariant?.size?.price;
+  const basePrice = currentVariant?.size?.basePrice || product.basePrice ;
 
   const discountedPrice = currentVariant?.size?.price || product.price;
 

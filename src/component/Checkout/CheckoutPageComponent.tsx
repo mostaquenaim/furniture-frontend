@@ -179,6 +179,7 @@ const CheckoutPageComponent = () => {
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Order failed");
+      setShowModal(false)
     } finally {
       setPlacingOrder(false);
     }

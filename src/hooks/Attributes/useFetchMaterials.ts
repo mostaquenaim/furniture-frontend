@@ -36,7 +36,6 @@ const useFetchMaterials = ({
       const response = await axiosPublic.get<Material[]>(
         `/materials?isActive=${isActive}`,
       );
-      console.log(response.data, "response-data");
       return response.data;
     },
   });

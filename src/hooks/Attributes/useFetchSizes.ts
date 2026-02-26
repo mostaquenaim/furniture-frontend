@@ -24,7 +24,6 @@ const useFetchSizes = ({
       const response = await axiosPublic.get<ProductSizeRelation[]>(
         `/sizes?isActive=${isActive}`,
       );
-      console.log(response.data, "response-data");
       return response.data;
     },
   });

@@ -26,7 +26,7 @@ const useFetchVariants = ({
       const response = await axiosPublic.get<Variant[]>(
         `/variants?isActive=${isActive}&&needSizes=${needSize}`,
       );
-      console.log(response.data, "response-data");
+
       return response.data;
     },
   });
