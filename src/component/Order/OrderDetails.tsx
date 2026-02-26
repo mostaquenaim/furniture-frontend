@@ -38,6 +38,7 @@ const OrderDetails = () => {
         const res = await axiosSecure.get(
           `orders/track/${orderId}?details=true`,
         );
+
         setOrder(res.data);
       } catch (err) {
         console.error(err);

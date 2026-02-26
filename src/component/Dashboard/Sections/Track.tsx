@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import useTrackOrder from "@/hooks/Track/useTrack";
 import { useState } from "react";
@@ -11,7 +12,7 @@ const Track = () => {
 
   const { order: orderData, isLoading, isError } = useTrackOrder(orderId);
 
-  //   console.log(orderData, "orderdataa");
+  console.log(orderData, "orderdataa");
 
   const handleTrack = (e: any) => {
     e.preventDefault();
@@ -174,9 +175,9 @@ const Track = () => {
                       <p className="text-xs text-gray-500 mt-1">
                         Qty: {item.quantity}
                       </p>
-                      <p className="text-sm font-semibold mt-auto">
-                        Tk {item.price.toLocaleString()}
-                      </p>
+                      {/* <p className="text-sm font-semibold mt-auto">
+                        Tk {item.price}
+                      </p> */}
                     </div>
                   </div>
                 ))}
@@ -191,8 +192,9 @@ const Track = () => {
                   <div className="font-semibold text-black mb-1">
                     {orderData.shippingAddress.name}
                   </div>
-                  <div>{orderData.shippingAddress.street}</div>
-                  <div>{orderData.shippingAddress.city}</div>
+                  <div>{orderData.shippingAddress.phone}</div>
+                  <div>{orderData.shippingAddress.address}</div>
+                  <div>{orderData.shippingAddress.district}</div>
                 </div>
               </div>
             </div>

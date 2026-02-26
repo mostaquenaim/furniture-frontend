@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosPublic from "../Axios/useAxiosPublic";
 import useAxiosSecure from "../Axios/useAxiosSecure";
 import { isAuthenticated } from "@/utils/auth";
+import { OrderItem } from "../Order/useOrders";
 // types/orderTracking.types.ts
 
 export interface TrackingEvent {
@@ -24,8 +25,15 @@ export interface TrackedItem {
 
 export interface ShippingAddress {
   name: string;
-  street: string;
-  city: string;
+  address: string;
+  district: string;
+  phone: string;
+}
+
+export interface PaymentInfo {
+  method: string;
+  status: string;
+  transactionId?: string;
 }
 
 export interface TrackedOrder {
@@ -38,6 +46,7 @@ export interface TrackedOrder {
   deliveryCharge?: number;
   discount?: number;
   total: number;
+  payment: PaymentInfo;
 
   items: TrackedItem[];
   trackingEvents: TrackingEvent[];
@@ -53,6 +62,8 @@ const useTrackOrder = (trackingId: string) => {
     const { data } = await axios.get<TrackedOrder>(
       `/orders/track/${trackingId}`,
     );
+
+    console.log(data, "order-data");
     return data;
   };
 
