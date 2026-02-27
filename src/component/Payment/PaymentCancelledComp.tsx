@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function PaymentCancelledComp() {
   const searchParams = useSearchParams();
   const transactionId = searchParams.get("transactionId");
+  const orderId = searchParams.get("orderId");
 
   return (
     <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
@@ -39,14 +40,13 @@ export default function PaymentCancelledComp() {
         <p className="text-sm text-stone-500 leading-relaxed mb-8">
           You cancelled the payment.
           <br />
-          Your cart is saved whenever you return.
         </p>
 
         <Link
-          href="/cart"
+          href={orderId ? `/order/${orderId}` : "/dashboard?activeItem=orders"}
           className="inline-block text-[11px] tracking-[0.18em] uppercase border border-stone-800 text-stone-800 px-8 py-3 hover:bg-stone-800 hover:text-white transition-colors duration-200"
         >
-          Back to Cart
+          {orderId ? "Return to Order" : "Back to Orders"}
         </Link>
       </div>
     </div>
