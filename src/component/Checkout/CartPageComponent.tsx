@@ -17,6 +17,8 @@ import { RelatedProduct } from "@/hooks/Products/RelatedProducts/useFetchRelated
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import LoadingDots from "../Loading/LoadingDS";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
+import { isAuthenticated } from "@/utils/auth";
+import { getVisitorId } from "@/utils/visitor";
 
 const CartPageComponent = () => {
   const { cart, isLoading, isFetching, refetch } = useFetchCarts();
@@ -174,6 +176,7 @@ const CartItemComponent = ({
 
   const axiosSecure = useAxiosSecure();
 
+  // update quantity
   const updateQuantity = async (quantity: number) => {
     await axiosSecure.patch(`/cart/items/${item.id}`, {
       quantity,
@@ -181,8 +184,13 @@ const CartItemComponent = ({
     refetch();
   };
 
+  // remove cart / delete cart
   const handleRemoveItem = async () => {
-    await axiosSecure.delete(`/cart/items/${item.id}`);
+    let visitorId = null;
+    isAuthenticated() && (visitorId = getVisitorId());
+    await axiosSecure.delete(`/cart/items/${item.id}`, {
+      data: { visitorId },
+    });
     refetch();
     refetchCount();
   };
@@ -208,6 +216,7 @@ const CartItemComponent = ({
             }
           />
         </Link>
+        
         <div className="text-sm space-y-1 flex-1">
           <Link
             href={`products/${item?.productSize?.color?.product?.slug}`}

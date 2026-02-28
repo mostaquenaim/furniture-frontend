@@ -187,14 +187,6 @@ const CheckoutPageComponent = () => {
 
   return (
     <div className="max-w-[1500px] mx-auto px-4 py-8 lg:px-8 lg:py-12 font-sans">
-      {/* Checkout Progress Stepper */}
-      {/* <div className="flex justify-center mb-16">
-        <div className="flex items-center w-full max-w-2xl relative">
-          <Step label="Shipment" active />
-          <div className="flex-1 h-[2px] bg-gray-200 mx-4 relative top-[-20px]"></div>
-          <Step label="Payment" active={false} />
-        </div>
-      </div> */}
 
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
         {/* LEFT: Shipping Form */}
