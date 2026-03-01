@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { mergeGuestUserWithRealUser } from "@/utils/merge";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 type ModalView =
   | "signin"
@@ -713,6 +714,18 @@ export default function AuthModal({
                   USE {!useMobileForSignin ? "MOBILE NUMBER" : "EMAIL"} INSTEAD
                 </button>
               </form>
+              {/* or google sign in */}
+              <div className="mt-6">
+                <div className="relative flex items-center gap-3 my-6">
+                  <div className="flex-1 border-t border-gray-200" />
+                  <span className="text-xs text-gray-400 uppercase tracking-widest">
+                    or
+                  </span>
+                  <div className="flex-1 border-t border-gray-200" />
+                </div>
+
+                <GoogleSignInButton />
+              </div>
 
               <div className="mt-8 pt-8 border-t border-gray-200">
                 <h3 className="text-xl font-light text-center mb-4 heading">
@@ -829,6 +842,17 @@ export default function AuthModal({
                   prepaid phones are not supported.
                 </div>
               </form>
+
+              <div className="relative flex items-center gap-3 my-4">
+                <div className="flex-1 border-t border-gray-200" />
+                <span className="text-xs text-gray-400 uppercase tracking-widest">
+                  or
+                </span>
+                <div className="flex-1 border-t border-gray-200" />
+              </div>
+
+              <GoogleSignInButton label="Sign up with Google" />
+
               {/* already account  */}
               <div className="mt-8 pt-8 border-t border-gray-200">
                 <h3 className="text-xl font-light text-center mb-4 heading">
