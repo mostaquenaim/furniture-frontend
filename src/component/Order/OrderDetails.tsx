@@ -191,6 +191,13 @@ const OrderDetails = () => {
         <header className="mb-12">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-gray-100 pb-8">
             <div>
+              <Link
+                href={`/dashboard/invoice/${order.invoiceId}`}
+                className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-3 inline-flex items-center gap-2"
+              >
+                Invoice
+              </Link>
+
               <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-3">
                 Order Tracking
               </p>

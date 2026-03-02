@@ -24,6 +24,7 @@ export type OrderStatus =
 export interface OrderItem {
   id: number;
   productId: number;
+  sku?: string;
   productTitle: string;
   quantity: number;
   priceAtPurchase: number;
@@ -54,6 +55,7 @@ export interface FullOrder {
   couponCode?: string | null;
   discount?: number | null;
   total: number;
+  invoiceId? : number | null;
   itemCount?: number;
   status: OrderStatus;
   awbNumber?: string | null;

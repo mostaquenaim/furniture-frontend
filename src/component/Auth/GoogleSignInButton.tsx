@@ -35,7 +35,7 @@ export default function GoogleSignInButton({
       type="button"
       onClick={handleGoogleSignIn}
       disabled={loading}
-      className={`w-full flex items-center justify-center gap-3 border border-gray-300 py-3 px-4 rounded hover:bg-gray-50 transition-colors font-medium text-sm text-gray-700 disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
+      className={`cursor-pointer w-full flex items-center justify-center gap-3 border border-gray-300 py-3 px-4 rounded hover:bg-gray-50 transition-colors font-medium text-sm text-gray-700 disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
     >
       {loading ? (
         <>

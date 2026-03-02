@@ -22,6 +22,9 @@ import { getVisitorId } from "@/utils/visitor";
 
 const CartPageComponent = () => {
   const { cart, isLoading, isFetching, refetch } = useFetchCarts();
+
+  console.log(cart, "cartdetails");
+  
   const { refetch: refetchCount } = useCartCount();
   const axiosPublic = useAxiosPublic();
 
@@ -216,7 +219,7 @@ const CartItemComponent = ({
             }
           />
         </Link>
-        
+
         <div className="text-sm space-y-1 flex-1">
           <Link
             href={`products/${item?.productSize?.color?.product?.slug}`}

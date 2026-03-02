@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // components/AuthModal.tsx
 "use client";
@@ -12,6 +13,7 @@ import axios from "axios";
 import { mergeGuestUserWithRealUser } from "@/utils/merge";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import GoogleSignInButton from "./GoogleSignInButton";
+import Link from "next/link";
 
 type ModalView =
   | "signin"
@@ -522,6 +524,17 @@ export default function AuthModal({
         >
           <X size={24} />
         </button>
+
+        {/* <Link
+          href={"/"}
+          className="flex justify-center items-center text-center"
+        >
+          <img
+            src="/logo/sakigai logo.png"
+            alt="Sakigai Logo"
+            className="w-20 mb-4 mt-6"
+          />
+        </Link> */}
 
         <div className="px-8 py-20">
           {view === "password-reset" && (
