@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 import { FullScreenCenter } from '../Screen/FullScreenCenter';
 import LoadingDots from '../Loading/LoadingDS';
+import useAxiosSecure from '@/hooks/Axios/useAxiosSecure';
 
 // ── tiny helpers ────────────────────────────────────────────────────────────
 const taka = (n: number | string) =>
@@ -33,9 +34,9 @@ const InvoiceComp = () => {
   const { id } = useParams<{ id: string }>();
   const { invoice, isLoading } = useFetchInvoice(id);
 
-  console.log(invoice?.order,'orderss');
   const [downloading, setDownloading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+//   const axiosSecure = useAxiosSecure()
 
   if (isLoading) {
     return <FullScreenCenter><LoadingDots /></FullScreenCenter>;
