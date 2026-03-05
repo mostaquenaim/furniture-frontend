@@ -13,6 +13,7 @@ import {
   FiTruck,
   FiCreditCard,
   FiAlertCircle,
+  FiDownload,
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { devLog } from "@/utils/devlog";
@@ -33,6 +34,7 @@ const OrderDetails = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -83,6 +85,27 @@ const OrderDetails = () => {
       toast.error(err.response?.data?.message || "Failed to initiate payment");
     } finally {
       setRetrying(false);
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/invoices/${order.invoiceId}/pdf`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        },
+      );
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice-${order.invoiceId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -191,13 +214,6 @@ const OrderDetails = () => {
         <header className="mb-12">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-gray-100 pb-8">
             <div>
-              <Link
-                href={`/dashboard/invoice/${order.invoiceId}`}
-                className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-3 inline-flex items-center gap-2"
-              >
-                Invoice
-              </Link>
-
               <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-3">
                 Order Tracking
               </p>
@@ -214,6 +230,15 @@ const OrderDetails = () => {
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleDownloadInvoice}
+                disabled={downloading}
+                className="cursor-pointer flex items-center gap-2 text-[10px] uppercase tracking-widest px-5 py-2.5 border border-black font-bold hover:bg-black hover:text-white transition-all active:scale-95 disabled:opacity-50"
+              >
+                <FiDownload className={downloading ? "animate-bounce" : ""} />
+                {downloading ? "Preparing..." : "Download Invoice"}
+              </button>
+
               <span className="text-[10px] uppercase tracking-widest px-5 py-2.5 bg-black text-white font-bold">
                 {order.status}
               </span>

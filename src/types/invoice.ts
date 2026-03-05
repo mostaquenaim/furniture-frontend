@@ -6,4 +6,6 @@ export interface Invoice {
   issuedAt: string;
   total: number;
   order: FullOrder;
+  dueDate?: string;
+  paidAt?: string | null;
 }

@@ -14,6 +14,7 @@ import {
   SubCategoryRelation,
 } from "@/types/product.types";
 import { Search } from "lucide-react";
+import BarcodeModal from "@/component/Barcode/Barcodemodal";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -23,6 +24,11 @@ const AllProducts = () => {
   const [isActive, setIsActive] = useState<boolean | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  const [barcodeModal, setBarcodeModal] = useState<{
+    productId: number;
+    productTitle: string;
+  } | null>(null);
 
   const axiosSecure = useAxiosSecure();
 
@@ -332,6 +338,17 @@ const AllProducts = () => {
                           Edit
                         </button>
                         <button
+                          onClick={() =>
+                            setBarcodeModal({
+                              productId: product.id,
+                              productTitle: product.title,
+                            })
+                          }
+                          className="text-violet-600 hover:text-violet-800 text-sm font-medium"
+                        >
+                          Barcode
+                        </button>
+                        <button
                           onClick={() => handleToggleStatus(product.slug)}
                           disabled={togglingId === product.slug}
                           className={`text-sm font-medium disabled:opacity-50 ${
@@ -445,6 +462,17 @@ const AllProducts = () => {
                     Edit
                   </button>
                   <button
+                    onClick={() =>
+                      setBarcodeModal({
+                        productId: product.id,
+                        productTitle: product.title,
+                      })
+                    }
+                    className="text-violet-600 font-medium"
+                  >
+                    Barcode
+                  </button>
+                  <button
                     onClick={() => handleToggleStatus(product.slug)}
                     disabled={togglingId === product.slug}
                     className={`font-medium disabled:opacity-50 ${
@@ -529,6 +557,14 @@ const AllProducts = () => {
             Page {meta.page} of {meta.totalPages}
           </div>
         </div>
+      )}
+
+      {barcodeModal && (
+        <BarcodeModal
+          productId={barcodeModal.productId}
+          productTitle={barcodeModal.productTitle}
+          onClose={() => setBarcodeModal(null)}
+        />
       )}
     </div>
   );

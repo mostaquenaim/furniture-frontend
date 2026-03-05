@@ -116,12 +116,6 @@ const InvoiceComp = () => {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => window.print()}
-              className="cursor-pointer flex items-center gap-2 px-4 py-2 text-xs font-medium tracking-widest uppercase border border-slate-300 text-slate-600 rounded-lg hover:bg-white transition-all"
-            >
-              <PrintIcon /> Print
-            </button>
-            <button
               onClick={handleDownload}
               disabled={downloading}
               className="cursor-pointer flex items-center gap-2 px-5 py-2 text-xs font-bold tracking-widest uppercase bg-[#0f172a] text-[#e2c97e] rounded-lg hover:bg-[#1e293b] transition-all disabled:opacity-50"
