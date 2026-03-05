@@ -4,8 +4,8 @@ import BarcodesPage from "@/component/Barcode/BarcodesPage";
 const BarcodePage = () => {
   return (
     <div>
-      {/* <BarcodeManagement /> */}
-      <BarcodesPage />
+      <BarcodeManagement />
+      {/* <BarcodesPage /> */}
     </div>
   );
 };

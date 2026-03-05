@@ -23,7 +23,7 @@ interface BarcodeRecord {
   lowStockAt: number;
   printCount: number;
   printedAt?: string;
-  product: { id: number; name: string; sellingPrice: number };
+  product: { id: number; title: string; price: number };
   location?: Location;
 }
 
@@ -106,6 +106,8 @@ export default function BarcodeManagement() {
         axiosSecure.get("/barcodes"),
         axiosSecure.get("/barcodes/locations"),
       ]);
+
+      console.log(bc.data);
       setBarcodes(bc.data);
       setLocations(lc.data);
     } finally {
@@ -185,7 +187,7 @@ export default function BarcodeManagement() {
   const filtered = barcodes.filter((b) => {
     const matchSearch =
       !search ||
-      b.product.name.toLowerCase().includes(search.toLowerCase()) ||
+      b.product.title.toLowerCase().includes(search.toLowerCase()) ||
       b.barcode.toLowerCase().includes(search.toLowerCase()) ||
       b.location?.code.toLowerCase().includes(search.toLowerCase());
     const matchTab =
@@ -510,10 +512,10 @@ export default function BarcodeManagement() {
                         {/* Product */}
                         <td className="px-4 py-3">
                           <p className="font-semibold text-slate-900 text-[13px]">
-                            {bc.product.name}
+                            {bc.product.title}
                           </p>
                           <p className="text-slate-400 text-[11px] mono">
-                            {taka(bc.product.sellingPrice)}
+                            {taka(bc.product.price)}
                           </p>
                         </td>
 
