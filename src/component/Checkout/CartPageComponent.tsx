@@ -13,7 +13,9 @@ import Link from "next/link";
 import OrderSummary from "./OrderSummary";
 import useCartCount from "@/hooks/Cart/useCartCount";
 import { useEffect, useMemo, useState } from "react";
-import { RelatedProduct } from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
+import useFetchRelatedProducts, {
+  RelatedProduct,
+} from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import LoadingDots from "../Loading/LoadingDS";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
@@ -24,13 +26,9 @@ const CartPageComponent = () => {
   const { cart, isLoading, isFetching, refetch } = useFetchCarts();
 
   console.log(cart, "cartdetails");
-  
+
   const { refetch: refetchCount } = useCartCount();
   const axiosPublic = useAxiosPublic();
-
-  const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
-
-  const [isRelatedLoading, setIsRelatedLoading] = useState(true);
 
   // devLog(cart, "cartslocal");
 
@@ -52,6 +50,12 @@ const CartPageComponent = () => {
     );
   }, [cartItems]);
 
+  const { relatedProducts, isLoading: isRelatedLoading } =
+    useFetchRelatedProducts({
+      productSlug: cartItems[0].productSize?.color?.product.slug,
+      productIds: cartItemIds.join(","),
+    });
+
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       const response = await axiosPublic.get(
@@ -62,9 +66,6 @@ const CartPageComponent = () => {
           },
         },
       );
-
-      setRelatedProducts(response.data);
-      setIsRelatedLoading(false);
     };
 
     if (cartItems) {

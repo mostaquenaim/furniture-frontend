@@ -4,7 +4,6 @@ import {
   useQuery,
   UseQueryResult,
 } from "@tanstack/react-query";
-import { Product } from "@/types/product.types";
 import { AxiosError } from "axios";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 
@@ -36,12 +35,23 @@ interface UseFetchProductsReturn {
   error: Error | null;
   refetch: () => void;
 }
-const useFetchRelatedProducts = (slug: string): UseFetchProductsReturn => {
+
+const useFetchRelatedProducts = ({
+  productSlug,
+  productIds,
+  categoryIds,
+  categorySlug,
+}: {
+  productSlug?: string;
+  productIds?: string;
+  categorySlug?: string;
+  categoryIds?: string;
+}): UseFetchProductsReturn => {
   const axiosPublic = useAxiosPublic();
 
   const fetchRelatedProducts = async (): Promise<RelatedProduct[]> => {
     const response = await axiosPublic.get<RelatedProduct[]>(
-      `/product/you-may-also-like/${slug}`,
+      `/product/you-may-also-like?productSlug=${productSlug}&productIds=${productIds}&categoryIds=${categoryIds}&categorySlug=${categorySlug}`,
     );
 
     return response.data;
@@ -55,7 +65,7 @@ const useFetchRelatedProducts = (slug: string): UseFetchProductsReturn => {
     refetch,
     isFetching,
   }: UseQueryResult<RelatedProduct[], AxiosError> = useQuery({
-    queryKey: ["related-products", slug],
+    queryKey: ["related-products", productSlug],
     queryFn: fetchRelatedProducts,
     placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,

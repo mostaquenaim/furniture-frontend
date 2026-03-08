@@ -12,6 +12,7 @@ import { FullScreenCenter } from "../Screen/FullScreenCenter";
 
 import useFetchABlog from "@/hooks/Blog/useFetchABlog";
 import { BlogPost } from "@/types/blog";
+import useFetchRelatedProducts from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 
 const parseMarkdown = (text: string) => {
   let html = text;
@@ -42,10 +43,14 @@ const parseMarkdown = (text: string) => {
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-
   const { blog, isLoading } = useFetchABlog(slug);
 
-  console.log(blog, "blog-details");
+  const subcategoryIds = blog?.subCategories?.map((b) => b.id);
+
+  const { relatedProducts, isLoading: isRelatedLoading } =
+    useFetchRelatedProducts({
+      categoryIds: subcategoryIds?.join(","),
+    });
 
   if (isLoading)
     return (
@@ -147,7 +152,11 @@ export default function BlogPostPage() {
       {/* Products Section */}
       <div className="max-w-7xl mx-auto px-6 pb-24">
         <Title title="Recommended Furniture" />
-        <ShowProductsFlex />
+        <ShowProductsFlex
+          isLoading={isRelatedLoading}
+          products={relatedProducts}
+          maxWidth="100%"
+        />
       </div>
     </article>
   );
