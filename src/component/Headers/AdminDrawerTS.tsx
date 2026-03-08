@@ -12,7 +12,6 @@ import {
   Users,
   Settings,
   BarChart3,
-  Tag,
   Layers,
   Database,
   Percent,
@@ -22,38 +21,11 @@ import {
   ChevronRight,
   ChevronDown,
   Menu,
-  Search,
-  Bell,
   Store,
-  HelpCircle,
   FileText,
   TrendingUp,
-  Box,
   Grid,
-  Truck,
-  Gift,
-  CreditCard,
-  LogOut,
-  User,
-  Shield,
-  Home,
-  ClipboardList,
-  Archive,
-  AlertCircle,
-  RefreshCw,
-  Star,
-  BookOpen,
-  Palette,
-  Ruler,
-  Droplet,
-  HardDrive,
   Download,
-  Upload,
-  Repeat,
-  ShieldCheck,
-  Globe,
-  Mail,
-  Wrench,
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { MdCategory } from "react-icons/md";
@@ -132,18 +104,20 @@ const AdminDrawer = () => {
           sub: [
             { href: "/admin/products", label: "All Products", badge: 124 },
             { href: "/admin/product/add", label: "Add Product" },
-            { href: "/admin/product/trash", label: "Trash" },
-            { href: "/admin/product/reviews", label: "Reviews", badge: 12 },
+            // { href: "/admin/product/reviews", label: "Reviews", badge: 12 },
+            { href: "/admin/barcode", label: "Barcodes" },
           ],
         },
-        {
-          name: "Purchases",
-          icon: Download,
-          sub: [
-            { href: "/admin/purchases", label: "All Purchases" },
-            { href: "/admin/purchase/add", label: "Add Purchase" },
-          ],
-        },
+        // purchases
+        // {
+        //   name: "Purchases",
+        //   icon: Download,
+        //   sub: [
+        //     { href: "/admin/purchases", label: "All Purchases" },
+        //     { href: "/admin/purchase/add", label: "Add Purchase" },
+        //   ],
+        // },
+        // product type
         {
           name: "Product Type",
           icon: MdCategory,
@@ -152,6 +126,7 @@ const AdminDrawer = () => {
             { href: "/admin/subcategory/add", label: "Add Subcategory" },
           ],
         },
+        // categories
         {
           name: "Categories",
           icon: Grid,
@@ -160,6 +135,7 @@ const AdminDrawer = () => {
             { href: "/admin/category/add", label: "Add Category" },
           ],
         },
+        // series
         {
           name: "Series",
           icon: Layers,
@@ -169,6 +145,7 @@ const AdminDrawer = () => {
             // { href: "/admin/series/arrange", label: "Arrange" },
           ],
         },
+        // attributes
         {
           name: "Attributes",
           icon: Sliders,
@@ -177,7 +154,7 @@ const AdminDrawer = () => {
             { href: "/admin/attribute/sizes", label: "Sizes" },
             { href: "/admin/attribute/variants", label: "Variants" },
             { href: "/admin/attribute/materials", label: "Materials" },
-            { href: "/admin/attribute/manage", label: "Manage" },
+            // { href: "/admin/attribute/manage", label: "Manage" },
           ],
         },
       ],
@@ -298,14 +275,23 @@ const AdminDrawer = () => {
       label: "System",
       items: [
         {
+          name: "Activity Log",
+          icon: FileText,
+          sub: [
+            { href: "/admin/activity-log", label: "All Logs" },
+            { href: "/admin/activity-log/users", label: "User Activities" },
+          ],
+        },
+        {
           name: "Settings",
           icon: Settings,
           sub: [
             { href: "/admin/settings/general", label: "General" },
             { href: "/admin/settings/shipping", label: "Shipping" },
-            { href: "/admin/settings/shipping/districts", label: "Districts" }, 
+            { href: "/admin/settings/shipping/districts", label: "Districts" },
             { href: "/admin/settings/email", label: "Email Templates" },
             { href: "/admin/settings/maintenance", label: "Maintenance" },
+            // { href: "/admin/settings/activity-log", label: "Activity Log" },
           ],
         },
       ],

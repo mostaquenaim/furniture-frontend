@@ -7,6 +7,7 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { Edit3, Save, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 const AllDistrictsComp = () => {
   const { districts, isLoading, refetch } = useFetchDistricts();
@@ -110,9 +111,9 @@ const AllDistrictsComp = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 text-sm text-slate-500">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
   }
 

@@ -32,6 +32,7 @@ import {
 } from "@/types/product.types";
 import VariantNSizes from "./FormComponents/VariantNSizesSection";
 import BasicInfoSection from "./FormComponents/BasicInfoSection";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -893,14 +894,9 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   // ─── Loading screen (edit mode only) ─────────────────────────────────────
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600">
-            <LoadingDots />
-          </p>
-        </div>
-      </div>
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
     );
   }
 

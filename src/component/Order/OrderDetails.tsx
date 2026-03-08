@@ -17,6 +17,7 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { devLog } from "@/utils/devlog";
+import { FullScreenCenter } from "../Screen/FullScreenCenter";
 
 const OrderDetails = () => {
   const searchParams = useSearchParams();
@@ -196,9 +197,9 @@ const OrderDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
   if (!order)
     return (

@@ -5,7 +5,6 @@ const UpdateProduct = () => {
     <div>
       {/* <ProductForm mode="update" /> */}
       <ProductForm />
-      {/* <UpdateProductComp /> */}
     </div>
   );
 };

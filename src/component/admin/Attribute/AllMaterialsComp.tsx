@@ -16,6 +16,7 @@ import {
 import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 interface Material {
   id: number;
@@ -42,7 +43,7 @@ const DEFAULT_FORM: MaterialFormData = {
 const AllMaterialsComp: React.FC = () => {
   const axiosSecure = useAxiosSecure();
   const { materials, isLoading, refetch } = useFetchMaterials({
-    isActive: null
+    isActive: null,
   });
 
   // UI States
@@ -135,9 +136,9 @@ const AllMaterialsComp: React.FC = () => {
 
   if (isLoading)
     return (
-      <div className="p-20 text-center">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   return (

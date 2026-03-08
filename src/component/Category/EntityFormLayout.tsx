@@ -19,13 +19,25 @@ interface EntityFormLayoutProps {
 }
 
 export const EntityFormLayout = ({
-  title, description, backPath, isLoading, isDataFetching,
-  onSubmit, onReset, submitLabel, children, previewCard
+  title,
+  description,
+  backPath,
+  isLoading,
+  isDataFetching,
+  onSubmit,
+  onReset,
+  submitLabel,
+  children,
+  previewCard,
 }: EntityFormLayoutProps) => {
   const router = useRouter();
 
   if (isDataFetching) {
-    return <FullScreenCenter><LoadingDots /></FullScreenCenter>;
+    return (
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
+    );
   }
 
   return (
@@ -49,13 +61,20 @@ export const EntityFormLayout = ({
 
           {/* Preview Section */}
           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Live Preview</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Live Preview
+            </h3>
             {previewCard}
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-            <button type="button" onClick={onReset} className="px-6 py-2 border border-gray-200 rounded-lg hover:bg-gray-50" disabled={isLoading}>
+            <button
+              type="button"
+              onClick={onReset}
+              className="px-6 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+              disabled={isLoading}
+            >
               Reset
             </button>
             <button
@@ -63,7 +82,11 @@ export const EntityFormLayout = ({
               disabled={isLoading}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
             >
-              {isLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <FiSave />}
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <FiSave />
+              )}
               {submitLabel}
             </button>
           </div>

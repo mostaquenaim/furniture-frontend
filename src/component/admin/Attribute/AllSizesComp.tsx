@@ -10,6 +10,7 @@ import useFetchSizes from "@/hooks/Attributes/useFetchSizes";
 import { ProductSizeRelation } from "@/types/product.types";
 import useFetchVariants from "@/hooks/Attributes/useFetchVariants";
 import StatusToggle from "./Status/StatusToggle";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 interface SizeFormData {
   name: string;
@@ -109,9 +110,9 @@ const AllSizesComp: React.FC = () => {
 
   if (isLoading)
     return (
-      <div className="p-20 text-center">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   return (

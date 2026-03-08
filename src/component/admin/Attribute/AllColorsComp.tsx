@@ -9,6 +9,7 @@ import LoadingDots from "@/component/Loading/LoadingDS";
 import useFetchColors from "@/hooks/Attributes/useFetchColors";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { Color } from "@/types/product.types";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 // TypeScript interfaces
 // interface Color {
@@ -258,9 +259,9 @@ const AllColorsComp: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
   }
 

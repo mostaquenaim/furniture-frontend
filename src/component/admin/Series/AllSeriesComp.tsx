@@ -9,6 +9,7 @@ import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { GenericReorderTable } from "../GenericReorderTable";
 import LoadingDots from "@/component/Loading/LoadingDS";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 const AllSeriesComp = () => {
   const router = useRouter();
@@ -28,9 +29,9 @@ const AllSeriesComp = () => {
 
   if (isLoading)
     return (
-      <div>
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   return (

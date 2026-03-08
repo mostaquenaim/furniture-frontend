@@ -1,6 +1,6 @@
 import { PromoBanner } from "@/types/promo-banner";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const promoBannerApi = {
   // Public endpoints

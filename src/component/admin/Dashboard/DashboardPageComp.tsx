@@ -9,6 +9,7 @@ import TopProductsTable from "./Components/TopProductsTable";
 import RecentOrders from "./Components/RecentOrders";
 import SearchAnalytics from "./Components/SearchAnalytics";
 import LoadingDots from "@/component/Loading/LoadingDS";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 export default function DashboardPageComp() {
   // 1. Initialize State
@@ -41,11 +42,9 @@ export default function DashboardPageComp() {
   // 3. Handle loading state
   if (loading && !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 animate-pulse">
-          <LoadingDots />
-        </p>
-      </div>
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
     );
   }
 

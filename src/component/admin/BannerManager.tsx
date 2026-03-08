@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Plus, Edit, Trash2, GripVertical } from 'lucide-react';
 import type { PromoBanner, BannerLink } from '@/types/promo-banner';
 import useAxiosPublic  from '@/hooks/Axios/useAxiosPublic';
+import useAxiosSecure from '@/hooks/Axios/useAxiosSecure';
 
 interface BannerManagerProps {
   initialBanners: PromoBanner[];
@@ -21,14 +22,12 @@ export default function BannerManager({ initialBanners, token }: BannerManagerPr
     isActive: true,
   });
 
-  const axiosPublic = useAxiosPublic()
+  const axiosSecure = useAxiosSecure()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log(formData);
-    const result = await axiosPublic.post('/promo-banners', formData );
-    console.log(result,'resultresult');
-    console.log('Submit:', formData);
+    const result = await axiosSecure.post('/promo-banners', formData );
   };
 
   const handleAddLink = () => {

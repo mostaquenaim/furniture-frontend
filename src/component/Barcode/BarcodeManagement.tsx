@@ -3,6 +3,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import { Stat } from "../Stats/Stat";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Location {
@@ -57,11 +58,11 @@ const StockChip = ({ qty, low }: { qty: number; low: number }) => {
 
 const LocBadge = ({ code }: { code?: string }) =>
   code ? (
-    <span className="inline-block px-2 py-0.5 bg-slate-900 text-amber-300 text-[10px] font-bold font-mono rounded tracking-widest">
+    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded">
       {code}
     </span>
   ) : (
-    <span className="text-[11px] text-slate-400 italic">Unassigned</span>
+    <span className="text-xs text-gray-400 italic">Unassigned</span>
   );
 
 // ── Barcode image (fetched from backend) ─────────────────────────────────────
@@ -206,81 +207,40 @@ export default function BarcodeManagement() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap');
-        .wh-font { font-family: 'Syne', sans-serif; }
-        .mono { font-family: 'DM Mono', monospace; }
-        @keyframes fadeUp {
-          from { opacity:0; transform:translateY(10px); }
-          to   { opacity:1; transform:translateY(0); }
-        }
-        .row-anim { animation: fadeUp .3s ease both; }
-      `}</style>
-
-      <div className="min-h-screen bg-[#f0ede8]">
+      <div className="min-h-screen">
         {/* ── Top bar ── */}
-        <div className="bg-[#0f172a] px-8 py-5 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <div>
-              <p className="wh-font text-[#e2c97e] text-lg tracking-wider">
-                SAKIGAI
-              </p>
-              <p className="text-slate-500 text-[10px] tracking-[0.2em] uppercase mt-0.5">
-                Warehouse · Barcode System
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Barcode Management
+          </h1>
+
           <div className="flex items-center gap-3">
             {lowStockCount > 0 && (
-              <span className="flex items-center gap-1.5 bg-red-950 text-red-400 border border-red-800 px-3 py-1.5 rounded-lg text-xs font-bold">
-                <span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" />
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
                 {lowStockCount} Low Stock
               </span>
             )}
+
             <button
               onClick={handlePrint}
               disabled={!selected.size || printing}
-              className="flex items-center gap-2 bg-[#e2c97e] text-[#0f172a] px-5 py-2 rounded-lg text-xs wh-font font-bold tracking-wider disabled:opacity-40 hover:bg-amber-300 transition"
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              <PrintIcon />
-              {printing
-                ? "Generating…"
-                : `Print Labels${selected.size ? ` (${selected.size})` : ""}`}
+              {printing ? "Generating..." : `Print Labels (${selected.size})`}
             </button>
           </div>
         </div>
 
         <div className="px-8 py-6 max-w-[1400px] mx-auto">
           {/* ── Stats row ── */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            {[
-              { label: "Total SKUs", value: barcodes.length, mono: true },
-              {
-                label: "Low Stock",
-                value: lowStockCount,
-                accent: "text-amber-600",
-              },
-              {
-                label: "Out of Stock",
-                value: barcodes.filter((b) => b.quantity === 0).length,
-                accent: "text-red-600",
-              },
-              { label: "Locations", value: locations.length, mono: true },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="bg-white rounded-xl border border-slate-100 px-5 py-4 shadow-sm"
-              >
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  {s.label}
-                </p>
-                <p
-                  className={`text-3xl font-bold mt-1 mono ${s.accent ?? "text-slate-900"}`}
-                >
-                  {s.value}
-                </p>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Stat title="Total Barcodes" value={barcodes.length} />
+            <Stat title="Low Stock" value={lowStockCount} />
+            <Stat
+              title="Out of Stock"
+              value={barcodes.filter((b) => b.quantity === 0).length}
+            />
+            <Stat title="Locations" value={locations.length} />
           </div>
 
           {/* ── Tabs + search ── */}
@@ -290,8 +250,8 @@ export default function BarcodeManagement() {
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`px-5 py-2 rounded-lg text-xs font-bold tracking-wider transition-all wh-font
-                    ${tab === t ? "bg-[#0f172a] text-[#e2c97e]" : "text-slate-500 hover:text-slate-800"}`}
+                  className={`px-5 py-2 rounded-lg text-xs font-bold tracking-wider transition-all 
+                    ${tab === t ? " " : "text-slate-500 hover:text-slate-800"}`}
                 >
                   {t === "all"
                     ? "All Products"
@@ -313,12 +273,10 @@ export default function BarcodeManagement() {
           {tab === "locations" && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <p className="wh-font text-slate-700 font-bold">
-                  Warehouse Locations
-                </p>
+                <p className=" text-slate-700 font-bold">Warehouse Locations</p>
                 <button
                   onClick={() => setShowLocForm(!showLocForm)}
-                  className="bg-[#0f172a] text-[#e2c97e] px-4 py-2 rounded-lg text-xs wh-font font-bold tracking-wider hover:bg-slate-800 transition"
+                  className="px-4 py-2 rounded-lg text-xs font-bold tracking-wider hover:bg-slate-200 transition cursor-pointer hover:opacity-80"
                 >
                   + Add Location
                 </button>
@@ -326,7 +284,7 @@ export default function BarcodeManagement() {
 
               {showLocForm && (
                 <div className="bg-white border border-slate-100 rounded-2xl p-6 mb-4 shadow-sm row-anim">
-                  <p className="wh-font font-bold text-slate-900 mb-4">
+                  <p className=" font-bold text-slate-900 mb-4">
                     New Inventory Location
                   </p>
                   <div className="grid grid-cols-5 gap-3">
@@ -340,7 +298,7 @@ export default function BarcodeManagement() {
                           onChange={(e) =>
                             setLocForm((p) => ({ ...p, [f]: e.target.value }))
                           }
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mono focus:outline-none focus:ring-2 focus:ring-amber-300"
+                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
                           placeholder={
                             f === "zone"
                               ? "A"
@@ -370,7 +328,7 @@ export default function BarcodeManagement() {
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={createLocation}
-                      className="bg-[#0f172a] text-[#e2c97e] px-5 py-2 rounded-lg text-xs wh-font font-bold"
+                      className="  px-5 py-2 rounded-lg text-xs  font-bold"
                     >
                       Create Location
                     </button>
@@ -391,7 +349,7 @@ export default function BarcodeManagement() {
                     className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm row-anim"
                   >
                     <div className="flex items-start justify-between">
-                      <span className="mono text-lg font-bold text-[#0f172a] bg-[#f0ede8] px-3 py-1 rounded-lg">
+                      <span className="text-lg font-bold text-[#0f172a] bg-[#f0ede8] px-3 py-1 rounded-lg">
                         {loc.code}
                       </span>
                       <span className="text-[10px] font-bold uppercase text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
@@ -413,7 +371,7 @@ export default function BarcodeManagement() {
                           <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">
                             {k}
                           </p>
-                          <p className="mono font-bold text-slate-900 text-lg">
+                          <p className="font-bold text-slate-900 text-lg">
                             {v}
                           </p>
                         </div>
@@ -427,10 +385,10 @@ export default function BarcodeManagement() {
 
           {/* ── Barcode table ── */}
           {tab !== "locations" && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto bg-white shadow-md rounded-lg">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-[#0f172a] bg-[#0f172a]">
+                <thead className="bg-gray-100 text-left text-sm text-gray-600">
+                  <tr className="border-t border-gray-200 hover:bg-gray-50">
                     <th className="px-4 py-3 w-10">
                       <input
                         type="checkbox"
@@ -514,14 +472,14 @@ export default function BarcodeManagement() {
                           <p className="font-semibold text-slate-900 text-[13px]">
                             {bc.product.title}
                           </p>
-                          <p className="text-slate-400 text-[11px] mono">
+                          <p className="text-slate-400 text-[11px]">
                             {taka(bc.product.price)}
                           </p>
                         </td>
 
                         {/* Barcode value */}
                         <td className="px-4 py-3">
-                          <span className="mono text-[11px] text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded">
                             {bc.barcode}
                           </span>
                           <p className="text-[9px] text-slate-400 mt-1 uppercase tracking-widest">
@@ -556,7 +514,17 @@ export default function BarcodeManagement() {
 
                         {/* Stock */}
                         <td className="px-4 py-3 text-center">
-                          <StockChip qty={bc.quantity} low={bc.lowStockAt} />
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              bc.quantity > bc.lowStockAt
+                                ? "bg-green-100 text-green-700"
+                                : bc.quantity > 0
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {bc.quantity}
+                          </span>{" "}
                           <p className="text-[9px] text-slate-400 mt-1">
                             alert ≤ {bc.lowStockAt}
                           </p>
@@ -572,23 +540,25 @@ export default function BarcodeManagement() {
                                   [bc.id]: (p[bc.id] ?? 0) - 1,
                                 }))
                               }
-                              className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition"
+                              className="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm"
                             >
                               −
                             </button>
+
                             <span
-                              className={`mono text-sm w-8 text-center font-bold ${
+                              className={`font-mono text-sm w-8 text-center font-semibold ${
                                 (adjMap[bc.id] ?? 0) > 0
                                   ? "text-emerald-600"
                                   : (adjMap[bc.id] ?? 0) < 0
                                     ? "text-red-600"
-                                    : "text-slate-400"
+                                    : "text-gray-400"
                               }`}
                             >
                               {(adjMap[bc.id] ?? 0) > 0
                                 ? `+${adjMap[bc.id]}`
-                                : (adjMap[bc.id] ?? "0")}
+                                : (adjMap[bc.id] ?? 0)}
                             </span>
+
                             <button
                               onClick={() =>
                                 setAdjMap((p) => ({
@@ -596,14 +566,15 @@ export default function BarcodeManagement() {
                                   [bc.id]: (p[bc.id] ?? 0) + 1,
                                 }))
                               }
-                              className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition"
+                              className="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm"
                             >
                               +
                             </button>
+
                             {(adjMap[bc.id] ?? 0) !== 0 && (
                               <button
                                 onClick={() => applyAdj(bc.id)}
-                                className="ml-1 px-2 py-0.5 bg-[#0f172a] text-[#e2c97e] text-[10px] font-bold rounded hover:bg-slate-800 transition"
+                                className="ml-2 px-2 py-0.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
                               >
                                 Apply
                               </button>
@@ -613,7 +584,7 @@ export default function BarcodeManagement() {
 
                         {/* Print count */}
                         <td className="px-4 py-3 text-center">
-                          <p className="mono text-[11px] text-slate-600">
+                          <p className="text-[11px] text-slate-600">
                             {bc.printCount}×
                           </p>
                           {bc.printedAt && (

@@ -8,6 +8,7 @@ import ShowProductsFlex from "../ProductDisplay/ShowProductsFlex";
 import LoadingDots from "../Loading/LoadingDS";
 import { BlogPost } from "@/types/blog";
 import Title from "../Headers/Title";
+import { FullScreenCenter } from "../Screen/FullScreenCenter";
 
 // Mock Data Fallback
 const MOCK_POST = {
@@ -77,9 +78,9 @@ export default function BlogPostPage() {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen w-full">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   if (!post) return notFound();

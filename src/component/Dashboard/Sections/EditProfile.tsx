@@ -3,10 +3,10 @@
 "use client";
 
 import LoadingDots from "@/component/Loading/LoadingDS";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
-import axios from "axios";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 
 const EditProfile = ({ user, loading }: { user: any; loading: boolean }) => {
@@ -32,12 +32,6 @@ const EditProfile = ({ user, loading }: { user: any; loading: boolean }) => {
       });
     }
   }, [user]);
-
-  if (userLoading) {
-    <div className="flex justify-center items-center">
-      <LoadingDots />
-    </div>;
-  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -111,11 +105,11 @@ const EditProfile = ({ user, loading }: { user: any; loading: boolean }) => {
     // await api.updateProfile(data);
   };
 
-  if (loading)
+  if (loading || userLoading)
     return (
-      <div className="p-20 text-center animate-pulse">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   return (

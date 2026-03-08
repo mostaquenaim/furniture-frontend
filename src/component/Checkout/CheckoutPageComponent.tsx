@@ -15,6 +15,7 @@ import Link from "next/link";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { FullScreenCenter } from "../Screen/FullScreenCenter";
 
 const CheckoutPageComponent = () => {
   const { user, loading } = useAuth();
@@ -92,9 +93,9 @@ const CheckoutPageComponent = () => {
   // loading state
   if (loading || isCartLoading || isFetching) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
   }
 
@@ -135,7 +136,7 @@ const CheckoutPageComponent = () => {
       return;
     }
 
-    if (!address.postCode) {  
+    if (!address.postCode) {
       toast.error("Please enter postcode");
       return;
     }
@@ -179,7 +180,7 @@ const CheckoutPageComponent = () => {
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Order failed");
-      setShowModal(false)
+      setShowModal(false);
     } finally {
       setPlacingOrder(false);
     }
@@ -187,7 +188,6 @@ const CheckoutPageComponent = () => {
 
   return (
     <div className="max-w-[1500px] mx-auto px-4 py-8 lg:px-8 lg:py-12 font-sans">
-
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
         {/* LEFT: Shipping Form */}
         <div className="flex-1 space-y-8">

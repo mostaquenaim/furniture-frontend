@@ -6,6 +6,7 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { useRouter } from "next/navigation";
 import useFetchCategories from "@/hooks/Categories/Categories/useFetchCategories";
 import LoadingDots from "@/component/Loading/LoadingDS";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 const AllCategoriesComp = () => {
   const router = useRouter();
@@ -19,9 +20,9 @@ const AllCategoriesComp = () => {
 
   if (isLoading)
     return (
-      <div>
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   return (

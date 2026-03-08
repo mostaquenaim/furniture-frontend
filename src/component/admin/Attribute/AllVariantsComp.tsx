@@ -8,6 +8,7 @@ import { Edit3, Save, Trash2, Plus, Tag } from "lucide-react";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import useFetchVariants from "@/hooks/Attributes/useFetchVariants";
 import StatusToggle from "./Status/StatusToggle";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 
 interface VariantFormData {
   name: string;
@@ -94,9 +95,9 @@ const AllVariantsComp: React.FC = () => {
 
   if (isLoading)
     return (
-      <div className="p-20 text-center">
+      <FullScreenCenter>
         <LoadingDots />
-      </div>
+      </FullScreenCenter>
     );
 
   return (
