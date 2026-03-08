@@ -89,7 +89,7 @@ const AdminDrawer = () => {
           href: "/admin/dashboard",
           sub: [
             { href: "/admin/dashboard", label: "Overview" },
-            { href: "/admin/analytics", label: "Analytics", badge: 3 },
+            { href: "/admin/analytics", label: "Analytics" },
             { href: "/admin/statistics", label: "Statistics" },
           ],
         },
@@ -102,9 +102,8 @@ const AdminDrawer = () => {
           name: "Products",
           icon: Package,
           sub: [
-            { href: "/admin/products", label: "All Products", badge: 124 },
+            { href: "/admin/products", label: "All Products" },
             { href: "/admin/product/add", label: "Add Product" },
-            // { href: "/admin/product/reviews", label: "Reviews", badge: 12 },
             { href: "/admin/barcode", label: "Barcodes" },
           ],
         },
@@ -165,12 +164,11 @@ const AdminDrawer = () => {
         {
           name: "Orders",
           icon: ShoppingCart,
-          badge: 8,
           sub: [
-            { href: "/admin/orders", label: "All Orders", badge: 156 },
-            { href: "/admin/order/pending", label: "Pending", badge: 8 },
+            { href: "/admin/orders", label: "All Orders" },
+            { href: "/admin/order/pending", label: "Pending" },
             { href: "/admin/order/completed", label: "Completed" },
-            { href: "/admin/order/returns", label: "Returns", badge: 3 },
+            { href: "/admin/order/returns", label: "Returns" },
           ],
         },
         {
@@ -181,7 +179,6 @@ const AdminDrawer = () => {
             {
               href: "/admin/inventory/low-stock",
               label: "Low Stock",
-              badge: 5,
             },
             { href: "/admin/inventory/adjustments", label: "Adjustments" },
             { href: "/admin/inventory/warehouse", label: "Warehouse" },
@@ -205,7 +202,7 @@ const AdminDrawer = () => {
           name: "Customers",
           icon: Users,
           sub: [
-            { href: "/admin/customers", label: "All Customers", badge: 892 },
+            { href: "/admin/customers", label: "All Customers" },
             { href: "/admin/customer/groups", label: "Groups" },
             { href: "/admin/customer/reviews", label: "Reviews" },
           ],
@@ -221,7 +218,7 @@ const AdminDrawer = () => {
           sub: [
             { href: "/admin/content/banners", label: "Banners" },
             { href: "/admin/content/pages", label: "Pages" },
-            { href: "/admin/content/blogs", label: "Blog Posts", badge: 4 },
+            { href: "/admin/content/blogs", label: "Blog Posts" },
             { href: "/admin/blog/add", label: "Create Blog" },
           ],
         },
