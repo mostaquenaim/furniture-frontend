@@ -18,7 +18,6 @@ const useFetchSubcategories = ({
         const res = await axiosPublic.get(
           `/subcategories?isActive=${isActive}`,
         );
-        console.log(res.data, "sub-categories");
         setSubCategories(res.data);
       } catch {
         toast.error("Failed to load subcategories");

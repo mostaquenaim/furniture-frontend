@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 import axios, { AxiosError } from "axios";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { optimizeImage } from "@/utils/imageOptimizer";
-import useFetchBlogCategories from "@/hooks/Admin/Blog/useFetchBlogCategories";
+import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
 import { generateSlug } from "@/utils/validation";
 
 interface ImageResponse {

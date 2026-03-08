@@ -1,135 +1,138 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState } from "react";
-
-// Mock data
-const BLOG_POSTS = [
-  {
-    id: 1,
-    title: "Gifts for Health and Wellness Lovers",
-    subtitle: "Find the best gift for your favorite self-care specialist.",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr-b2YJVPQW2hmI6jEIMrBg6oVrkaFclHt1w&s",
-  },
-  {
-    id: 2,
-    title: "The BEAUTY FAVES Team Anthro Is Loving Right Now",
-    subtitle: "These always earn a spot in our beauty bag.",
-    image:
-      "https://funky-chunky-furniture.co.uk/cdn/shop/files/Sandyford_Scandi_Coffee_Tablesquare_2040x2040.jpg?v=1692266394",
-  },
-  {
-    id: 3,
-    title: "Double Cleansing 101",
-    subtitle: "Let us give you the 411 on this buzzy skincare step.",
-    image: "https://m.media-amazon.com/images/I/31XRSuRli5L._AC_US750_.jpg",
-  },
-];
-
-const CATEGORIES = [
-  "Fashion & Style",
-  "Home & Garden",
-  "Beauty & Wellness",
-  "Weddings",
-  "Behind the Brand",
-  "Anthro Impact",
-  "Gift Guides",
-];
+import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
+import useFetchBlogs from "@/hooks/Blog/useFetchBlogs";
+import Link from "next/link";
+import { useState } from "react";
+import { FullScreenCenter } from "../Screen/FullScreenCenter";
+import LoadingDots from "../Loading/LoadingDS";
 
 export default function AllBlogsComponent() {
-  const [activeCategory, setActiveCategory] = useState("Beauty & Wellness");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const { blogCategories, isLoading: isBlogCategories } =
+    useFetchBlogCategories();
+  const { blogPosts, isLoading: isBlogsLoading } = useFetchBlogs({
+    activeCategory,
+  });
+
+  if (isBlogsLoading || isBlogCategories) {
+    return (
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
+    );
+  }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-10 py-10 min-h-screen font-serif">
-      {/* Header Section */}
-      <header className="text-center mb-12">
-        <div className="flex items-center justify-center gap-2 text-[#b2965d] uppercase tracking-widest text-xs mb-2">
-          <span className="border-b border-[#b2965d] pb-0.5">A</span>
+    <div className="max-w-360 mx-auto px-4 sm:px-10 py-16 min-h-screen font-serif bg-[#fcfcfc]">
+      {/* Header Section: Shifted to a "Design Journal" feel */}
+      <header className="text-center mb-16">
+        <div className="flex items-center justify-center gap-3 text-[#8c764d] uppercase tracking-[0.25em] text-[10px] mb-4">
+          <span className="h-px w-8 bg-[#8c764d]"></span>
           <span>
-            stories:{" "}
-            <span className="italic lowercase font-normal">
-              {activeCategory.split(" ")[0].toLowerCase()}
-            </span>
+            {activeCategory ? activeCategory.replace("-", " ") : "The Journal"}
           </span>
+          <span className="h-px w-8 bg-[#8c764d]"></span>
         </div>
-        <h1 className="text-2xl md:text-3xl tracking-[0.2em] uppercase font-light text-gray-800 mb-4">
-          Beauty, Wellness, and Skincare Tips
+
+        <h1 className="text-3xl md:text-5xl tracking-tight font-light text-slate-900 mb-6 italic">
+          {activeCategory
+            ? `Curating ${activeCategory.replace("-", " ")}`
+            : "Art of Living"}
         </h1>
-        <p className="text-gray-600 max-w-2xl mx-auto italic font-sans text-sm md:text-base leading-relaxed">
-          Feel your best – inside & out – with these self-care tips &
-          get-glowing tricks.
+
+        <p className="text-slate-500 max-w-xl mx-auto font-sans text-sm md:text-base leading-relaxed font-light">
+          Explore our collection of interior inspiration, master craftsmanship
+          stories, and guides to creating a home that breathes.
         </p>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-12">
-        {/* Desktop Sidebar / Mobile Dropdown */}
-        <aside className="lg:w-1/5">
-          {/* Mobile "Shop by Category" Dropdown */}
-          <div className="lg:hidden mb-8">
+      <div className="flex flex-col lg:flex-row gap-16">
+        {/* Sidebar: Refined with "Atelier" styling */}
+        <aside className="lg:w-1/4">
+          <div className="lg:hidden mb-10">
             <select
-              className="w-full border border-gray-300 bg-white p-4 text-sm tracking-wide appearance-none cursor-pointer"
-              value={activeCategory}
-              onChange={(e) => setActiveCategory(e.target.value)}
+              className="w-full border-b border-slate-300 bg-transparent py-3 text-xs tracking-widest uppercase focus:outline-none"
+              value={activeCategory ?? ""}
+              onChange={(e) => setActiveCategory(e.target.value || null)}
             >
-              <option disabled>Shop by Category</option>
-              {CATEGORIES?.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              <option value="">All Collections</option>
+              {blogCategories?.map((cat) => (
+                <option key={cat.id} value={cat.slug}>
+                  {cat.name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Desktop Sidebar List */}
-          <nav className="hidden lg:block space-y-3 border-t border-gray-200 pt-6">
-            <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-4">
-              Browse by:
-            </p>
-            <p className="text-sm font-semibold mb-6">Stories</p>
-            <ul className="space-y-3 text-[13px] tracking-wide text-gray-700">
-              {CATEGORIES?.map((cat) => (
+          <nav className="hidden lg:block sticky top-10">
+            <h3 className="text-[11px] uppercase tracking-[0.3em] text-slate-400 mb-8 font-bold">
+              Filter by Space
+            </h3>
+            <ul className="space-y-5 text-sm tracking-wide text-slate-600">
+              <li
+                className={`cursor-pointer transition-colors duration-300 hover:text-slate-900 ${
+                  activeCategory === null
+                    ? "text-slate-900 font-semibold border-l-2 border-slate-900 pl-4"
+                    : "pl-4"
+                }`}
+                onClick={() => setActiveCategory(null)}
+              >
+                All Stories
+              </li>
+
+              {blogCategories?.map((cat) => (
                 <li
-                  key={cat}
-                  className={`cursor-pointer hover:underline ${
-                    activeCategory === cat
-                      ? "text-teal-700 font-medium underline underline-offset-4"
-                      : ""
+                  key={cat.id}
+                  className={`cursor-pointer transition-colors duration-300 hover:text-slate-900 ${
+                    activeCategory === cat.slug
+                      ? "text-slate-900 font-semibold border-l-2 border-slate-900 pl-4"
+                      : "pl-4"
                   }`}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => setActiveCategory(cat.slug)}
                 >
-                  {cat}
+                  {cat.name}
                 </li>
               ))}
             </ul>
           </nav>
         </aside>
 
-        {/* Blog Main Grid */}
-        <main className="lg:w-4/5">
-          <div className="border-t border-gray-200 pt-4 mb-8">
-            <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-800 font-bold">
-              Beauty Guides
-            </h2>
-          </div>
+        {/* Blog Main Grid: Switched to 2 columns for a more "Architectural" feel */}
+        <main className="lg:w-3/4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-16">
+            {blogPosts?.map((post) => (
+              <Link
+                href={`/blogs/${post.slug}`}
+                key={post.id}
+                className="group"
+              >
+                <article>
+                  {/* Furniture photography looks best in 3:2 or 16:9 rather than 4:5 */}
+                  <div className="aspect-[3/2] overflow-hidden mb-6 bg-slate-100">
+                    <img
+                      src={post.image || "/placeholder-furniture.jpg"}
+                      alt={post.title}
+                      className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+                    />
+                  </div>
 
-          {/* Grid: 1 col on mobile, 3 cols on desktop */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-12">
-            {BLOG_POSTS?.map((post) => (
-              <article key={post.id} className="group cursor-pointer">
-                <div className="aspect-4/5 overflow-hidden mb-5">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-                <h3 className="text-lg md:text-xl text-gray-800 border-b border-gray-800 inline-block mb-3 pb-0.5 leading-snug">
-                  {post.title}
-                </h3>
-                <p className="text-sm text-gray-600 font-sans italic leading-relaxed">
-                  {post.subtitle}
-                </p>
-              </article>
+                  <div className="space-y-3">
+                    <span className="text-[10px] uppercase tracking-widest text-[#8c764d] font-semibold">
+                      {post.category?.name || "Interior Design"}
+                    </span>
+                    <h3 className="text-xl md:text-2xl text-slate-850 font-light leading-tight group-hover:text-[#8c764d] transition-colors">
+                      {post.title}
+                    </h3>
+                    <div className="pt-2">
+                      <span className="text-xs uppercase tracking-tighter border-b border-slate-900 pb-1">
+                        Read the story
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </Link>
             ))}
           </div>
         </main>

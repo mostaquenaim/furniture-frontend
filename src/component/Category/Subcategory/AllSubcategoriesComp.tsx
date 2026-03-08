@@ -30,7 +30,7 @@ const AllSubcategoriesComp = () => {
   return (
     <GenericReorderTable
       title="Product Types"
-      description="Drag categories to reorder them."
+      description="Drag categories to reorder them"
       nowFetching="subcategories"
       initialData={subcategoryList || []}
       isSaving={false}

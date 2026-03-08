@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import useAxiosPublic from "../../Axios/useAxiosPublic";
+import useAxiosPublic from "../Axios/useAxiosPublic";
 
 export interface BlogCategory {
   id: number;
@@ -23,7 +23,6 @@ const useFetchBlogCategories = () => {
     queryKey: ["blogCategories"],
     queryFn: async () => {
       const res = await axiosPublic.get("/blogs/categories");
-      console.log(res.data, "blog catss");
       return res.data;
     },
   });
