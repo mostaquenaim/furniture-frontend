@@ -139,7 +139,7 @@ const CustomerDashboard = () => {
 
   const { orders, refetch } = useOrders(orderOptions);
 
-  devLog(orders, "orderss");
+  // devLog(orders, "orderss");
 
   const [activeItem, setActiveItem] = useState("overview");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

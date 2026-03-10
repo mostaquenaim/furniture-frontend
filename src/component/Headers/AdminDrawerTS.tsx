@@ -166,9 +166,6 @@ const AdminDrawer = () => {
           icon: ShoppingCart,
           sub: [
             { href: "/admin/orders", label: "All Orders" },
-            { href: "/admin/order/pending", label: "Pending" },
-            { href: "/admin/order/completed", label: "Completed" },
-            { href: "/admin/order/returns", label: "Returns" },
           ],
         },
         {

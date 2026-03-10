@@ -55,7 +55,7 @@ export interface FullOrder {
   couponCode?: string | null;
   discount?: number | null;
   total: number;
-  invoiceId? : number | null;
+  invoiceId?: number | null;
   itemCount?: number;
   status: OrderStatus;
   awbNumber?: string | null;
@@ -63,6 +63,19 @@ export interface FullOrder {
   updatedAt: string;
   items: OrderItem[];
   payments: any[];
+  paymentStatus: PaymentStatus;
+}
+
+export enum PaymentStatus {
+  PENDING, // Initial state
+  PROCESSING, // Payment in progress
+  PAID, // Successfully paid
+  FAILED, // Payment failed
+  REFUNDED, // Fully refunded
+  PARTIALLY_REFUNDED, // Partially refunded
+  CANCELLED, // Payment cancelled by user
+  EXPIRED, // Payment link expired
+  ON_HOLD, // Payment under review
 }
 
 export interface PaginatedOrdersResponse<T = ThumbOrder | FullOrder> {
@@ -92,10 +105,12 @@ export interface GetAllOrdersOptions {
   sortBy?: "createdAt" | "total" | "status";
   order?: "asc" | "desc";
   thumb?: boolean;
+  from?: string;
+  to?: string;
 }
-// ============================================================================
+// ===================
 // Hook
-// ============================================================================
+// ===================
 
 interface UseOrdersReturn {
   orders: PaginatedOrdersResponse<ThumbOrder | FullOrder> | null;
@@ -134,11 +149,15 @@ const useOrders = (options?: GetAllOrdersOptions): UseOrdersReturn => {
     if (options?.sortBy) params.sortBy = options.sortBy;
     if (options?.order) params.order = options.order;
     if (options?.thumb) params.thumb = options.thumb;
+    if (options?.from) params.from = options.from;
+    if (options?.to) params.to = options.to;
 
     try {
       const res = await axiosSecure.get<
         PaginatedOrdersResponse<ThumbOrder | FullOrder>
       >("/orders/all", { params });
+
+      // console.log(res.data, "order dta");
       return res.data;
     } catch (error: any) {
       devLog("Failed to fetch orders", error);
