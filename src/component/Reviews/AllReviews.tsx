@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useMemo } from "react";
 import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview";
 import { RefreshButton } from "../Shared/Admin/AdminUI/AdminUI";
+import toast from "react-hot-toast";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 // ─── Star Rating ──────────────────────────────────────────────────────────────
 const StarRating = ({ rating }: { rating: number }) => (
@@ -151,6 +154,10 @@ const ToggleAction = ({
 // ─── Main Component ────────────────────────────────────────────────────────────
 const AllReviewsComp = () => {
   const { reviews = [], isLoading, refetch } = useFetchProductReview({});
+  const axiosSecure = useAxiosSecure();
+
+  // const { updateStatus, isUpdating } = useUpdateReviewStatus();
+
   const [page, setPage] = useState(1);
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<
@@ -158,6 +165,7 @@ const AllReviewsComp = () => {
   >("all");
   const [search, setSearch] = useState("");
   const limit = 10;
+  const [updatingId, setUpdatingId] = useState<string | number | null>(null);
 
   // ── Derived stats ─────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -198,6 +206,26 @@ const AllReviewsComp = () => {
   const handleFilter = (val: typeof statusFilter) => {
     setStatusFilter(val);
     setPage(1);
+  };
+
+  // --- Toggle Handler ---
+  const handleUpdate = async (
+    reviewId: number,
+    data: { isHidden?: boolean; isFeatured?: boolean },
+  ) => {
+    setUpdatingId(reviewId);
+    try {
+      // Pass 'data' as the second argument to send it in the request body
+      await axiosSecure.patch(`/reviews/${reviewId}`, data);
+
+      toast.success("Review updated successfully");
+      refetch(); // Refresh the list to reflect changes
+    } catch (error) {
+      console.error(`Update failed for ${reviewId}:`, error);
+      toast.error("Failed to update review status");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   // ── Loading skeleton ──────────────────────────────────────────────────────
@@ -360,16 +388,21 @@ const AllReviewsComp = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-t border-slate-100 bg-slate-50/60">
-                {["Reviewer", "Rating", "Comment", "Status", "Date"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {[
+                  "Reviewer",
+                  "Rating",
+                  "Comment",
+                  "Status",
+                  "Actions",
+                  "Date",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -447,6 +480,43 @@ const AllReviewsComp = () => {
                         isHidden={review.isHidden}
                         isFeatured={review.isFeatured}
                       />
+                    </td>
+
+                    {/* Actions Cell (The Interactive Part) */}
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <button
+                          disabled={updatingId === review.id}
+                          onClick={() =>
+                            handleUpdate(review.id, {
+                              isFeatured: !review.isFeatured,
+                            })
+                          }
+                          className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all border ${
+                            review.isFeatured
+                              ? "bg-violet-600 text-white border-transparent"
+                              : "bg-white text-slate-400 border-slate-200 hover:border-violet-300"
+                          } disabled:opacity-50`}
+                        >
+                          {updatingId === review.id ? "..." : "Featured"}
+                        </button>
+
+                        <button
+                          disabled={updatingId === review.id}
+                          onClick={() =>
+                            handleUpdate(review.id, {
+                              isHidden: !review.isHidden,
+                            })
+                          }
+                          className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all border ${
+                            review.isHidden
+                              ? "bg-rose-600 text-white border-transparent"
+                              : "bg-white text-slate-400 border-slate-200 hover:border-rose-300"
+                          } disabled:opacity-50`}
+                        >
+                          {updatingId === review.id ? "..." : "Hidden"}
+                        </button>
+                      </div>
                     </td>
 
                     {/* Date */}
