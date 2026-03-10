@@ -1080,12 +1080,12 @@ export default function CourierManagement() {
       label: "Providers",
       icon: <Truck className="w-4 h-4" />,
     },
-    { id: "rates", label: "Rates", icon: <MapPin className="w-4 h-4" /> },
-    {
-      id: "stats",
-      label: "Analytics",
-      icon: <BarChart3 className="w-4 h-4" />,
-    },
+    // { id: "rates", label: "Rates", icon: <MapPin className="w-4 h-4" /> },
+    // {
+    //   id: "stats",
+    //   label: "Analytics",
+    //   icon: <BarChart3 className="w-4 h-4" />,
+    // },
   ];
 
   return (
@@ -1584,13 +1584,6 @@ export default function CourierManagement() {
                 })}
               </div>
             </div>
-          </div>
-        )}
-
-        {tab === "stats" && !stats && (
-          <div className="py-16 text-center text-slate-400">
-            <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-3" />
-            Loading analytics...
           </div>
         )}
       </div>

@@ -105,6 +105,7 @@ const AdminDrawer = () => {
             { href: "/admin/products", label: "All Products" },
             { href: "/admin/product/add", label: "Add Product" },
             { href: "/admin/barcode", label: "Barcodes" },
+            { href: "/admin/product/reviews", label: "Reviews" },
           ],
         },
         // purchases
@@ -164,9 +165,7 @@ const AdminDrawer = () => {
         {
           name: "Orders",
           icon: ShoppingCart,
-          sub: [
-            { href: "/admin/orders", label: "All Orders" },
-          ],
+          sub: [{ href: "/admin/orders", label: "All Orders" }],
         },
         {
           name: "Inventory",

@@ -101,6 +101,8 @@ export interface Review {
   user: User;
   userId: number;
   createdAt: Date;
+  isHidden: boolean;
+  isFeatured: boolean;
 }
 
 export interface User {

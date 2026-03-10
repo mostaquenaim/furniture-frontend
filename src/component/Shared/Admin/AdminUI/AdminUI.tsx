@@ -7,7 +7,7 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { Search, RefreshCw, X } from "lucide-react";
+import { Search, RefreshCw, X, Star } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface Meta {
@@ -23,19 +23,47 @@ export interface Meta {
  */
 export function Badge({
   label,
+  onRemove,
   colorClass = "bg-slate-100 text-slate-600",
   dot,
+  icon,
+  removable = false,
 }: {
   label: string;
+  onRemove?: () => void;
   colorClass?: string;
   dot?: string; // tailwind bg color e.g. "bg-blue-500"
+  icon?: React.ReactNode; // For custom icons
+  removable?: boolean;
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide ${colorClass}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide ${
+        removable ? "pr-1" : ""
+      } ${colorClass}`}
     >
+      {icon && <span className="flex items-center">{icon}</span>}
       {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />}
-      {label}
+      <span>{label}</span>
+      {removable && onRemove && (
+        <button
+          onClick={onRemove}
+          className="ml-0.5 hover:bg-black/10 rounded-full p-0.5 transition-colors"
+          aria-label="Remove filter"
+        >
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
     </span>
   );
 }
@@ -269,7 +297,7 @@ export function AdminTable({
 }
 
 // ── Pagination ────────────────────────────────────────────────────────────────
-export function Pagination({
+export function MetaPagination({
   meta,
   page,
   onPageChange,
@@ -532,3 +560,92 @@ export function PageHeader({
     </div>
   );
 }
+
+// SearchInput Component
+export const SearchInput = ({
+  placeholder,
+  value,
+  onChange,
+  className = "",
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}) => (
+  <input
+    type="text"
+    placeholder={placeholder}
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className={`px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+  />
+);
+
+// FilterDropdown Component
+export const FilterDropdown = ({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+}) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    {options.map((option) => (
+      <option key={option.value} value={option.value}>
+        {option.label}
+      </option>
+    ))}
+  </select>
+);
+
+// StarRating Component
+export const StarRating = ({ rating }: { rating: number }) => (
+  <div className="flex items-center gap-0.5">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <Star
+        key={star}
+        className={`w-3 h-3 ${
+          star <= rating ? "text-amber-400 fill-amber-400" : "text-slate-300"
+        }`}
+      />
+    ))}
+  </div>
+);
+
+// Pagination Component
+export const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => (
+  <div className="flex gap-2">
+    <button
+      onClick={() => onPageChange(currentPage - 1)}
+      disabled={currentPage === 1}
+      className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-slate-50"
+    >
+      Prev
+    </button>
+    <span className="px-3 py-1 border rounded bg-slate-50">
+      {currentPage} / {totalPages}
+    </span>
+    <button
+      onClick={() => onPageChange(currentPage + 1)}
+      disabled={currentPage === totalPages}
+      className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-slate-50"
+    >
+      Next
+    </button>
+  </div>
+);

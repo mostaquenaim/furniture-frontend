@@ -30,7 +30,7 @@ import {
   RefreshButton,
   ClearFiltersButton,
   AdminTable,
-  Pagination,
+  MetaPagination,
   DetailDrawer,
   DrawerSection,
   DrawerRow,
@@ -864,7 +864,7 @@ export default function AllOrdersComponent() {
         </AdminTable>
 
         {/* Pagination */}
-        <Pagination
+        <MetaPagination
           meta={typedMeta}
           page={page}
           onPageChange={setPage}
