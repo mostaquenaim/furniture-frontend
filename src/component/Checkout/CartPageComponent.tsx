@@ -52,7 +52,7 @@ const CartPageComponent = () => {
 
   const { relatedProducts, isLoading: isRelatedLoading } =
     useFetchRelatedProducts({
-      productSlug: cartItems[0].productSize?.color?.product.slug,
+      productSlug: cartItems[0]?.productSize?.color?.product.slug,
       productIds: cartItemIds.join(","),
     });
 
@@ -90,7 +90,7 @@ const CartPageComponent = () => {
   const total = subtotal + handlingSurcharge;
 
   return (
-    <div className="max-w-[1500px] mx-auto p-4 lg:p-8 font-sans overflow-x-hidden">
+    <div className="max-w-375 mx-auto p-4 lg:p-8 font-sans overflow-x-hidden">
       <div className="flex flex-col lg:flex-row gap-12">
         {/* LEFT: Items List */}
         <div className="flex-1 min-w-0">

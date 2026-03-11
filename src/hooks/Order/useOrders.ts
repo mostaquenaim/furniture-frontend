@@ -7,6 +7,8 @@ import { AxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosSecure from "../Axios/useAxiosSecure";
 import { devLog } from "@/utils/devlog";
+import { Product } from "@/types/product.types";
+import { User } from "@/types/auth";
 
 // ============================================================================
 // Types
@@ -29,6 +31,8 @@ export interface OrderItem {
   quantity: number;
   priceAtPurchase: number;
   totalPriceAtPurchase: number;
+  product?: Product;
+  order?: FullOrder;
 }
 
 export interface ThumbOrder {
@@ -61,6 +65,7 @@ export interface FullOrder {
   awbNumber?: string | null;
   createdAt: string;
   updatedAt: string;
+  user?: User;
   items: OrderItem[];
   payments: any[];
   paymentStatus: PaymentStatus;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -111,8 +112,12 @@ export default function BlogPostPage() {
 
   const subcategoryIds = blog?.subCategories?.map((b: any) => b.id);
 
+  const joinedIDs = subcategoryIds?.join(",");
+
+  console.log(blog?.subCategories, subcategoryIds, joinedIDs, "subcategoryIds");
+
   const { relatedProducts, isLoading: isRelatedLoading } =
-    useFetchRelatedProducts({ categoryIds: subcategoryIds?.join(",") });
+    useFetchRelatedProducts({ isEnabled: isLoading, categoryIds: joinedIDs });
 
   if (isLoading)
     return (

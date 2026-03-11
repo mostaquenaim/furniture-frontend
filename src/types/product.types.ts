@@ -1,3 +1,4 @@
+import { OrderItem } from "@/hooks/Order/useOrders";
 import { SubCategory } from "./menu";
 
 export interface Product {
@@ -98,11 +99,12 @@ export interface Review {
   id: number;
   rating: number;
   comment?: string;
-  user: User;
+  user?: User;
   userId: number;
   createdAt: Date;
   isHidden: boolean;
   isFeatured: boolean;
+  orderItem?: OrderItem;
 }
 
 export interface User {

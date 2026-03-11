@@ -153,7 +153,11 @@ const ToggleAction = ({
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 const AllReviewsComp = () => {
-  const { reviews = [], isLoading, refetch } = useFetchProductReview({});
+  const {
+    reviews = [],
+    isLoading,
+    refetch,
+  } = useFetchProductReview({ isHidden: null });
   const axiosSecure = useAxiosSecure();
 
   // const { updateStatus, isUpdating } = useUpdateReviewStatus();

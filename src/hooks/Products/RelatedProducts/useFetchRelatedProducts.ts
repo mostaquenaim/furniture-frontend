@@ -41,17 +41,21 @@ const useFetchRelatedProducts = ({
   productIds,
   categoryIds,
   categorySlug,
+  isEnabled = true,
 }: {
   productSlug?: string;
   productIds?: string;
   categorySlug?: string;
   categoryIds?: string;
+  isEnabled?: boolean | null;
 }): UseFetchProductsReturn => {
   const axiosPublic = useAxiosPublic();
 
+  // console.log(categoryIds, categorySlug, "categoryIds");
+
   const fetchRelatedProducts = async (): Promise<RelatedProduct[]> => {
     const response = await axiosPublic.get<RelatedProduct[]>(
-      `/product/you-may-also-like?productSlug=${productSlug}&productIds=${productIds}&categoryIds=${categoryIds}&categorySlug=${categorySlug}`,
+      `/product/you-may-also-like?productSlug=${productSlug && productSlug}&productIds=${productIds && productIds}&categoryIds=${categoryIds && categoryIds}&categorySlug=${categorySlug && categorySlug}`,
     );
 
     return response.data;
@@ -67,6 +71,7 @@ const useFetchRelatedProducts = ({
   }: UseQueryResult<RelatedProduct[], AxiosError> = useQuery({
     queryKey: ["related-products", productSlug],
     queryFn: fetchRelatedProducts,
+    enabled: !!isEnabled,
     placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

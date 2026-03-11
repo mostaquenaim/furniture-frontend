@@ -14,7 +14,7 @@ interface UseFetchProductReviewParams {
   slug?: string;
   minRating?: number;
   maxRating?: number;
-  isHidden?: boolean;
+  isHidden?: boolean | null;
   isFeatured?: boolean;
   fromDate?: string; // YYYY-MM-DD
   toDate?: string; // YYYY-MM-DD

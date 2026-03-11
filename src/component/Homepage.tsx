@@ -11,6 +11,7 @@ import Title from "./Headers/Title";
 import HomepageGallery from "./Homepage/HomepageGallery";
 import RecommendedProducts from "./Recommended/RecommendedProducts";
 import RecentlyViewedProducts from "./RecentlyViewed/RecentlyViewedProducts";
+import FeaturedReview from "./Reviews/FeaturedReview";
 
 export default function Homepage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -156,6 +157,11 @@ export default function Homepage() {
         {/* Recently viewed products */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">
           <RecentlyViewedProducts />
+        </div>
+
+        {/* Featured Review */}
+        <div className="px-4 md:px-12 lg:px-40 pb-8">
+          <FeaturedReview />
         </div>
       </div>
     </div>
