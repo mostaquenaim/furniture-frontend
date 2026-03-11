@@ -345,6 +345,7 @@ const ProviderModal: React.FC<{
 
   const handleSave = async () => {
     let config;
+
     try {
       config = JSON.parse(form.config);
       setConfigError(false);
