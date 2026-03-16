@@ -49,6 +49,7 @@ export interface ProductFormData {
   discount: number;
   discountStart: string;
   discountEnd: string;
+  weight: number;
 
   selectedSeriesIds: number[];
   selectedCategoryIds: number[];
@@ -110,6 +111,7 @@ const initialFormData: ProductFormData = {
   brand: "",
   hasColorVariants: true,
   showColor: true,
+  weight: 0.5,
   discountType: "PERCENT",
   discount: 0,
   discountStart: new Date().toISOString().split("T")[0],
@@ -854,6 +856,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           description: formData.description || undefined,
           brand: formData.brand || undefined,
           hasColorVariants: formData.hasColorVariants,
+          weight: formData.weight,
           showColor: formData.showColor,
           discountType: formData.discountType,
           discount: formData.discount,

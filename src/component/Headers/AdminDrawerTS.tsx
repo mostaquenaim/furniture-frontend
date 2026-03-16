@@ -165,7 +165,10 @@ const AdminDrawer = () => {
         {
           name: "Orders",
           icon: ShoppingCart,
-          sub: [{ href: "/admin/orders", label: "All Orders" }],
+          sub: [
+            { href: "/admin/orders", label: "All Orders" },
+            { href: "/admin/courier", label: "Couriers" },
+          ],
         },
         {
           name: "Inventory",
@@ -273,6 +276,15 @@ const AdminDrawer = () => {
           sub: [
             { href: "/admin/activity-log", label: "All Logs" },
             { href: "/admin/activity-log/users", label: "User Activities" },
+          ],
+        },
+        {
+          name: "Admin Management",
+          icon: FileText,
+          sub: [
+            { href: "/admin/admin-users", label: "Admin Users" },
+            { href: "/admin/roles", label: "Roles" },
+            { href: "/admin/permissions", label: "Permissions" },
           ],
         },
         {

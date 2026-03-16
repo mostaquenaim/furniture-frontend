@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, FC } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { Edit3, Save, Trash2, X, Plus, Palette, Upload } from "lucide-react";
 import toast from "react-hot-toast";
@@ -10,6 +10,7 @@ import useFetchColors from "@/hooks/Attributes/useFetchColors";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { Color } from "@/types/product.types";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
+import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
 
 // TypeScript interfaces
 // interface Color {
@@ -556,7 +557,8 @@ const AllColorsComp: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <DeleteConfirmationModal
-          isDeleting={isDeleting}
+          open={!!deleteId}
+          isLoading={isDeleting}
           onConfirm={confirmDelete}
           onCancel={() => setDeleteId(null)}
         />
@@ -674,52 +676,6 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
     ></span>
     {isActive ? "Active" : "Inactive"}
   </button>
-);
-
-interface DeleteConfirmationModalProps {
-  isDeleting: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
-  isDeleting,
-  onConfirm,
-  onCancel,
-}) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 mx-4">
-      <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-        <Trash2 size={24} />
-      </div>
-
-      <h3 className="text-xl font-semibold text-gray-900 text-center mb-2">
-        Delete Color?
-      </h3>
-
-      <p className="text-sm text-gray-500 text-center mb-6">
-        This action cannot be undone. The color will be permanently removed from
-        your library. Products using this color may be affected.
-      </p>
-
-      <div className="flex gap-3">
-        <button
-          onClick={onCancel}
-          disabled={isDeleting}
-          className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isDeleting}
-          className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-        >
-          {isDeleting ? "Deleting..." : "Delete"}
-        </button>
-      </div>
-    </div>
-  </div>
 );
 
 export default AllColorsComp;

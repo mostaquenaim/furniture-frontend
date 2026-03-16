@@ -20,6 +20,9 @@ import {
   AlertCircle,
   ArrowRight,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
+import { DeleteConfirmationModal } from "../admin/Modal/DeleteConfirmationModal";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type CourierStatus =
@@ -70,13 +73,7 @@ interface Shipment {
   };
 }
 
-interface Stats {
-  total: number;
-  byStatus: Record<string, number>;
-  delivered: { count: number; totalCod: number; totalDeliveryCharge: number };
-}
-
-type Tab = "shipments" | "providers" | "rates" | "stats";
+type Tab = "shipments" | "providers";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<
@@ -184,25 +181,88 @@ const StatusBadge = ({ status }: { status: CourierStatus }) => {
 const BookModal: React.FC<{
   providers: Provider[];
   onClose: () => void;
-  onBook: (data: {
-    orderId: number;
-    providerId: number;
-    weight: number;
-    note: string;
-  }) => Promise<void>;
-}> = ({ providers, onClose, onBook }) => {
-  const [orderId, setOrderId] = useState("");
+  onBook: (data: any) => Promise<void>;
+  initialOrderId?: string;
+}> = ({ providers, onClose, onBook, initialOrderId = "" }) => {
+  const axiosSecure = useAxiosSecure();
+
+  const [orderNumber, setOrderNumber] = useState(initialOrderId);
+  const [orderId, setOrderId] = useState(null);
   const [providerId, setProviderId] = useState<number | "">("");
-  const [weight, setWeight] = useState(1);
-  const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [orderInfo, setOrderInfo] = useState<any>(null);
+
+  const [form, setForm] = useState({
+    recipientName: "",
+    recipientPhone: "",
+    recipientAddress: "",
+    weight: 0.5,
+    codAmount: 0,
+    itemDescription: "",
+    special_instruction: "",
+    deliveryType: "48",
+    itemType: "2",
+  });
 
   const activeProviders = providers.filter((p) => p.isActive);
 
+  // Auto-fetch order when initialOrderId is set
+  useEffect(() => {
+    if (initialOrderId) fetchOrder(initialOrderId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialOrderId]);
+
+  const fetchOrder = async (id: string) => {
+    if (!id) return;
+    setFetching(true);
+    try {
+      const r = await axiosSecure.get(`/orders/track/${id}`);
+      const o = r.data;
+
+      console.log(o, "data");
+      setOrderId(o.id);
+      setOrderInfo(o);
+      setForm((prev) => ({
+        ...prev,
+        recipientName: o.shippingAddress?.name ?? o.customerName ?? "",
+        recipientPhone: o.shippingAddress?.phone ?? o.customerPhone ?? "",
+        recipientAddress: [
+          o.shippingAddress?.address,
+          o.shippingAddress?.district,
+        ]
+          .filter(Boolean)
+          .join(", "),
+        codAmount: o.total ?? 0,
+        itemDescription:
+          o.items
+            ?.map(
+              (i: any) =>
+                `${i.name}${i.size ? ` (${i.size})` : ""} x${i.quantity}`,
+            )
+            .join(", ") ?? "",
+        weight: Math.max(
+          0.5,
+          (o.items?.reduce((s: number, i: any) => s + i.quantity, 0) ?? 1) *
+            0.3,
+        ),
+      }));
+    } catch {
+      toast.error("Order not found");
+      setOrderInfo(null);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const set = (key: string, val: any) =>
+    setForm((prev) => ({ ...prev, [key]: val }));
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 shrink-0">
           <div>
             <h3 className="font-semibold text-slate-900 text-base">
               Book Shipment
@@ -219,25 +279,63 @@ const BookModal: React.FC<{
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
-          <Field label="Order ID (numeric)">
-            <input
-              type="number"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              placeholder="e.g. 1042"
-              className="input-base"
-            />
-          </Field>
+        <div className="overflow-y-auto flex-1 p-6 space-y-5">
+          {/* Order lookup */}
+          <div>
+            <Field label="Order ID">
+              <div className="flex gap-2">
+                <input
+                  value={orderNumber}
+                  onChange={(e) => setOrderNumber(e.target.value)}
+                  placeholder="ORD-20260302-..."
+                  className="input-base flex-1"
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && fetchOrder(orderNumber)
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => fetchOrder(orderNumber)}
+                  disabled={fetching || !orderNumber}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-medium rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-colors flex items-center gap-1.5 shrink-0"
+                >
+                  {fetching ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Search className="w-3.5 h-3.5" />
+                  )}
+                  {fetching ? "Fetching…" : "Fetch"}
+                </button>
+              </div>
+            </Field>
 
+            {/* Order info banner */}
+            {orderInfo && (
+              <div className="mt-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                <div className="text-xs text-emerald-800">
+                  <p className="font-semibold">
+                    {orderInfo.customerName ?? orderInfo.shippingAddress?.name}
+                  </p>
+                  <p className="text-emerald-600 mt-0.5">
+                    {orderInfo.items?.length ?? 0} item(s) · ৳{orderInfo.total}
+                    {orderInfo.shippingAddress?.district &&
+                      ` · ${orderInfo.shippingAddress.district}`}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Provider selection */}
           <Field label="Courier Provider">
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {activeProviders.map((p) => (
                 <button
                   key={p.id}
                   type="button"
                   onClick={() => setProviderId(p.id)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                  className={`flex items-center gap-2 p-3 rounded-xl border-2 text-left transition-all ${
                     providerId === p.id
                       ? "border-[#0f172a] bg-slate-50"
                       : "border-slate-200 hover:border-slate-300"
@@ -247,48 +345,118 @@ const BookModal: React.FC<{
                     <img
                       src={p.logo}
                       alt={p.displayName}
-                      className="w-8 h-8 object-contain rounded"
+                      className="w-7 h-7 object-contain rounded"
                     />
                   ) : (
-                    <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center">
-                      <Truck className="w-4 h-4 text-slate-400" />
+                    <div className="w-7 h-7 bg-slate-100 rounded flex items-center justify-center">
+                      <Truck className="w-3.5 h-3.5 text-slate-400" />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-slate-800">
+                  <span className="text-xs font-medium text-slate-800 leading-tight">
                     {p.displayName}
                   </span>
                   {providerId === p.id && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 ml-auto shrink-0" />
                   )}
                 </button>
               ))}
             </div>
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Weight (kg)">
+          {/* Recipient */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Recipient Name">
               <input
-                type="number"
-                value={weight}
-                min={0.1}
-                step={0.1}
-                onChange={(e) => setWeight(Number(e.target.value))}
+                value={form.recipientName}
+                onChange={(e) => set("recipientName", e.target.value)}
+                placeholder="Full name"
                 className="input-base"
               />
             </Field>
-            <Field label="Note (optional)">
+            <Field label="Recipient Phone">
               <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Fragile, etc."
+                value={form.recipientPhone}
+                onChange={(e) => set("recipientPhone", e.target.value)}
+                placeholder="01XXXXXXXXX"
                 className="input-base"
               />
             </Field>
           </div>
+
+          <Field label="Delivery Address">
+            <textarea
+              rows={2}
+              value={form.recipientAddress}
+              onChange={(e) => set("recipientAddress", e.target.value)}
+              placeholder="Full address with district"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+            />
+          </Field>
+
+          {/* Item details */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Field label="Weight (kg)">
+              <input
+                type="number"
+                value={form.weight}
+                min={0.1}
+                step={0.1}
+                onChange={(e) => set("weight", Number(e.target.value))}
+                className="input-base"
+              />
+            </Field>
+            <Field label="COD Amount (৳)">
+              <input
+                type="number"
+                value={form.codAmount}
+                min={0}
+                onChange={(e) => set("codAmount", Number(e.target.value))}
+                className="input-base"
+              />
+            </Field>
+            <Field label="Delivery Type">
+              <select
+                value={form.deliveryType}
+                onChange={(e) => set("deliveryType", e.target.value)}
+                className="input-base"
+              >
+                <option value="48">Normal (48h)</option>
+                <option value="12">On Demand</option>
+              </select>
+            </Field>
+            <Field label="Item Type">
+              <select
+                value={form.itemType}
+                onChange={(e) => set("itemType", e.target.value)}
+                className="input-base"
+              >
+                <option value="2">Parcel</option>
+                <option value="1">Document</option>
+              </select>
+            </Field>
+          </div>
+
+          <Field label="Item Description">
+            <input
+              value={form.itemDescription}
+              onChange={(e) => set("itemDescription", e.target.value)}
+              placeholder="e.g. T-Shirt (M) x2, Hoodie x1"
+              className="input-base"
+            />
+          </Field>
+
+          <Field label="Special Instructions (optional)">
+            <input
+              value={form.special_instruction}
+              onChange={(e) => set("special_instruction", e.target.value)}
+              placeholder="Fragile, call before delivery, etc."
+              className="input-base"
+            />
+          </Field>
         </div>
 
-        <div className="flex gap-3 px-6 pb-6">
+        {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 border-t border-slate-100 shrink-0">
           <button
             onClick={onClose}
             className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 text-sm rounded-xl hover:bg-slate-50 transition-colors"
@@ -297,20 +465,22 @@ const BookModal: React.FC<{
           </button>
           <button
             onClick={async () => {
-              if (!orderId || !providerId) {
-                toast.error("Fill all required fields");
+              if (!orderNumber || !providerId) {
+                toast.error("Order ID and provider are required");
                 return;
               }
               setLoading(true);
               await onBook({
-                orderId: Number(orderId),
+                orderId,
+                orderNumber,
                 providerId: Number(providerId),
-                weight,
-                note,
+                ...form,
+                deliveryType: Number(form.deliveryType),
+                itemType: Number(form.itemType),
               });
               setLoading(false);
             }}
-            disabled={loading || !orderId || !providerId}
+            disabled={loading || !orderNumber || !providerId}
             className="flex-1 px-4 py-2.5 bg-[#0f172a] text-white text-sm rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium"
           >
             {loading ? (
@@ -480,179 +650,6 @@ const ProviderModal: React.FC<{
               <CheckCircle2 className="w-4 h-4" />
             )}
             {saving ? "Saving..." : existing ? "Update" : "Create"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ── Rate Form ─────────────────────────────────────────────────────────────────
-const RateModal: React.FC<{
-  providers: Provider[];
-  onClose: () => void;
-  onSave: (data: any) => Promise<void>;
-}> = ({ providers, onClose, onSave }) => {
-  const axiosSecure = useAxiosSecure();
-  const [districts, setDistricts] = useState<{ id: number; name: string }[]>(
-    [],
-  );
-  const [form, setForm] = useState({
-    providerId: "",
-    districtId: "",
-    weightMin: 0,
-    weightMax: 5,
-    price: 80,
-    codFee: 0,
-    deliveryTime: "24-48h",
-    isActive: true,
-  });
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    axiosSecure
-      .get("/districts")
-      .then((r) => setDistricts(r.data?.data ?? r.data ?? []))
-      .catch(() => {});
-  }, [axiosSecure]);
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-900">New Rate</h3>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 rounded-full"
-          >
-            <XCircle className="w-5 h-5 text-slate-400" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4">
-          <Field label="Provider">
-            <select
-              value={form.providerId}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, providerId: e.target.value }))
-              }
-              className="input-base"
-            >
-              <option value="">— Select —</option>
-              {providers.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.displayName}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="District (leave blank for all)">
-            <select
-              value={form.districtId}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, districtId: e.target.value }))
-              }
-              className="input-base"
-            >
-              <option value="">All Districts</option>
-              {districts.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Min Weight (kg)">
-              <input
-                type="number"
-                value={form.weightMin}
-                min={0}
-                step={0.1}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, weightMin: Number(e.target.value) }))
-                }
-                className="input-base"
-              />
-            </Field>
-            <Field label="Max Weight (kg)">
-              <input
-                type="number"
-                value={form.weightMax}
-                min={0}
-                step={0.1}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, weightMax: Number(e.target.value) }))
-                }
-                className="input-base"
-              />
-            </Field>
-            <Field label="Price (৳)">
-              <input
-                type="number"
-                value={form.price}
-                min={0}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, price: Number(e.target.value) }))
-                }
-                className="input-base"
-              />
-            </Field>
-            <Field label="COD Fee (৳)">
-              <input
-                type="number"
-                value={form.codFee}
-                min={0}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, codFee: Number(e.target.value) }))
-                }
-                className="input-base"
-              />
-            </Field>
-          </div>
-
-          <Field label="Delivery Time">
-            <input
-              value={form.deliveryTime}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, deliveryTime: e.target.value }))
-              }
-              placeholder="24-48h"
-              className="input-base"
-            />
-          </Field>
-        </div>
-
-        <div className="flex gap-3 px-6 pb-6">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 border border-slate-200 text-sm text-slate-600 rounded-xl hover:bg-slate-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={async () => {
-              setSaving(true);
-              await onSave({
-                ...form,
-                providerId: Number(form.providerId),
-                districtId: form.districtId
-                  ? Number(form.districtId)
-                  : undefined,
-              });
-              setSaving(false);
-            }}
-            disabled={saving || !form.providerId}
-            className="flex-1 py-2.5 bg-[#0f172a] text-white text-sm rounded-xl hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
-          >
-            {saving ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-            {saving ? "Saving..." : "Create Rate"}
           </button>
         </div>
       </div>
@@ -881,62 +878,34 @@ const ShipmentDrawer: React.FC<{
   );
 };
 
-// ── Stat Card ─────────────────────────────────────────────────────────────────
-const StatCard = ({
-  label,
-  value,
-  sub,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  accent?: boolean;
-}) => (
-  <div
-    className={`rounded-2xl p-5 border ${accent ? "bg-[#0f172a] border-slate-800" : "bg-white border-slate-100"} shadow-sm`}
-  >
-    <p
-      className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${accent ? "text-slate-400" : "text-slate-400"}`}
-    >
-      {label}
-    </p>
-    <p
-      className={`text-2xl font-bold font-mono ${accent ? "text-[#e2c97e]" : "text-slate-900"}`}
-    >
-      {value}
-    </p>
-    {sub && (
-      <p
-        className={`text-xs mt-1 ${accent ? "text-slate-500" : "text-slate-400"}`}
-      >
-        {sub}
-      </p>
-    )}
-  </div>
-);
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function CourierManagement() {
   const axiosSecure = useAxiosSecure();
+  const searchParams = useSearchParams();
 
+  useEffect(() => {
+    const orderId = searchParams.get("orderId");
+    if (orderId) setShowBookModal(true);
+  }, [searchParams]);
+
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [tab, setTab] = useState<Tab>("shipments");
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [rates, setRates] = useState<any[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<CourierStatus | "">("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  console.log(shipments, "shipments");
+
   // Modals
   const [showBookModal, setShowBookModal] = useState(false);
   const [showProviderModal, setShowProviderModal] = useState<
     Provider | null | "new"
   >(null);
-  const [showRateModal, setShowRateModal] = useState(false);
   const [drawerShipmentId, setDrawerShipmentId] = useState<number | null>(null);
 
   // ── Load ──
@@ -959,37 +928,26 @@ export default function CourierManagement() {
 
   const loadProviders = useCallback(async () => {
     const r = await axiosSecure.get("/courier/providers");
+    // console.log(r.data, "provider-data");
     setProviders(r.data);
-  }, [axiosSecure]);
-
-  const loadRates = useCallback(async () => {
-    const r = await axiosSecure.get("/courier/rates");
-    setRates(r.data);
-  }, [axiosSecure]);
-
-  const loadStats = useCallback(async () => {
-    const r = await axiosSecure.get("/courier/shipments/stats");
-    setStats(r.data);
   }, [axiosSecure]);
 
   useEffect(() => {
     loadProviders();
-    loadStats();
-  }, [loadProviders, loadStats]);
+  }, [loadProviders]);
 
   useEffect(() => {
     if (tab === "shipments") loadShipments();
-    if (tab === "rates") loadRates();
-  }, [tab, loadShipments, loadRates, page, statusFilter, search]);
+  }, [tab, loadShipments, page, statusFilter, search]);
 
   // ── Actions ──
   const handleBook = async (data: any) => {
+    // console.log(data, "sjhipment data");
     try {
-      await axiosSecure.post("/courier/shipments/book", data);
+      await axiosSecure.post("/courier/shipments", data);
       toast.success("Shipment booked!");
       setShowBookModal(false);
       loadShipments();
-      loadStats();
     } catch (e: any) {
       toast.error(e?.response?.data?.message ?? "Booking failed");
     }
@@ -1000,7 +958,6 @@ export default function CourierManagement() {
       await axiosSecure.post(`/courier/shipments/${id}/sync`);
       toast.success("Synced");
       loadShipments();
-      loadStats();
     } catch (e: any) {
       toast.error(e?.response?.data?.message ?? "Sync failed");
     }
@@ -1011,7 +968,6 @@ export default function CourierManagement() {
       await axiosSecure.post(`/courier/shipments/${id}/cancel`);
       toast.success("Shipment cancelled");
       loadShipments();
-      loadStats();
     } catch (e: any) {
       toast.error(e?.response?.data?.message ?? "Cancel failed");
     }
@@ -1020,13 +976,10 @@ export default function CourierManagement() {
   const handleSaveProvider = async (data: any) => {
     try {
       if (typeof showProviderModal === "object" && showProviderModal?.id) {
-        await axiosSecure.patch(
-          `/courier/providers/${showProviderModal.id}`,
-          data,
-        );
+        await axiosSecure.patch(`/providers/${showProviderModal.id}`, data);
         toast.success("Provider updated");
       } else {
-        await axiosSecure.post("/courier/providers", data);
+        await axiosSecure.post("/providers", data);
         toast.success("Provider created");
       }
       setShowProviderModal(null);
@@ -1036,36 +989,21 @@ export default function CourierManagement() {
     }
   };
 
-  const handleDeleteProvider = async (id: number) => {
-    if (!confirm("Delete this provider?")) return;
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+
+    setIsProcessing(true);
+
     try {
-      await axiosSecure.delete(`/courier/providers/${id}`);
-      toast.success("Deleted");
+      await axiosSecure.delete(`/providers/${deleteId}`);
+      toast.success("Provider deleted");
+
+      setDeleteId(null);
       loadProviders();
     } catch (e: any) {
       toast.error(e?.response?.data?.message ?? "Delete failed");
-    }
-  };
-
-  const handleSaveRate = async (data: any) => {
-    try {
-      await axiosSecure.post("/courier/rates", data);
-      toast.success("Rate created");
-      setShowRateModal(false);
-      loadRates();
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "Failed");
-    }
-  };
-
-  const handleDeleteRate = async (id: number) => {
-    if (!confirm("Delete this rate?")) return;
-    try {
-      await axiosSecure.delete(`/courier/rates/${id}`);
-      toast.success("Deleted");
-      loadRates();
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "Delete failed");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -1081,12 +1019,6 @@ export default function CourierManagement() {
       label: "Providers",
       icon: <Truck className="w-4 h-4" />,
     },
-    // { id: "rates", label: "Rates", icon: <MapPin className="w-4 h-4" /> },
-    // {
-    //   id: "stats",
-    //   label: "Analytics",
-    //   icon: <BarChart3 className="w-4 h-4" />,
-    // },
   ];
 
   return (
@@ -1104,24 +1036,6 @@ export default function CourierManagement() {
           </div>
 
           <div className="flex items-center gap-3">
-            {stats && (
-              <div className="hidden md:flex items-center gap-4 mr-2">
-                <QuickStat
-                  label="Active"
-                  value={
-                    (stats.byStatus["BOOKED"] ?? 0) +
-                    (stats.byStatus["IN_TRANSIT"] ?? 0) +
-                    (stats.byStatus["OUT_FOR_DELIVERY"] ?? 0)
-                  }
-                  color="text-amber-400"
-                />
-                <QuickStat
-                  label="Delivered"
-                  value={stats.byStatus["DELIVERED"] ?? 0}
-                  color="text-emerald-400"
-                />
-              </div>
-            )}
             <button
               onClick={() => setShowBookModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-[#e2c97e] text-[#0f172a] text-sm font-bold rounded-xl hover:bg-amber-300 transition-colors"
@@ -1394,7 +1308,7 @@ export default function CourierManagement() {
                       <Settings className="w-3.5 h-3.5" /> Configure
                     </button>
                     <button
-                      onClick={() => handleDeleteProvider(p.id)}
+                      onClick={() => setDeleteId(p.id)}
                       className="px-3 py-2 text-red-500 hover:bg-red-50 border border-red-100 rounded-xl transition-colors text-xs"
                     >
                       Delete
@@ -1411,190 +1325,24 @@ export default function CourierManagement() {
             </div>
           </div>
         )}
-
-        {/* ─── RATES TAB ─── */}
-        {tab === "rates" && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-slate-600 font-medium">
-                {rates.length} rate{rates.length !== 1 ? "s" : ""} configured
-              </p>
-              <button
-                onClick={() => setShowRateModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#0f172a] text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Add Rate
-              </button>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50">
-                    {[
-                      "Provider",
-                      "District",
-                      "Weight Range",
-                      "Price",
-                      "COD Fee",
-                      "Delivery Time",
-                      "Status",
-                      "",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-slate-400"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {rates.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        className="py-16 text-center text-slate-400 text-sm"
-                      >
-                        No rates configured
-                      </td>
-                    </tr>
-                  ) : (
-                    rates.map((r) => (
-                      <tr
-                        key={r.id}
-                        className="hover:bg-slate-50/80 transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <span className="text-xs font-semibold text-slate-800">
-                            {r.provider?.displayName}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-slate-600">
-                          {r.district?.name ?? (
-                            <span className="italic text-slate-400">All</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs font-mono text-slate-600">
-                            {r.weightMin}–{r.weightMax} kg
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs font-mono font-semibold text-slate-800">
-                            {taka(r.price)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs font-mono text-slate-600">
-                          {r.codFee ? taka(r.codFee) : "—"}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-slate-500">
-                          {r.deliveryTime ?? "—"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
-                              r.isActive
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-slate-100 text-slate-500"
-                            }`}
-                          >
-                            {r.isActive ? "Active" : "Off"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleDeleteRate(r.id)}
-                            className="text-xs text-red-500 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* ─── ANALYTICS TAB ─── */}
-        {tab === "stats" && stats && (
-          <div className="space-y-6">
-            {/* Top KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard label="Total Shipments" value={stats.total} accent />
-              <StatCard
-                label="Delivered"
-                value={stats.delivered.count}
-                sub="All time"
-              />
-              <StatCard
-                label="COD Collected"
-                value={taka(stats.delivered.totalCod)}
-                sub="From delivered orders"
-              />
-              <StatCard
-                label="Delivery Revenue"
-                value={taka(stats.delivered.totalDeliveryCharge)}
-                sub="Courier charges"
-              />
-            </div>
-
-            {/* Status breakdown */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <p className="text-sm font-semibold text-slate-800 mb-5">
-                Shipments by Status
-              </p>
-              <div className="space-y-3">
-                {Object.entries(STATUS_CONFIG).map(([status, cfg]) => {
-                  const count = stats.byStatus[status] ?? 0;
-                  const pct =
-                    stats.total > 0
-                      ? Math.round((count / stats.total) * 100)
-                      : 0;
-                  if (count === 0) return null;
-                  return (
-                    <div key={status}>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                          <span className="text-xs text-slate-600 font-medium">
-                            {cfg.label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-mono font-semibold text-slate-800">
-                            {count}
-                          </span>
-                          <span className="text-[10px] text-slate-400 w-8 text-right">
-                            {pct}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${cfg.dot.replace("animate-pulse", "")}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Modals ── */}
+      {deleteId && (
+        <DeleteConfirmationModal
+          open={!!deleteId}
+          isLoading={isProcessing}
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
+
       {showBookModal && (
         <BookModal
           providers={providers}
           onClose={() => setShowBookModal(false)}
           onBook={handleBook}
+          initialOrderId={searchParams.get("orderId") ?? ""} // ← add this
         />
       )}
 
@@ -1603,14 +1351,6 @@ export default function CourierManagement() {
           existing={showProviderModal === "new" ? null : showProviderModal}
           onClose={() => setShowProviderModal(null)}
           onSave={handleSaveProvider}
-        />
-      )}
-
-      {showRateModal && (
-        <RateModal
-          providers={providers}
-          onClose={() => setShowRateModal(false)}
-          onSave={handleSaveRate}
         />
       )}
 
@@ -1683,25 +1423,6 @@ function Row({
       >
         {value ?? "—"}
       </span>
-    </div>
-  );
-}
-
-function QuickStat({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
-  return (
-    <div className="text-right">
-      <p className={`text-lg font-bold font-mono ${color}`}>{value}</p>
-      <p className="text-[10px] text-slate-500 uppercase tracking-wider">
-        {label}
-      </p>
     </div>
   );
 }

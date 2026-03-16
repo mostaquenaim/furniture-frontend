@@ -8,6 +8,7 @@ import { Edit3, Save, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
+import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
 
 const AllDistrictsComp = () => {
   const { districts, isLoading, refetch } = useFetchDistricts();
@@ -339,36 +340,14 @@ const AllDistrictsComp = () => {
           })}
         </tbody>
       </table>
+
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-96 p-6">
-            <h3 className="text-lg font-semibold text-slate-800">
-              Delete District
-            </h3>
-
-            <p className="text-sm text-slate-500 mt-2">
-              This action cannot be undone. Are you sure you want to delete this
-              district?
-            </p>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setDeleteId(null)}
-                className="px-4 py-2 text-sm rounded-md border border-slate-300 hover:bg-slate-100"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={confirmDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmationModal
+          open={!!deleteId}
+          isLoading={isDeleting}
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteId(null)}
+        />
       )}
     </div>
   );

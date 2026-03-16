@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
+import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
 
 interface Material {
   id: number;
@@ -398,34 +399,12 @@ const AllMaterialsComp: React.FC = () => {
 
       {/* Confirmation Modal */}
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 overflow-hidden">
-            <div className="bg-red-50 text-red-600 w-12 h-12 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <Trash2 size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 text-center">
-              Permanently delete?
-            </h3>
-            <p className="text-sm text-slate-500 text-center mt-2">
-              This will remove the material from the system. This cannot be
-              undone.
-            </p>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setDeleteId(null)}
-                className="flex-1 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="flex-1 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmationModal
+          open={!!deleteId}
+          isLoading={isProcessing}
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteId(null)}
+        />
       )}
     </div>
   );

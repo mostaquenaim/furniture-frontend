@@ -187,7 +187,7 @@ const CheckoutPageComponent = () => {
   };
 
   return (
-    <div className="max-w-[1500px] mx-auto px-4 py-8 lg:px-8 lg:py-12 font-sans">
+    <div className="max-w-375 mx-auto px-4 py-8 lg:px-8 lg:py-12 font-sans">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
         {/* LEFT: Shipping Form */}
         <div className="flex-1 space-y-8">

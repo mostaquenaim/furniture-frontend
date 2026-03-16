@@ -325,8 +325,9 @@ function OrderDetailDrawer({
       headerActions={
         <button
           onClick={() => createShipment(order?.orderNumber)}
-          className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-700 text-slate-300 text-xs font-medium rounded-xl hover:bg-white/10 transition-colors"
         >
+          <Truck className="w-3.5 h-3.5" />
           Create Shipment
         </button>
       }
