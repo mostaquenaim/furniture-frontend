@@ -292,6 +292,7 @@ const AdminDrawer = () => {
           icon: Settings,
           sub: [
             { href: "/admin/settings/general", label: "General" },
+            { href: "/admin/settings/company", label: "Company Info" },
             { href: "/admin/settings/shipping", label: "Shipping" },
             { href: "/admin/settings/shipping/districts", label: "Districts" },
             { href: "/admin/settings/email", label: "Email Templates" },
