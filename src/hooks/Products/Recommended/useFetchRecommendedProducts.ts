@@ -23,10 +23,6 @@ const useFetchRecommendedProducts = ({
       `/product/recommended?limit=${limit}`,
     );
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("Fetched products:", response.data);
-    }
-
     return response.data;
   };
 

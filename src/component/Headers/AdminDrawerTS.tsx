@@ -89,8 +89,6 @@ const AdminDrawer = () => {
           href: "/admin/dashboard",
           sub: [
             { href: "/admin/dashboard", label: "Overview" },
-            { href: "/admin/analytics", label: "Analytics" },
-            { href: "/admin/statistics", label: "Statistics" },
           ],
         },
       ],
@@ -171,39 +169,10 @@ const AdminDrawer = () => {
           ],
         },
         {
-          name: "Inventory",
-          icon: Database,
-          sub: [
-            { href: "/admin/inventories", label: "Stock Overview" },
-            {
-              href: "/admin/inventory/low-stock",
-              label: "Low Stock",
-            },
-            { href: "/admin/inventory/adjustments", label: "Adjustments" },
-            { href: "/admin/inventory/warehouse", label: "Warehouse" },
-          ],
-        },
-        {
           name: "Promotions",
           icon: Percent,
           sub: [
             { href: "/admin/promotions/coupons", label: "Coupons" },
-            { href: "/admin/promotions/discounts", label: "Discounts" },
-            { href: "/admin/promotions/offers", label: "Special Offers" },
-          ],
-        },
-      ],
-    },
-    {
-      label: "Customers",
-      items: [
-        {
-          name: "Customers",
-          icon: Users,
-          sub: [
-            { href: "/admin/customers", label: "All Customers" },
-            { href: "/admin/customer/groups", label: "Groups" },
-            { href: "/admin/customer/reviews", label: "Reviews" },
           ],
         },
       ],
@@ -215,54 +184,7 @@ const AdminDrawer = () => {
           name: "Content",
           icon: FileText,
           sub: [
-            { href: "/admin/content/banners", label: "Banners" },
-            { href: "/admin/content/pages", label: "Pages" },
-            { href: "/admin/content/blogs", label: "Blog Posts" },
             { href: "/admin/blog/add", label: "Create Blog" },
-          ],
-        },
-        {
-          name: "Media",
-          icon: Image,
-          sub: [
-            { href: "/admin/media/gallery", label: "Gallery" },
-            { href: "/admin/media/library", label: "Library" },
-          ],
-        },
-      ],
-    },
-    {
-      label: "Insights",
-      items: [
-        {
-          name: "Reports",
-          icon: BarChart3,
-          sub: [
-            { href: "/admin/reports/sales", label: "Sales Reports" },
-            { href: "/admin/reports/inventory", label: "Inventory Reports" },
-            { href: "/admin/reports/customers", label: "Customer Reports" },
-          ],
-        },
-        {
-          name: "Analytics",
-          icon: TrendingUp,
-          sub: [
-            { href: "/admin/analytics/traffic", label: "Traffic" },
-            { href: "/admin/analytics/conversion", label: "Conversion" },
-          ],
-        },
-      ],
-    },
-    {
-      label: "Finance",
-      items: [
-        {
-          name: "Finances",
-          icon: DollarSign,
-          sub: [
-            { href: "/admin/finances/transactions", label: "Transactions" },
-            { href: "/admin/finances/payments", label: "Payments" },
-            { href: "/admin/finances/taxes", label: "Tax Settings" },
           ],
         },
       ],
@@ -275,7 +197,6 @@ const AdminDrawer = () => {
           icon: FileText,
           sub: [
             { href: "/admin/activity-log", label: "All Logs" },
-            { href: "/admin/activity-log/users", label: "User Activities" },
           ],
         },
         {
@@ -283,7 +204,6 @@ const AdminDrawer = () => {
           icon: FileText,
           sub: [
             { href: "/admin/admin-users", label: "Admin Users" },
-            { href: "/admin/roles", label: "Roles" },
             { href: "/admin/permissions", label: "Permissions" },
           ],
         },
@@ -291,13 +211,9 @@ const AdminDrawer = () => {
           name: "Settings",
           icon: Settings,
           sub: [
-            { href: "/admin/settings/general", label: "General" },
             { href: "/admin/settings/company", label: "Company Info" },
-            { href: "/admin/settings/shipping", label: "Shipping" },
             { href: "/admin/settings/shipping/districts", label: "Districts" },
             { href: "/admin/settings/email", label: "Email Templates" },
-            { href: "/admin/settings/maintenance", label: "Maintenance" },
-            // { href: "/admin/settings/activity-log", label: "Activity Log" },
           ],
         },
       ],

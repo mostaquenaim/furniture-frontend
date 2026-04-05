@@ -209,7 +209,7 @@ const OrderSummary = ({
               />
               <button
                 onClick={handleApplyCoupon}
-                className="border border-black px-4 py-2 text-xs uppercase font-bold hover:bg-black hover:text-white"
+                className="border border-gray-200 px-4 py-2 text-xs uppercase font-bold hover:bg-black hover:text-white"
               >
                 Apply
               </button>

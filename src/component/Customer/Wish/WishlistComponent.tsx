@@ -53,7 +53,6 @@ const WishlistComponent = () => {
   const removeSelected = async () => {
     if (selectedIds.length === 0) return;
 
-    console.log("bulk - delete");
     try {
       await Promise.all(
         selectedIds.map((id) => axiosSecure.patch(`/wishlist/toggle/${id}`)),

@@ -6,6 +6,7 @@ export interface Product {
   title: string;
   slug: string;
   sku: string | null;
+  weight: number | null;
   description: string | null;
   basePrice: number;
   price: number;

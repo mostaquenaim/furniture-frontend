@@ -165,7 +165,7 @@ export function GenericReorderTable<T extends BaseItem>({
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-4">
-                              <div className="h-10 w-14 rounded overflow-hidden border bg-slate-100">
+                              <div className="h-10 w-14 rounded overflow-hidden border border-slate-200 bg-slate-100">
                                 {item.image ? (
                                   <img
                                     src={item.image}

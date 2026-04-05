@@ -16,17 +16,39 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
+import useFetchZones from "@/hooks/Districts/useFetchZones";
+import useFetchAreaList from "@/hooks/Districts/useFetchAreaList";
 
 const CheckoutPageComponent = () => {
   const { user, loading } = useAuth();
+
+  const [selectedZone, setSelectedZone] = useState<number | "">("");
+  const [selectedArea, setSelectedArea] = useState<number | "">("");
+  const [deliveryFee, setDeliveryFee] = useState<number>(0);
+  const [showModal, setShowModal] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const axiosSecure = useAxiosSecure();
+  const router = useRouter();
+
+  const [address, setAddress] = useState({
+    name: "",
+    phone: "",
+    districtId: 0,
+    zoneId: 0,
+    areaId: 0,
+    zoneName: "",
+    areaName: "",
+    fullAddress: "",
+    postCode: "",
+  });
+
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
 
   const {
     districts,
     isLoading: isDistrictLoading,
     error,
   } = useFetchDistricts();
-
-  // console.log(districts);
 
   const {
     cart,
@@ -35,37 +57,34 @@ const CheckoutPageComponent = () => {
     refetch,
   } = useFetchCarts({ isSummary: true });
 
+  const subtotal = Number(cart?.subtotalAtAdd ?? 0);
+  const handlingSurcharge = 0;
+
+  const total = subtotal + deliveryFee;
+
+  const selectedDistrict = districts?.find((d) => d.id === address.districtId);
+
+  const districtBlocksCOD = selectedDistrict?.isCODAvailable === false;
+
+  const finalCODAvailable = cart?.codAvailable && !districtBlocksCOD;
+
+  const { zones, isLoading: isZoneLoading } = useFetchZones({
+    id: selectedDistrict?.id,
+    enabled: !!selectedDistrict,
+  });
+
+  // console.log(zones, "zones");
+
+  const { areas, isLoading: isAreaLoading } = useFetchAreaList({
+    id: selectedZone ? Number(selectedZone) : undefined,
+    enabled: !!selectedZone,
+  });
+
   // console.log(cart, "cart-response");
 
   useEffect(() => {
     refetch();
   }, [refetch]);
-
-  const subtotal = Number(cart?.subtotalAtAdd ?? 0);
-  const handlingSurcharge = 0;
-
-  // const [name, setName] = useState("");
-  // const [phone, setPhone] = useState("");
-  // const [address, setAddress] = useState("");
-
-  // const [selectedDistrictId, setSelectedDistrictId] = useState<number | "">("");
-  const [deliveryFee, setDeliveryFee] = useState<number>(0);
-  const [showModal, setShowModal] = useState(false);
-  const [placingOrder, setPlacingOrder] = useState(false);
-
-  const total = subtotal + deliveryFee;
-  const axiosSecure = useAxiosSecure();
-  const router = useRouter();
-
-  const [address, setAddress] = useState({
-    name: "",
-    phone: "",
-    districtId: "" as number | "",
-    fullAddress: "",
-    postCode: "",
-  });
-
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
 
   // Update useEffect to set user info
   useEffect(() => {
@@ -78,11 +97,65 @@ const CheckoutPageComponent = () => {
     }
   }, [user]);
 
-  const selectedDistrict = districts?.find((d) => d.id === address.districtId);
+  useEffect(() => {
+    setSelectedZone("");
+    setSelectedArea("");
+    setAddress((prev) => ({
+      ...prev,
+      zoneId: 0,
+      areaId: 0,
+      zoneName: "",
+      areaName: "",
+    }));
+  }, [address.districtId]);
 
-  const districtBlocksCOD = selectedDistrict?.isCODAvailable === false;
+  useEffect(() => {
+    setSelectedArea("");
+    setAddress((prev) => ({ ...prev, areaId: 0, areaName: "" }));
+  }, [selectedZone]);
 
-  const finalCODAvailable = cart?.codAvailable && !districtBlocksCOD;
+  useEffect(() => {
+    if (!selectedZone || !address.districtId || !cart?.id) return;
+
+    const totalWeight =
+      cart?.items?.reduce((acc, item) => {
+        console.log(item.productSize?.color?.product?.weight, acc);
+        const weight = item.productSize?.color?.product?.weight || 0;
+        return acc + weight * item.quantity;
+      }, 0) || 0;
+
+    console.log(totalWeight);
+
+    if (totalWeight <= 0) return;
+
+    const timeout = setTimeout(() => {
+      axiosSecure
+        .post("/delivery/fee", {
+          cityId: address.districtId,
+          zoneId: selectedZone,
+          areaId: selectedArea || undefined,
+          cartId: cart.id,
+          weight: totalWeight,
+        })
+
+        .then((res) => {
+          console.log(res.data, "delivery fee data");
+          setDeliveryFee(res.data.fee);
+        })
+        .catch(() => {
+          setDeliveryFee(0);
+        });
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [
+    address.districtId,
+    axiosSecure,
+    cart?.id,
+    cart?.items,
+    selectedArea,
+    selectedZone,
+  ]);
 
   useEffect(() => {
     if (!finalCODAvailable && paymentMethod === "cod") {
@@ -141,14 +214,21 @@ const CheckoutPageComponent = () => {
       return;
     }
 
+    if (!selectedZone) {
+      toast.error("Please select zone");
+      return;
+    }
+
     try {
       setPlacingOrder(true);
 
       if (paymentMethod === "cod") {
+        console.log(cart.id, address, paymentMethod, "order details");
         const { data } = await axiosSecure.post(`/orders/create`, {
           cartId: cart.id,
           address,
           paymentMethod: "COD",
+          deliveryFee,
         });
 
         // expect backend to return orderId
@@ -217,16 +297,10 @@ const CheckoutPageComponent = () => {
               </label>
               <select
                 value={address.districtId}
+                className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-gray-900 transition-colors bg-white"
                 onChange={(e) => {
                   const id = Number(e.target.value);
                   const district = districts?.find((d) => d.id === id);
-
-                  setAddress((prev) => ({
-                    ...prev,
-                    districtId: id,
-                  }));
-
-                  setDeliveryFee(district?.deliveryFee ?? 0);
 
                   setAddress((prev) => ({
                     ...prev,
@@ -249,6 +323,78 @@ const CheckoutPageComponent = () => {
                 ))}
               </select>
             </div>
+
+            {/* Zone - only show if district selected */}
+            {address.districtId && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wide block mb-3">
+                  Zone*
+                </label>
+                {isZoneLoading ? (
+                  <LoadingDots />
+                ) : (
+                  <select
+                    value={selectedZone}
+                    onChange={(e) => {
+                      const selected = zones?.find(
+                        (z) => z.id === Number(e.target.value),
+                      );
+                      setSelectedZone(Number(e.target.value));
+                      setAddress((prev) => ({
+                        ...prev,
+                        zoneId: Number(e.target.value),
+                        zoneName: selected?.name ?? "",
+                        areaId: 0,
+                        areaName: "",
+                      }));
+                    }}
+                    className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-gray-900 transition-colors bg-white"
+                  >
+                    <option value="">Select Zone</option>
+                    {zones?.map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
+
+            {/* Area - only show if zone selected */}
+            {selectedZone && !isAreaLoading && areas && areas.length > 0 && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wide block mb-3">
+                  Area*
+                </label>
+                {isAreaLoading ? (
+                  <LoadingDots />
+                ) : (
+                  <select
+                    value={selectedArea}
+                    onChange={(e) => {
+                      const selected = areas?.find(
+                        (a) => a.id === Number(e.target.value),
+                      );
+                      setSelectedArea(Number(e.target.value));
+                      setAddress((prev) => ({
+                        ...prev,
+                        areaId: Number(e.target.value),
+                        areaName: selected?.name ?? "",
+                      }));
+                    }}
+                    className="w-full border border-gray-300 px-4 py-3 outline-none focus:border-gray-900 transition-colors bg-white"
+                  >
+                    <option value="">Select Area</option>
+                    {areas?.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
 
             {/* Full Address */}
             <div>
@@ -361,7 +507,7 @@ const CheckoutPageComponent = () => {
 
         {/* RIGHT: Order Summary */}
         {cart && (
-          <aside className="w-full lg:w-[400px] xl:w-[440px] shrink-0">
+          <aside className="w-full lg:w-100 xl:w-110 shrink-0">
             <OrderSummary
               cartId={cart?.id}
               subtotal={subtotal}
@@ -376,7 +522,9 @@ const CheckoutPageComponent = () => {
                   address.name &&
                   address.phone &&
                   address.districtId &&
-                  address.fullAddress
+                  selectedZone &&
+                  address.fullAddress &&
+                  address.postCode
                 )
               }
               handleConfirmOrder={handleConfirmOrder}
@@ -388,7 +536,7 @@ const CheckoutPageComponent = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[400px] max-w-full p-6 space-y-4">
+          <div className="bg-white rounded-2xl w-100 max-w-full p-6 space-y-4">
             <h3 className="text-lg font-bold">Confirm Your Order</h3>
             <div className="space-y-2 text-sm">
               <p>

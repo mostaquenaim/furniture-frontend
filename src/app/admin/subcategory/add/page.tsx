@@ -179,7 +179,7 @@ const AddSubcategory = () => {
   // UI
   // -------------------------
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl border shadow-sm">
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
       <h1 className="text-2xl font-bold mb-6">Add New Subcategory</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -196,7 +196,7 @@ const AddSubcategory = () => {
                 seriesId: Number(e.target.value),
               }))
             }
-            className="w-full px-4 py-2 border rounded-lg"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg"
           >
             <option value="">-- Select Series --</option>
             {seriesList?.map((s) => (
@@ -220,7 +220,7 @@ const AddSubcategory = () => {
                 categoryId: Number(e.target.value),
               }))
             }
-            className="w-full px-4 py-2 border rounded-lg"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg"
             disabled={!formData.seriesId}
           >
             <option value="">-- Select Category --</option>
@@ -241,7 +241,7 @@ const AddSubcategory = () => {
             type="text"
             value={formData.name}
             onChange={handleNameChange}
-            className="w-full px-4 py-2 border rounded-lg"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg"
             placeholder="e.g. Recliner Sofa"
           />
         </div>
@@ -258,7 +258,7 @@ const AddSubcategory = () => {
                 slug: generateSlug(e.target.value),
               }))
             }
-            className="w-full px-4 py-2 border rounded-lg"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg"
             required
           />
         </div>
@@ -272,7 +272,7 @@ const AddSubcategory = () => {
             <div className="relative w-48 h-36">
               <img
                 src={imagePreview}
-                className="w-full h-full object-cover rounded-lg border"
+                className="w-full h-full object-cover rounded-lg border border-gray-200"
                 alt="Preview"
               />
               <button
@@ -284,7 +284,7 @@ const AddSubcategory = () => {
               </button>
             </div>
           ) : (
-            <label className="flex items-center justify-center w-48 h-36 border-2 border-dashed rounded-lg cursor-pointer">
+            <label className="flex items-center justify-center w-48 h-36 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer">
               <FiUpload className="text-gray-400" />
               <input
                 type="file"
@@ -309,7 +309,7 @@ const AddSubcategory = () => {
                   sortOrder: Number(e.target.value) || 0,
                 }))
               }
-              className="w-24 px-3 py-2 border rounded-lg"
+              className="w-24 px-3 py-2 border border-gray-200 rounded-lg"
             />
           </div>
 
@@ -323,7 +323,7 @@ const AddSubcategory = () => {
                   isActive: e.target.value === "1",
                 }))
               }
-              className="px-4 py-2 border rounded-lg"
+              className="px-4 py-2 border border-gray-200 rounded-lg"
             >
               <option value="1">Active</option>
               <option value="0">Inactive</option>
@@ -332,11 +332,11 @@ const AddSubcategory = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4 pt-4 border-t">
+        <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
           <button
             type="button"
             onClick={() => router.push("/admin/subcategories")}
-            className="px-5 py-2 border rounded-lg"
+            className="px-5 py-2 border border-gray-200 rounded-lg"
           >
             Cancel
           </button>

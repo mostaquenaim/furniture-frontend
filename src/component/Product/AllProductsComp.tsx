@@ -4,10 +4,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import sortData from "@/data/SortData";
-import { Product, ProductImage } from "@/types/product.types";
-import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import useFetchSeriesWiseProducts from "@/hooks/Products/useFetchSeriesWiseProducts";
+import { Product } from "@/types/product.types";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import DisplayHeading from "../ProductDisplay/Heading/DisplayHeading";
 import FilterProducts from "../ProductDisplay/Filters/FilterProducts";
 import EachProductShow from "../ProductDisplay/EachProductShow";

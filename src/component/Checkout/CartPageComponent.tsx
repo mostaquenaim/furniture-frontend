@@ -56,25 +56,6 @@ const CartPageComponent = () => {
       productIds: cartItemIds.join(","),
     });
 
-  useEffect(() => {
-    const fetchRelatedProducts = async () => {
-      const response = await axiosPublic.get(
-        `/product/you-may-also-like/${cartItems[0].productSize?.color?.product.slug}`,
-        {
-          params: {
-            productIds: cartItemIds.join(","),
-          },
-        },
-      );
-    };
-
-    if (cartItems) {
-      if (cartItems.length > 0) {
-        fetchRelatedProducts();
-      }
-    }
-  }, [axiosPublic, cartItemIds, cartItems]);
-
   if (isLoading || isFetching) {
     return (
       <FullScreenCenter>
