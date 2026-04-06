@@ -1,118 +1,95 @@
-// components/dashboard/RecentOrders.tsx
-import React from 'react';
+// app/dashboard/Components/RecentOrders.tsx
+import type { RecentOrder } from "@/lib/api/actions/dashboard";
 
-interface Order {
-  id: string;
-  customer: string;
-  date: string;
-  amount: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  payment: 'cod' | 'bkash' | 'card';
+interface Props {
+  orders: RecentOrder[];
 }
 
-interface RecentOrdersProps {
-  orders: Order[];
-}
+const statusConfig: Record<string, { label: string; className: string }> = {
+  pending: { label: "Pending", className: "bg-gray-100 text-gray-600" },
+  confirmed: { label: "Confirmed", className: "bg-blue-100 text-blue-700" },
+  processing: { label: "Processing", className: "bg-amber-100 text-amber-700" },
+  shipped: { label: "Shipped", className: "bg-violet-100 text-violet-700" },
+  delivered: {
+    label: "Delivered",
+    className: "bg-emerald-100 text-emerald-700",
+  },
+  cancelled: { label: "Cancelled", className: "bg-red-100 text-red-700" },
+};
 
-const RecentOrders: React.FC<RecentOrdersProps> = ({ orders }) => {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-BD', {
-      style: 'currency',
-      currency: 'BDT',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+const paymentConfig: Record<string, string> = {
+  cod: "COD",
+  bkash: "bKash",
+  card: "Card",
+  nagad: "Nagad",
+  bank: "Bank",
+};
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'processing':
-        return 'bg-blue-100 text-blue-800';
-      case 'shipped':
-        return 'bg-purple-100 text-purple-800';
-      case 'delivered':
-        return 'bg-green-100 text-green-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getPaymentMethod = (method: string) => {
-    switch (method) {
-      case 'cod':
-        return 'Cash on Delivery';
-      case 'bkash':
-        return 'bKash';
-      case 'card':
-        return 'Card Payment';
-      default:
-        return method;
-    }
-  };
+export default function RecentOrders({ orders }: Props) {
+  if (!orders?.length) {
+    return (
+      <div className="px-6 py-10 text-center text-sm text-gray-400">
+        No recent orders
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
+      <table className="min-w-full divide-y divide-gray-100">
+        <thead>
+          <tr className="bg-gray-50">
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Order ID
+              Order
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Customer
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Date
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Amount
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Status
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Payment
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {orders.map((order) => (
-            <tr key={order.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-mono text-gray-900">{order.id}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{order.customer}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-600">{order.date}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">
-                  {formatCurrency(order.amount)}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                    order.status
-                  )}`}
-                >
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-600">{getPaymentMethod(order.payment)}</div>
-              </td>
-            </tr>
-          ))}
+        <tbody className="divide-y divide-gray-100 bg-white">
+          {orders.map((order) => {
+            const status =
+              statusConfig[order.status] ?? statusConfig["pending"];
+            return (
+              <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-3">
+                  <p className="text-sm font-medium text-gray-900">
+                    {order.customer}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-gray-400">{order.id}</span>
+                    <span className="text-gray-300">·</span>
+                    <span className="text-xs text-gray-400">
+                      {paymentConfig[order.payment] ?? order.payment}
+                    </span>
+                    <span className="text-gray-300">·</span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(order.date).toLocaleDateString("en-BD", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                  ৳{order.amount.toLocaleString()}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span
+                    className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded-full ${status.className}`}
+                  >
+                    {status.label}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
-};
-
-export default RecentOrders;
+}

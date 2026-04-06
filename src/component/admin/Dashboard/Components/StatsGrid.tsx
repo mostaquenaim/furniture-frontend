@@ -1,103 +1,98 @@
-// components/dashboard/StatsGrid.tsx
-import React from "react";
+// app/dashboard/Components/StatsGrid.tsx
+import {
+  TrendingUp,
+  ShoppingBag,
+  ReceiptText,
+  Users,
+  AlertTriangle,
+  Percent,
+} from "lucide-react";
+import type { DashboardStats } from "@/lib/api/actions/dashboard";
 
-interface StatsData {
-  totalRevenue: number;
-  totalOrders: number;
-  avgOrderValue: number;
-  conversionRate: number;
-  activeUsers: number;
-  inventoryAlerts: number;
+interface Props {
+  stats: DashboardStats;
 }
 
-interface StatsGridProps {
-  stats: StatsData;
-}
-
-const StatsGrid: React.FC<StatsGridProps> = ({ stats }) => {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-BD", {
+const fmt = {
+  currency: (n: number) =>
+    new Intl.NumberFormat("en-BD", {
       style: "currency",
       currency: "BDT",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+      maximumFractionDigits: 0,
+    }).format(n),
+  number: (n: number) => new Intl.NumberFormat("en-BD").format(n),
+  percent: (n: number) => `${n}%`,
+};
 
-  const statsConfig = [
+export default function StatsGrid({ stats }: Props) {
+  const cards = [
     {
       label: "Total Revenue",
-      value: formatCurrency(stats.totalRevenue),
-      change: "+12.5%",
-      trend: "positive",
-      description: "From previous period",
+      value: fmt.currency(stats.totalRevenue),
+      icon: TrendingUp,
+      iconColor: "text-emerald-600",
+      iconBg: "bg-emerald-50",
     },
     {
       label: "Total Orders",
-      value: stats.totalOrders.toLocaleString(),
-      change: "+8.2%",
-      trend: "positive",
-      description: "Orders placed",
+      value: fmt.number(stats.totalOrders),
+      icon: ShoppingBag,
+      iconColor: "text-indigo-600",
+      iconBg: "bg-indigo-50",
     },
     {
       label: "Avg Order Value",
-      value: formatCurrency(stats.avgOrderValue),
-      change: "+4.3%",
-      trend: "positive",
-      description: "Average per order",
-    },
-    {
-      label: "Conversion Rate",
-      value: `${stats.conversionRate}%`,
-      change: "+2.1%",
-      trend: "positive",
-      description: "Visitor to customer",
+      value: fmt.currency(stats.avgOrderValue),
+      icon: ReceiptText,
+      iconColor: "text-violet-600",
+      iconBg: "bg-violet-50",
     },
     {
       label: "Active Users",
-      value: stats.activeUsers.toLocaleString(),
-      change: "+15.7%",
-      trend: "positive",
-      description: "Last 30 days",
+      value: fmt.number(stats.activeUsers),
+      icon: Users,
+      iconColor: "text-sky-600",
+      iconBg: "bg-sky-50",
     },
     {
-      label: "Low Stock Alerts",
-      value: stats.inventoryAlerts,
-      change: "3 items",
-      trend: "warning",
-      description: "Requires attention",
+      label: "Inventory Alerts",
+      value: fmt.number(stats.inventoryAlerts),
+      icon: AlertTriangle,
+      iconColor: stats.inventoryAlerts > 0 ? "text-amber-600" : "text-gray-400",
+      iconBg: stats.inventoryAlerts > 0 ? "bg-amber-50" : "bg-gray-50",
+    },
+    {
+      label: "Conversion Rate",
+      value: fmt.percent(stats.conversionRate),
+      icon: Percent,
+      iconColor: "text-rose-600",
+      iconBg: "bg-rose-50",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-      {statsConfig.map((stat, index) => (
-        <div
-          key={index}
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-sm transition-shadow"
-        >
-          <div className="flex items-start justify-between">
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
+      {cards.map((card) => {
+        const Icon = card.icon;
+        return (
+          <div
+            key={card.label}
+            className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 flex flex-col gap-3"
+          >
+            <div
+              className={`w-9 h-9 rounded-lg ${card.iconBg} flex items-center justify-center`}
+            >
+              <Icon size={18} className={card.iconColor} />
+            </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-              <p className="mt-2 text-2xl font-semibold text-gray-900">
-                {stat.value}
+              <p className="text-xs text-gray-500">{card.label}</p>
+              <p className="text-lg font-semibold text-gray-900 mt-0.5 leading-tight">
+                {card.value}
               </p>
             </div>
-            {stat.trend === "positive" && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                {stat.change}
-              </span>
-            )}
-            {stat.trend === "warning" && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                {stat.change}
-              </span>
-            )}
           </div>
-          <p className="mt-2 text-xs text-gray-500">{stat.description}</p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
-};
-
-export default StatsGrid;
+}

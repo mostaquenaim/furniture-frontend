@@ -1,68 +1,65 @@
-// components/dashboard/SearchAnalytics.tsx
-import React from 'react';
+// app/dashboard/Components/SearchAnalytics.tsx
+import type { TopKeyword } from "@/lib/api/actions/dashboard";
 
-interface Keyword {
-  keyword: string;
-  searches: number;
-  conversionRate: number;
-  productsFound: number;
+interface Props {
+  keywords: TopKeyword[];
 }
 
-interface SearchAnalyticsProps {
-  keywords: Keyword[];
-}
+export default function SearchAnalytics({ keywords }: Props) {
+  if (!keywords?.length) {
+    return (
+      <div className="py-8 text-center text-sm text-gray-400">
+        No search data for this period
+      </div>
+    );
+  }
 
-const SearchAnalytics: React.FC<SearchAnalyticsProps> = ({ keywords }) => {
+  const maxSearches = Math.max(...keywords.map((k) => k.searches), 1);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Keyword
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Searches
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Conversion Rate
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Products Found
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {keywords.map((item, index) => (
-            <tr key={index} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{item.keyword}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{item.searches.toLocaleString()}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="w-24 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-green-600 h-2 rounded-full"
-                      style={{ width: `${Math.min(item.conversionRate * 2, 100)}%` }}
-                    />
-                  </div>
-                  <span className="ml-2 text-sm font-medium text-gray-900">
-                    {item.conversionRate}%
-                  </span>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-600">{item.productsFound}</div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="space-y-4">
+      {keywords.map((kw, index) => (
+        <div key={kw.keyword}>
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-medium text-gray-400 w-4 shrink-0">
+                {index + 1}
+              </span>
+              <span className="text-sm font-medium text-gray-800 truncate">
+                {kw.keyword}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 shrink-0 ml-2">
+              <span className="text-xs text-gray-500">
+                {kw.searches.toLocaleString()}
+              </span>
+              <span
+                className={`text-xs font-semibold ${
+                  kw.conversionRate >= 4
+                    ? "text-emerald-600"
+                    : kw.conversionRate >= 2
+                      ? "text-amber-600"
+                      : "text-gray-400"
+                }`}
+              >
+                {kw.conversionRate}%
+              </span>
+            </div>
+          </div>
+
+          {/* Search volume bar */}
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-indigo-400 rounded-full transition-all"
+              style={{ width: `${(kw.searches / maxSearches) * 100}%` }}
+            />
+          </div>
+        </div>
+      ))}
+
+      <p className="text-xs text-gray-400 pt-1">
+        % = conversion rate · bar = relative search volume
+      </p>
     </div>
   );
-};
-
-export default SearchAnalytics;
+}
