@@ -4,7 +4,8 @@ export interface BannerLink {
 }
 
 export interface PromoBanner {
-  id: string;
+  id: number;
+  title: string;
   text: string;
   links?: BannerLink[];
   bgColor: string;

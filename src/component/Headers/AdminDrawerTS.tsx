@@ -87,9 +87,7 @@ const AdminDrawer = () => {
           name: "Dashboard",
           icon: LayoutDashboard,
           href: "/admin/dashboard",
-          sub: [
-            { href: "/admin/dashboard", label: "Overview" },
-          ],
+          sub: [{ href: "/admin/dashboard", label: "Overview" }],
         },
       ],
     },
@@ -171,9 +169,7 @@ const AdminDrawer = () => {
         {
           name: "Promotions",
           icon: Percent,
-          sub: [
-            { href: "/admin/promotions/coupons", label: "Coupons" },
-          ],
+          sub: [{ href: "/admin/promotions/coupons", label: "Coupons" }],
         },
       ],
     },
@@ -183,8 +179,20 @@ const AdminDrawer = () => {
         {
           name: "Content",
           icon: FileText,
+          sub: [{ href: "/admin/blog/add", label: "Create Blog" }],
+        },
+        {
+          name: "Banners",
+          icon: FileText,
           sub: [
-            { href: "/admin/blog/add", label: "Create Blog" },
+            {
+              href: "/admin/banners/promo-banners",
+              label: "Promo Banner Management",
+            },
+            {
+              href: "/admin/banners/homepage-banners",
+              label: "Homepage Banner Management",
+            },
           ],
         },
       ],
@@ -195,9 +203,7 @@ const AdminDrawer = () => {
         {
           name: "Activity Log",
           icon: FileText,
-          sub: [
-            { href: "/admin/activity-log", label: "All Logs" },
-          ],
+          sub: [{ href: "/admin/activity-log", label: "All Logs" }],
         },
         {
           name: "Admin Management",

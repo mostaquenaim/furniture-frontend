@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 
 const HomepageBanner = () => {
+  
   return (
     <div className="w-full my-5">
       {/* Mobile banner (1:1) */}
