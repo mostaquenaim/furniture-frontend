@@ -187,11 +187,25 @@ const AdminDrawer = () => {
           sub: [
             {
               href: "/admin/banners/promo-banners",
-              label: "Promo Banner Management",
+              label: "Promo Banner",
             },
+          ],
+        },
+        {
+          name: "Homepage",
+          icon: FileText,
+          sub: [
             {
               href: "/admin/banners/homepage-banners",
-              label: "Homepage Banner Management",
+              label: "Homepage Banner",
+            },
+            {
+              href: "/admin/seasonal-categories",
+              label: "Seasonal Categories",
+            },
+            {
+              href: "/admin/homepage-gallery",
+              label: "Homepage Gallery",
             },
           ],
         },

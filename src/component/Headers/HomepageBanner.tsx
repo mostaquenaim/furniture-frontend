@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import useFetchHomepageBanners from "@/hooks/Banner/useFetchHomepageBanners";
 import Image from "next/image";
 import Link from "next/link";
-import { Banner } from "../admin/Banner/AllHomepageBannersComp";
+import { Banner } from "../admin/Homepage/Banner/AllHomepageBannersComp";
+import useFetchHomepageBanners from "@/hooks/Homepage/Banner/useFetchHomepageBanners";
 
 const HomepageBanner = () => {
   const { banners, isLoading } = useFetchHomepageBanners(true);

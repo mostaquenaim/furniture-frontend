@@ -1,4 +1,4 @@
-import AllHomepageBannersComp from "@/component/admin/Banner/AllHomepageBannersComp";
+import AllHomepageBannersComp from "@/component/admin/Homepage/Banner/AllHomepageBannersComp";
 
 const HomepageBanners = () => {
   return (

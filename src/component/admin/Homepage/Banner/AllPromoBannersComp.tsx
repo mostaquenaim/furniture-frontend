@@ -11,17 +11,14 @@ import {
   Plus,
   Image as ImageIcon,
   Link as LinkIcon,
-  Check,
   GripVertical,
-  Eye,
-  EyeOff,
   ExternalLink,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
-import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
-import useFetchPromoBanners from "@/hooks/Banner/useFetchPromoBanners";
+import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
+import useFetchPromoBanners from "@/hooks/Homepage/Banner/useFetchPromoBanners";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

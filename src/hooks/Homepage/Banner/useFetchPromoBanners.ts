@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import { useQuery } from "@tanstack/react-query";
-import useAxiosPublic from "../Axios/useAxiosPublic";
 
 type ActiveFilter = boolean | null | undefined;
 

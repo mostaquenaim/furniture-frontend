@@ -20,9 +20,8 @@ import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
-import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
-import useFetchPromoBanners from "@/hooks/Banner/useFetchPromoBanners";
-import useFetchHomepageBanners from "@/hooks/Banner/useFetchHomepageBanners";
+import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
+import useFetchHomepageBanners from "@/hooks/Homepage/Banner/useFetchHomepageBanners";
 
 // Types
 export interface Banner {

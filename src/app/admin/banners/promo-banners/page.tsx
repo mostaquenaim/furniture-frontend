@@ -1,4 +1,4 @@
-import AllPromoBannersComp from "@/component/admin/Banner/AllPromoBannersComp";
+import AllPromoBannersComp from "@/component/admin/Homepage/Banner/AllPromoBannersComp";
 
 const PromoBanners = () => {
   return (

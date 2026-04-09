@@ -3,43 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-const products = [
-  {
-    id: 1,
-    name: "Summer Dress",
-    image: "/images/products/p1.webp",
-    slug: "summer-dress-1",
-  },
-  {
-    id: 2,
-    name: "Winter Jacket",
-    image: "/images/products/p2.webp",
-    slug: "winter-jacket",
-  },
-  {
-    id: 3,
-    name: "Casual Shirt",
-    image: "/images/products/p3.webp",
-    slug: "casual-shirt",
-  },
-  {
-    id: 4,
-    name: "Formal Pants",
-    image: "/images/products/p4.webp",
-    slug: "formal-pants",
-  },
-  {
-    id: 5,
-    name: "Eid Kurta",
-    image: "/images/products/p5.webp",
-    slug: "eid-kurta",
-  },
-];
+import useFetchHomepageGallery from "@/hooks/Homepage/Gallery/useFetchHomepageGallery";
 
 const HomepageGallery = () => {
-  // Triple the items to ensure a seamless loop on larger screens
-  const marqueeItems = [...products, ...products, ...products];
+  const { items, isLoading } = useFetchHomepageGallery(true); // onlyActive=true
+
+  // Triple for seamless marquee loop
+  const marqueeItems = [...items, ...items, ...items];
+
+  if (isLoading || items.length === 0) return null;
 
   return (
     <section className="py-12 bg-gray-50 overflow-hidden hidden lg:block">
@@ -58,30 +30,27 @@ const HomepageGallery = () => {
       {/* Marquee Wrapper */}
       <div className="group relative flex overflow-x-hidden border-y border-gray-100 bg-white py-8">
         <div className="flex animate-marquee whitespace-nowrap group-hover:pause-animation">
-          {marqueeItems?.map((product, index) => (
+          {marqueeItems.map((item, index) => (
             <Link
-              href={`/product/${product.slug}`}
-              key={`${product.id}-${index}`}
+              href={`/product/${item.slug}`}
+              key={`${item.id}-${index}`}
               className="inline-flex flex-col items-center mx-6 transition-transform duration-300 hover:scale-105"
               style={{ minWidth: "220px" }}
             >
               {/* Image Card */}
-              <div className="relative w-full aspect-3/5 overflow-hidden rounded-xl bg-gray-100 shadow-sm transition-shadow duration-300 hover:shadow-xl">
+              <div className="relative w-full aspect-[3/5] overflow-hidden rounded-xl bg-gray-100 shadow-sm transition-shadow duration-300 hover:shadow-xl">
                 <Image
-                  src={product.image}
-                  alt={product.name}
+                  src={item.image}
+                  alt={item.name}
                   fill
                   sizes="220px"
                   className="object-cover"
                 />
               </div>
 
-              {/* Typography */}
-              <p
-                // onClick={() => handleProductClick(product.slug)}
-                className="mt-2 text-sm font-medium text-center text-gray-800 cursor-pointer border-b hover:border-none"
-              >
-                {product.name}
+              {/* Label */}
+              <p className="mt-2 text-sm font-medium text-center text-gray-800 cursor-pointer border-b hover:border-none">
+                {item.name}
               </p>
             </Link>
           ))}

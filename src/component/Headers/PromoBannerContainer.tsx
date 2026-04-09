@@ -1,7 +1,7 @@
 'use client';
 
+import useFetchPromoBanners from '@/hooks/Homepage/Banner/useFetchPromoBanners';
 import PromoBannerCarousel from './PromoBannerCarousel';
-import useFetchPromoBanners from '@/hooks/Banner/useFetchPromoBanners';
 
 export default function PromoBannerContainer() {
   const { banners, isLoading: loading } = useFetchPromoBanners(true);
