@@ -1,14 +1,22 @@
-// hooks/Banner/useFetchHomepageBanners.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
-const useFetchHomepageBanners = () => {
+type ActiveFilter = boolean | null | undefined;
+
+const useFetchHomepageBanners = (isActive?: ActiveFilter) => {
   const axiosSecure = useAxiosSecure();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["homepage-banners"],
+    queryKey: ["homepage-banners", isActive],
     queryFn: async () => {
-      const { data } = await axiosSecure.get("/homepage-banners");
+      const params: Record<string, any> = {};
+
+      if (typeof isActive === "boolean") {
+        params.isActive = isActive;
+      }
+
+      const { data } = await axiosSecure.get("/homepage-banners", { params });
       return data;
     },
   });

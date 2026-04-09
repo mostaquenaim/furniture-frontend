@@ -63,7 +63,7 @@ const DEFAULT_FORM_DATA: BannerFormData = {
 
 const AllBannersComp: React.FC = () => {
   const axiosSecure = useAxiosSecure();
-  const { banners, isLoading, refetch } = useFetchHomepageBanners();
+  const { banners, isLoading, refetch } = useFetchHomepageBanners(null);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isAdding, setIsAdding] = useState<boolean>(false);
