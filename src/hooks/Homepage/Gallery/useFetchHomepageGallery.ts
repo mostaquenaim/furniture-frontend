@@ -6,6 +6,7 @@ export interface HomepageGalleryItem {
   name: string;
   image: string;
   slug: string;
+  isHeading: boolean;
   sortOrder: number;
   isActive: boolean;
   createdAt: string;

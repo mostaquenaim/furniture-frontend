@@ -33,6 +33,7 @@ interface GalleryFormData {
   slug: string;
   sortOrder: number;
   isActive: boolean;
+  isHeading: boolean; // Add this
 }
 
 interface ApiError {
@@ -48,6 +49,7 @@ const DEFAULT_FORM: GalleryFormData = {
   slug: "",
   sortOrder: 0,
   isActive: true,
+  isHeading: false, // Add this
 };
 
 const inputClass = (error?: string) =>
@@ -81,7 +83,7 @@ const AllHomepageGalleryComp: React.FC = () => {
     Record<string, string>
   >({});
 
-  // ── Validation ──────────────────────────────────────────────────────────────
+  // ── Validation ───────────────
 
   const validateForm = useCallback((): boolean => {
     const errors: Record<string, string> = {};
@@ -101,12 +103,7 @@ const AllHomepageGalleryComp: React.FC = () => {
   }, [formData]);
 
   const isFormValid = useMemo(
-    () =>
-      !!(
-        formData.name.trim() &&
-        formData.image &&
-        formData.slug.trim()
-      ),
+    () => !!(formData.name.trim() && formData.image && formData.slug.trim()),
     [formData],
   );
 
@@ -166,6 +163,7 @@ const AllHomepageGalleryComp: React.FC = () => {
       slug: item.slug,
       sortOrder: item.sortOrder,
       isActive: item.isActive,
+      isHeading: item.isHeading,
     });
     setImagePreview(item.image || null);
     setValidationErrors({});
@@ -204,6 +202,7 @@ const AllHomepageGalleryComp: React.FC = () => {
           slug: formData.slug.trim(),
           sortOrder: Number(formData.sortOrder),
           isActive: formData.isActive,
+          isHeading: formData.isHeading,
         };
 
         if (id) {
@@ -303,17 +302,23 @@ const AllHomepageGalleryComp: React.FC = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {["", "Image", "Name & Slug", "Order", "Status", "Actions"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    scope="col"
-                    className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap last:text-right"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
+              {[
+                "",
+                "Type",
+                "Image",
+                "Name & Slug",
+                "Order",
+                "Status",
+                "Actions",
+              ].map((h) => (
+                <th
+                  key={h}
+                  scope="col"
+                  className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap last:text-right"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
 
@@ -321,15 +326,35 @@ const AllHomepageGalleryComp: React.FC = () => {
             {/* ── Add Row ── */}
             {isAdding && (
               <tr className="bg-indigo-50/40">
+                {/* grip for dnd */}
                 <td className="px-3 py-4 text-gray-300">
                   <GripVertical size={18} />
                 </td>
+
+                {/* HERO BANNER */}
+                <td className="px-5 py-4 align-top">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isHeading}
+                      onChange={(e) =>
+                        handleInputChange("isHeading", e.target.checked)
+                      }
+                      className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500 border-gray-300"
+                    />
+                    <span className="text-xs font-medium text-gray-700">
+                      Hero Banner
+                    </span>
+                  </label>
+                </td>
+
                 <td className="px-5 py-4 align-top">
                   <GalleryImageUpload
                     imagePreview={imagePreview}
                     onImageChange={handleImageChange}
                     onImageRemove={removeImage}
                     error={validationErrors.image}
+                    isHeading={formData.isHeading}
                   />
                 </td>
                 <td className="px-5 py-4 align-top">
@@ -387,6 +412,32 @@ const AllHomepageGalleryComp: React.FC = () => {
                     <GripVertical size={18} />
                   </td>
 
+                  <td className="px-5 py-4 align-top">
+                    {isEditing ? (
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.isHeading}
+                          onChange={(e) =>
+                            handleInputChange("isHeading", e.target.checked)
+                          }
+                          className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500 border-gray-300"
+                        />
+                        <span className="text-xs font-medium text-gray-700">
+                          Hero Banner
+                        </span>
+                      </label>
+                    ) : item.isHeading ? (
+                      <span className="px-2 py-1 bg-orange-100 text-orange-700 text-[10px] font-bold rounded uppercase">
+                        Heading
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 uppercase">
+                        Regular
+                      </span>
+                    )}
+                  </td>
+
                   {/* Image */}
                   <td className="px-5 py-4 align-top">
                     {isEditing ? (
@@ -395,9 +446,12 @@ const AllHomepageGalleryComp: React.FC = () => {
                         onImageChange={handleImageChange}
                         onImageRemove={removeImage}
                         error={validationErrors.image}
+                        isHeading={formData.isHeading}
                       />
                     ) : (
-                      <div className="w-14 h-20 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
+                      <div
+                        className={`${item.isHeading ? "w-24 h-10" : "w-14 h-20"} rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0`}
+                      >
                         {item.image ? (
                           <img
                             src={item.image}
@@ -432,13 +486,13 @@ const AllHomepageGalleryComp: React.FC = () => {
                           {item.name}
                         </p>
                         <a
-                          href={`/product/${item.slug}`}
+                          href={`/products/${item.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs text-indigo-500 hover:underline mt-0.5 font-mono"
                         >
                           <ExternalLink size={10} className="shrink-0" />
-                          /product/{item.slug}
+                          /products/{item.slug}
                         </a>
                         <p className="text-xs text-gray-400 mt-0.5">
                           #{item.id}
@@ -564,16 +618,20 @@ interface GalleryImageUploadProps {
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onImageRemove: () => void;
   error?: string;
+  isHeading?: boolean;
 }
 const GalleryImageUpload: FC<GalleryImageUploadProps> = ({
   imagePreview,
   onImageChange,
   onImageRemove,
   error,
+  isHeading,
 }) => (
   <div className="flex flex-col gap-1">
     {imagePreview ? (
-      <div className="relative w-14 h-20 border rounded-lg overflow-hidden group">
+      <div
+        className={`relative ${isHeading ? "w-24 h-10" : "w-14 h-20"} border rounded-lg overflow-hidden group`}
+      >
         <img
           src={imagePreview}
           alt="Preview"
@@ -590,7 +648,7 @@ const GalleryImageUpload: FC<GalleryImageUploadProps> = ({
       </div>
     ) : (
       <label
-        className={`relative w-14 h-20 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors group ${
+        className={`relative ${isHeading ? "w-24 h-10" : "w-14 h-20"} border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors group ${
           error
             ? "border-red-400 bg-red-50"
             : "border-gray-300 hover:border-indigo-500"
@@ -605,16 +663,12 @@ const GalleryImageUpload: FC<GalleryImageUploadProps> = ({
         <Upload
           size={16}
           className={
-            error
-              ? "text-red-400"
-              : "text-gray-400 group-hover:text-indigo-500"
+            error ? "text-red-400" : "text-gray-400 group-hover:text-indigo-500"
           }
         />
         <span
           className={`text-[10px] mt-1 ${
-            error
-              ? "text-red-400"
-              : "text-gray-400 group-hover:text-indigo-500"
+            error ? "text-red-400" : "text-gray-400 group-hover:text-indigo-500"
           }`}
         >
           Upload
@@ -656,14 +710,14 @@ const NameSlugFields: FC<NameSlugFieldsProps> = ({
     <div className="space-y-1">
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-mono select-none">
-          /product/
+          /products/
         </span>
         <input
           type="text"
           placeholder="summer-dress"
           value={slug}
           onChange={(e) => onSlugChange(e.target.value)}
-          className={`${inputClass(slugError)} pl-[72px] font-mono text-xs`}
+          className={`${inputClass(slugError)} pl-19 font-mono text-xs`}
         />
       </div>
       {slugError && <p className="text-xs text-red-600">{slugError}</p>}
