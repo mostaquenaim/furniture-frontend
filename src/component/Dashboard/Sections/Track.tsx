@@ -10,7 +10,12 @@ const Track = () => {
   //   const [orderData, setOrderData] = useState(null);
   const [error, setError] = useState("");
 
-  const { order: orderData, isLoading, isError } = useTrackOrder(orderId);
+  const {
+    order: orderData,
+    isLoading,
+    isError,
+
+  } = useTrackOrder({ trackingId: orderId });
 
   console.log(orderData, "orderdataa");
 

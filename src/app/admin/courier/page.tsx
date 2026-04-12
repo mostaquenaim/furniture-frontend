@@ -1,10 +1,11 @@
 import CourierManagement from "@/component/Courier/CourierManagement";
+import { Suspense } from "react";
 
 const CourierPage = () => {
   return (
-    <div>
+    <Suspense>
       <CourierManagement />
-    </div>
+    </Suspense>
   );
 };
 

@@ -3,11 +3,9 @@ import { Suspense } from "react";
 
 const OrderByIdPage = () => {
   return (
-    <div>
-      <Suspense>
-        <OrderDetails />
-      </Suspense>
-    </div>
+    <Suspense>
+      <OrderDetails />
+    </Suspense>
   );
 };
 

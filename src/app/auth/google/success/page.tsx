@@ -1,11 +1,11 @@
 import GoogleSuccess from "@/component/Auth/GoogleSuccess";
-import React from "react";
+import { Suspense } from "react";
 
 const GoogleSuccessPage = () => {
   return (
-    <div>
+    <Suspense>
       <GoogleSuccess />
-    </div>
+    </Suspense>
   );
 };
 

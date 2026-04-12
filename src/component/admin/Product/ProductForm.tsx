@@ -233,6 +233,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
       basePrice: product.basePrice,
       description: product.description || "",
       brand: product.brand || "",
+      weight: product.weight || 0.5,
       hasColorVariants: product.hasColorVariants,
       showColor: product.showColor,
       discountType: product.discountType ?? "PERCENT",

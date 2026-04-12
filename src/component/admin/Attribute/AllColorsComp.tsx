@@ -651,7 +651,7 @@ const ColorVisual: React.FC<ColorVisualProps> = ({
 );
 
 interface StatusBadgeProps {
-  isActive: boolean;
+  isActive?: boolean;
   onToggle?: () => void;
   isPending?: boolean;
 }

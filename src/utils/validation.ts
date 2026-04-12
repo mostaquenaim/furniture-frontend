@@ -1,12 +1,13 @@
-import { ProductFormData, SizeDetail } from "../types";
+import { Color } from "@/types/product.types";
 import { ProductImageItem } from "@/component/admin/Product/ImageUploader";
+import { ProductFormData, SizeDetail } from "@/component/admin/Product/ProductForm";
 
 interface ValidateProductProps {
   formData: ProductFormData;
   defaultImages: ProductImageItem[];
   colorImages: Record<number, ProductImageItem[]>;
   sizeSelections: Record<number, SizeDetail[]>;
-  colors: any[]; // Replace with proper Color type
+  colors: Color[]; // Replace with proper Color type
 }
 
 export const validateProduct = ({

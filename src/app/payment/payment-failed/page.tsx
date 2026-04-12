@@ -1,10 +1,11 @@
 import PaymentFailedComp from "@/component/Payment/PaymentFailedComp";
+import { Suspense } from "react";
 
 const PaymentFailedPage = () => {
   return (
-    <div>
+    <Suspense>
       <PaymentFailedComp />
-    </div>
+    </Suspense>
   );
 };
 

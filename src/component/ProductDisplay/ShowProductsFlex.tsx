@@ -1,10 +1,6 @@
 import React, { useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { Product } from "@/types/product.types";
 import Image from "next/image";
 import { RelatedProduct } from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import Link from "next/link";
@@ -112,8 +108,7 @@ const ShowProductsFlex = ({
                     <div className="h-3 bg-gray-200 rounded w-3/4 animate-pulse" />
                   </div>
                 </SwiperSlide>
-              ))
-              }
+              ))}
       </Swiper>
 
       {/* Custom Navigation Buttons */}

@@ -60,7 +60,7 @@ const useTrackOrder = ({
   details = false,
 }: {
   trackingId: string;
-  details: boolean;
+  details?: boolean;
 }) => {
   const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();

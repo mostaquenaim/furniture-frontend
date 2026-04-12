@@ -19,7 +19,7 @@ export interface RelatedProduct {
   slug: string;
   price?: number;
   basePrice?: number;
-  rating?: number;
+  rating?: number | null | string;
   images: RelatedProductImage[];
 }
 

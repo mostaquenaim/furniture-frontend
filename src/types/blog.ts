@@ -15,6 +15,7 @@ export interface BlogPost {
   slug?: string;
   content: string;
   image?: string;
+  tags?: { tag: { id: number; name: string } }[];
   createdAt: string;
   category: BlogCategory;
   subCategories?: BlogSubCategory[];

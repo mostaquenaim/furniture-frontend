@@ -100,38 +100,38 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           <p className="text-center text-gray-500">No reviews yet.</p>
         )}
 
-        {reviews.map((review) => (
-          <div
-            key={review.id}
-            className="grid grid-cols-1 md:grid-cols-12 gap-10 border-t border-gray-100 pt-12"
-          >
-            {/* User Info */}
-            <div className="md:col-span-3 space-y-2">
-              <p className="text-[13px] font-medium">{review.user.name}</p>
-              {/* <p className="text-[12px] text-gray-600 font-light">
-                <span className="font-normal text-gray-800">Reviewed on:</span>{" "}
-                {new Date(review.createdAt).toLocaleDateString()}
-              </p> */}
-            </div>
+        {reviews &&
+          reviews.length > 0 &&
+          reviews.map((review) => (
+            <div
+              key={review.id}
+              className="grid grid-cols-1 md:grid-cols-12 gap-10 border-t border-gray-100 pt-12"
+            >
+              {/* User Info */}
+              {review.user && (
+                <div className="md:col-span-3 space-y-2">
+                  <p className="text-[13px] font-medium">{review.user.name}</p>
+                </div>
+              )}
 
-            {/* Review Content */}
-            <div className="md:col-span-9">
-              <div className="flex gap-0.5 text-[#eeb012] mb-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={14}
-                    fill={i < review.rating ? "currentColor" : "none"}
-                    stroke="currentColor"
-                  />
-                ))}
+              {/* Review Content */}
+              <div className="md:col-span-9">
+                <div className="flex gap-0.5 text-[#eeb012] mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      fill={i < review.rating ? "currentColor" : "none"}
+                      stroke="currentColor"
+                    />
+                  ))}
+                </div>
+                <p className="text-[13px] text-gray-600 leading-relaxed">
+                  {review.comment}
+                </p>
               </div>
-              <p className="text-[13px] text-gray-600 leading-relaxed">
-                {review.comment}
-              </p>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {/* Write Review Button */}

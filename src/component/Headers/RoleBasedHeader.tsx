@@ -3,9 +3,6 @@
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Header from "./Header";
-import AdminDrawerPro from "./AdminDrawerPro";
-import { AdminDrawerProvider } from "@/context/AdminContext";
-import AdminHeader from "./AdminHeader";
 
 const RoleBasedHeader = () => {
   const { user } = useAuth();

@@ -72,15 +72,15 @@ export interface FullOrder {
 }
 
 export enum PaymentStatus {
-  PENDING, // Initial state
-  PROCESSING, // Payment in progress
-  PAID, // Successfully paid
-  FAILED, // Payment failed
-  REFUNDED, // Fully refunded
-  PARTIALLY_REFUNDED, // Partially refunded
-  CANCELLED, // Payment cancelled by user
-  EXPIRED, // Payment link expired
-  ON_HOLD, // Payment under review
+  PENDING = "PENDING",
+  PROCESSING = "PROCESSING",
+  PAID = "PAID",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED",
+  PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED",
+  CANCELLED = "CANCELLED",
+  EXPIRED = "EXPIRED",
+  ON_HOLD = "ON_HOLD",
 }
 
 export interface PaginatedOrdersResponse<T = ThumbOrder | FullOrder> {

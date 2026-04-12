@@ -81,10 +81,13 @@ export default function SalesChart({ data }: Props) {
             fontSize: "12px",
             boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07)",
           }}
-          formatter={(value: number, name: string) => [
-            name === "revenue" ? `৳${value.toLocaleString()}` : value,
-            name === "revenue" ? "Revenue" : "Orders",
-          ]}
+          formatter={(value, name) => {
+            const numVal = typeof value === "number" ? value : Number(value);
+            if (name === "revenue") {
+              return [`৳${numVal.toLocaleString()}`, "Revenue"];
+            }
+            return [numVal, "Orders"];
+          }}
         />
 
         <Legend

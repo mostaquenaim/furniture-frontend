@@ -1,9 +1,5 @@
 'use client';
 
-// app/auth/google/success/page.tsx
-// Google OAuth redirects here after backend issues the token.
-// This page reads the token, stores it, then redirects home.
-
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
