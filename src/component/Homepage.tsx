@@ -10,6 +10,7 @@ import HomepageGallery from "./Homepage/HomepageGallery";
 import RecommendedProducts from "./Recommended/RecommendedProducts";
 import RecentlyViewedProducts from "./RecentlyViewed/RecentlyViewedProducts";
 import FeaturedReview from "./Reviews/FeaturedReview";
+import BroadBanner from "./Homepage/BroadBanner";
 
 export default function Homepage() {
   return (
@@ -28,11 +29,7 @@ export default function Homepage() {
 
         {/* larger device gif */}
         <div className="hidden lg:block pb-8">
-          <img
-            src={"/images/home/homepage-large-image.jpg"}
-            alt={"Gallery Heading"}
-            className="w-full h-full object-cover"
-          />
+          <BroadBanner />
         </div>
 
         {/* small device category navigation */}

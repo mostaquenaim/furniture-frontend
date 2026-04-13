@@ -189,6 +189,10 @@ const AdminDrawer = () => {
               href: "/admin/banners/promo-banners",
               label: "Promo Banner",
             },
+            {
+              href: "/admin/banners/broad-banners",
+              label: "Broad Banner",
+            },
           ],
         },
         {
