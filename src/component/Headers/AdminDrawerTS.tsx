@@ -9,23 +9,18 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  Users,
   Settings,
-  BarChart3,
   Layers,
-  Database,
   Percent,
   Image,
   Sliders,
-  DollarSign,
   ChevronRight,
   ChevronDown,
   Menu,
   Store,
   FileText,
-  TrendingUp,
   Grid,
-  Download,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { MdCategory } from "react-icons/md";
@@ -178,12 +173,12 @@ const AdminDrawer = () => {
       items: [
         {
           name: "Content",
-          icon: FileText,
+          icon: Newspaper, // blog/content related
           sub: [{ href: "/admin/blog/add", label: "Create Blog" }],
         },
         {
           name: "Banners",
-          icon: FileText,
+          icon: Image, // visual/banner = image
           sub: [
             {
               href: "/admin/banners/promo-banners",
@@ -197,7 +192,7 @@ const AdminDrawer = () => {
         },
         {
           name: "Homepage",
-          icon: FileText,
+          icon: LayoutDashboard, // homepage/dashboard vibe
           sub: [
             {
               href: "/admin/banners/homepage-banners",
@@ -429,7 +424,7 @@ const AdminDrawer = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
                 <div className="relative">
-                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
+                  <div className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">SA</span>
                   </div>
                   <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
@@ -455,7 +450,7 @@ const AdminDrawer = () => {
           ) : (
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
-                <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
+                <div className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">SA</span>
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>

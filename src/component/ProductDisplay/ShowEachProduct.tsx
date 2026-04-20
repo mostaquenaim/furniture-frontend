@@ -798,6 +798,7 @@ export default function ShowEachProduct() {
         <section>
           <Title title={"You may also like"} />
           <ShowProductsFlex
+            id="may-also-like"
             isLoading={isRelatedLoading}
             products={relatedProducts}
           />
@@ -818,6 +819,7 @@ export default function ShowEachProduct() {
         <section>
           <Title title="Trending Now" />
           <ShowProductsFlex
+            id="trending"
             isLoading={isTrendingLoading}
             products={trendingProducts}
           />

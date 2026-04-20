@@ -17,7 +17,7 @@ const RecommendedProducts = () => {
 
     return (
         <div>
-            <ShowProductsFlex products={products}/>
+            <ShowProductsFlex id="recommended" products={products} />
         </div>
     );
 };

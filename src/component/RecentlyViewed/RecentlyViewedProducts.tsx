@@ -21,7 +21,7 @@ const RecentlyViewedProducts = () => {
       {products && products.length > 0 && (
         <>
           <Title title="Recently Viewed" />
-          <ShowProductsFlex products={products} />
+          <ShowProductsFlex id="recent" products={products} />
         </>
       )}
     </div>

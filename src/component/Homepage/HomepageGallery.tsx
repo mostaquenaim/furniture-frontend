@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useFetchHomepageGallery from "@/hooks/Homepage/Gallery/useFetchHomepageGallery";
@@ -16,9 +15,9 @@ const HomepageGallery = () => {
   if (isLoading || items.length === 0) return null;
 
   return (
-    <section className="py-12 bg-gray-50 overflow-hidden hidden lg:block">
+    <section className="py-12 overflow-hidden hidden lg:block">
       {/* Dynamic Heading Section */}
-      <div className="container mx-auto mb-8">
+      <div className=" mb-8">
         <div className="relative w-full h-16 md:h-24">
           <Image
             // If dynamic heading exists, use it; otherwise, use fallback
@@ -27,7 +26,7 @@ const HomepageGallery = () => {
             }
             alt={headingItem?.name || "Our Collection"}
             fill
-            className="object-contain"
+            className="object-cover"
             priority
           />
         </div>

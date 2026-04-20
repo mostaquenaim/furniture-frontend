@@ -238,6 +238,7 @@ export default function BlogPostPage() {
         <div className="max-w-7xl mx-auto px-6 pb-24">
           <Title title="Recommended Furniture" />
           <ShowProductsFlex
+            id="blogpost"
             isLoading={isRelatedLoading}
             products={relatedProducts}
             maxWidth="100%"

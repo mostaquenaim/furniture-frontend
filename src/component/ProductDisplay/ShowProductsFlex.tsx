@@ -18,10 +18,6 @@ const ShowProductsFlex = ({
   products,
   isLoading,
 }: ShowProductType) => {
-  // console.log("ShowProductsFlex", products);
-  const prevRef = useRef<HTMLButtonElement>(null);
-  const nextRef = useRef<HTMLButtonElement>(null);
-
   return (
     <div className={`${maxWidth || ""} relative`}>
       <Swiper

@@ -115,6 +115,7 @@ const CartPageComponent = () => {
               <Title title="You may also like" />
               <div className="w-full">
                 <ShowProductsFlex
+                  id="cartpage"
                   isLoading={isRelatedLoading}
                   products={relatedProducts}
                   maxWidth="100%"
