@@ -664,7 +664,7 @@ interface CouponCodeInputProps {
   error?: string;
 }
 const CouponCodeInput: FC<CouponCodeInputProps> = ({ value, onChange, error }) => (
-  <div className="space-y-1 min-w-[130px]">
+  <div className="space-y-1 min-w-32.5">
     <input
       type="text"
       placeholder="e.g. SAVE20"

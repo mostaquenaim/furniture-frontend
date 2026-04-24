@@ -580,7 +580,7 @@ interface TitleFieldProps {
   error?: string;
 }
 const TitleField: FC<TitleFieldProps> = ({ value, onChange, error }) => (
-  <div className="space-y-1 min-w-[160px]">
+  <div className="space-y-1 min-w-40">
     <input
       type="text"
       placeholder="e.g. Summer Sale"

@@ -316,7 +316,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   );
 };
 
-// --- MAIN HEADER COMPONENT ---
+// MAIN HEADER COMPONENT
 const Header = () => {
   const pathname = usePathname();
 

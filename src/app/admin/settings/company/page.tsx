@@ -1,5 +1,4 @@
 import CompanyInfoComp from "@/component/admin/Company/CompanyManagement";
-import React from "react";
 
 const CompanyInfoPage = () => {
   return (

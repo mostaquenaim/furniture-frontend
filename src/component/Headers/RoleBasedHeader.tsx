@@ -14,12 +14,6 @@ const RoleBasedHeader = () => {
   // For admin routes, return the complete admin layout components
   if (isAdmin) {
     return null;
-    // (
-    //   <AdminDrawerProvider>
-    //     <AdminDrawerPro />
-    //     <AdminHeader />
-    //   </AdminDrawerProvider>
-    // );
   }
 
   // For non-admin routes, return the regular header

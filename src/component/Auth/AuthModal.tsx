@@ -188,7 +188,11 @@ export default function AuthModal({
         withCredentials: true,
       });
 
-      setReceivedOtp(res.data.otpDetails);
+      setReceivedOtp(
+        res.data.otpDetails.message
+          ? res.data.otpDetails.message
+          : res.data.otpDetails,
+      );
 
       const data = res.data;
 
@@ -525,17 +529,6 @@ export default function AuthModal({
           <X size={24} />
         </button>
 
-        {/* <Link
-          href={"/"}
-          className="flex justify-center items-center text-center"
-        >
-          <img
-            src="/logo/sakigai logo.png"
-            alt="Sakigai Logo"
-            className="w-20 mb-4 mt-6"
-          />
-        </Link> */}
-
         <div className="px-8 py-20">
           {view === "password-reset" && (
             <>
@@ -543,8 +536,8 @@ export default function AuthModal({
                 Forgot Password?
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Please enter your email address and we'll send you instructions
-                to reset your password.
+                Please enter your email address and we&apos;ll send you
+                instructions to reset your password.
               </p>
 
               <form onSubmit={handlePasswordReset}>
@@ -638,7 +631,7 @@ export default function AuthModal({
                   Sign Up
                 </h3>
                 <p className="text-sm text-gray-600 text-center mb-4">
-                  Welcome! It's quick and easy to set up an account
+                  Welcome! It&apos;s quick and easy to set up an account
                 </p>
                 <button
                   onClick={() => handleView("create-account")}
@@ -888,7 +881,7 @@ export default function AuthModal({
                 OTP Verification
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Enter the OTP {receivedOtp && receivedOtp} sent to your{" "}
+                Enter the OTP sent to your{" "}
                 <span className="font-semibold italic">
                   {verificationTarget}
                 </span>
