@@ -364,9 +364,6 @@ const Header = () => {
   // console.log(derivedActiveNavItem, "derivedActiveNavItem");
 
   const { token, logout, loading, setLoading } = useAuth();
-  // console.log(token,'tokennn');
-
-  // const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
 
   useEffect(() => {

@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Sakigai Admin Pro",
+  title: "Ondorkotha Admin Pro",
   description: "Premium Furniture Marketplace Administration",
 };
 

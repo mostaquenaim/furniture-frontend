@@ -136,15 +136,15 @@ const InvoiceComp = () => {
           <div className="bg-[#0f172a] px-10 py-9 flex justify-between items-start">
             <div>
               <p className="inv-font text-[#e2c97e] text-2xl tracking-[0.25em] uppercase font-semibold">
-                Sakigai
+                Ondorkotha
               </p>
               <p className="text-slate-500 text-[10px] tracking-[0.2em] uppercase mt-1">
                 Furniture · Crafted for your home
               </p>
               <div className="mt-5 text-slate-500 text-[11px] leading-relaxed">
                 <p>Dhaka, Bangladesh</p>
-                <p>support@sakigai.com.bd</p>
-                <p>sakigai.com.bd</p>
+                <p>support@ondorkotha.com.bd</p>
+                <p>ondorkotha.com</p>
               </div>
             </div>
 
@@ -277,19 +277,19 @@ const InvoiceComp = () => {
           <div className="border-t border-slate-100 bg-[#faf9f7] px-10 py-5 flex justify-between items-center">
             <p className="text-[11px] text-slate-400 leading-relaxed">
               Questions? Email us at{' '}
-              <span className="text-slate-600">support@sakigai.com.bd</span>
+              <span className="text-slate-600">support@ondorkotha.com.bd</span>
               <br />
               Computer-generated invoice — no signature required.
             </p>
             <p className="inv-mono text-[10px] text-slate-300 uppercase tracking-[0.25em]">
-              Sakigai · {new Date().getFullYear()}
+              Ondorkotha · {new Date().getFullYear()}
             </p>
           </div>
 
         </div>
 
         <p className="text-center inv-font text-slate-400 text-sm mt-8 italic no-print">
-          Thank you for choosing Sakigai. We hope you love your furniture.
+          Thank you for choosing Ondorkotha. We hope you love your furniture.
         </p>
       </div>
     </>

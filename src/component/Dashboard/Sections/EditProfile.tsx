@@ -101,7 +101,7 @@ const EditProfile = ({ user, loading }: { user: any; loading: boolean }) => {
   };
 
   const saveProfile = async (data: any) => {
-    console.log("Saving to Sakigai DB:", data);
+    console.log("Saving to Ondorkotha DB:", data);
     // await api.updateProfile(data);
   };
 

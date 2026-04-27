@@ -254,7 +254,7 @@ const AddOrUpdateSeriesComp = () => {
                   Slug *
                 </label>
                 <div className="flex items-center space-x-2">
-                  <span className="text-gray-500">sakigai.com/series/</span>
+                  <span className="text-gray-500">ondorkotha.com/series/</span>
                   <input
                     type="text"
                     value={formData.slug}

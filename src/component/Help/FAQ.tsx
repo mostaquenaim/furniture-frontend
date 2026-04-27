@@ -30,7 +30,7 @@ const faqData: FAQItem[] = [
   // Ordering & Products
   {
     id: 1,
-    question: "How do I place an order on Sakigai?",
+    question: "How do I place an order on Ondorkotha?",
     answer:
       "You can place an order by browsing our collection, selecting your desired items, and proceeding through our secure checkout. You'll need to provide shipping information, select a payment method, and confirm your order. You'll receive an email confirmation immediately after placing your order.",
     category: "Ordering & Products",

@@ -28,7 +28,7 @@ export const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  title: "Sakigai",
+  title: "Ondorkotha",
   description: "Premium Furniture Marketplace",
 };
 

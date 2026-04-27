@@ -6,18 +6,15 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { mergeGuestUserWithRealUser } from "@/utils/merge";
-import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import GoogleSignInButton from "./GoogleSignInButton";
-import Link from "next/link";
+import { devLog } from "@/utils/devlog";
 
 type ModalView =
   | "signin"
-  | "signup"
   | "create-account"
   | "password-reset"
   | "enter-password"
@@ -40,7 +37,6 @@ export default function AuthModal({
   const [customerName, setCustomerName] = useState("");
   const [password, setPassword] = useState("");
   const [mobileNumber, setMobileNumber] = useState("+880");
-  const [countryCode, setCountryCode] = useState("BD");
   const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -52,7 +48,7 @@ export default function AuthModal({
     "email" | "phone"
   >("email");
 
-  const [useMobileForSignin, setUseMobileForSignin] = useState<boolean>(false);
+  const [useMobileForSignin, setUseMobileForSignin] = useState<boolean>(true);
   const [showTooltip, setShowTooltip] = useState(false);
 
   const [oldPassword, setOldPassword] = useState("");
@@ -60,8 +56,6 @@ export default function AuthModal({
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const axiosPublic = useAxiosPublic();
-  const axiosSecure = useAxiosSecure();
-  const router = useRouter();
   const { setUser, setToken } = useAuth();
 
   // validate password
@@ -165,7 +159,7 @@ export default function AuthModal({
       // const clientIp = ipData.ip;
 
       interface Payload {
-        password: string;
+        password?: string;
         keepSignedIn: boolean;
         phone?: string | null;
         email?: string | null;
@@ -173,7 +167,7 @@ export default function AuthModal({
       }
 
       const payload: Payload = {
-        password,
+        // password,
         keepSignedIn,
         // clientIp,
       };
@@ -210,7 +204,7 @@ export default function AuthModal({
 
         await mergeGuestUserWithRealUser(data.token);
 
-        toast.success(`Welcome to Sakigai`);
+        toast.success(`Welcome to Ondorkotha`);
         handleView("signin");
         onClose();
         // data.user.role === "CUSTOMER"
@@ -229,12 +223,16 @@ export default function AuthModal({
         errorMessage = err.message;
       }
 
+      // devLog(errorMessage, "erromssaa");
+
       if (errorMessage.includes("Too many attempts")) {
         setError(
           "Account temporarily locked. Please try again after a few minutes.",
         );
-      } else {
+      } else if (!errorMessage) {
         setError("Invalid password. Please try again.");
+      } else {
+        setError(errorMessage);
       }
     } finally {
       setLoading(false);
@@ -247,12 +245,12 @@ export default function AuthModal({
     setError("");
     setLoading(true);
 
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
-      setLoading(false);
-      return;
-    }
+    // const passwordError = validatePassword(password);
+    // if (passwordError) {
+    //   setError(passwordError);
+    //   setLoading(false);
+    //   return;
+    // }
 
     const phoneError = validatePhoneNumber(mobileNumber);
     if (phoneError) {
@@ -265,13 +263,13 @@ export default function AuthModal({
       interface payloadType {
         phone: string | null;
         email?: string | null;
-        password: string;
+        password?: string;
         name: string;
         keepSignedIn: boolean;
       }
       const payload: payloadType = {
         phone: mobileNumber,
-        password,
+        password: password || undefined,
         name: customerName,
         keepSignedIn,
       };
@@ -346,7 +344,7 @@ export default function AuthModal({
 
       await mergeGuestUserWithRealUser(token);
 
-      toast.success(`Welcome to Sakigai`);
+      toast.success(`Welcome to Ondorkotha`);
       handleView("signin");
       onClose();
       // router.push("/");
@@ -367,45 +365,45 @@ export default function AuthModal({
   };
 
   // password reset / forgot password
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  // const handlePasswordReset = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError("");
 
-    try {
-      const otpSent = await axiosPublic.post(
-        "/auth/reset-password",
-        useMobileForSignin
-          ? { emailOrPhone: mobileNumber, type: "phone" }
-          : { emailOrPhone: email, type: "email" },
-      );
+  //   try {
+  //     const otpSent = await axiosPublic.post(
+  //       "/auth/reset-password",
+  //       useMobileForSignin
+  //         ? { emailOrPhone: mobileNumber, type: "phone" }
+  //         : { emailOrPhone: email, type: "email" },
+  //     );
 
-      // console.log(otpSent,'otpsent');
-      setReceivedOtp(otpSent.data);
+  //     // console.log(otpSent,'otpsent');
+  //     setReceivedOtp(otpSent.data);
 
-      // console.log(otpSent,'otpSent');
-      toast.success(
-        `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`,
-      );
+  //     // console.log(otpSent,'otpSent');
+  //     toast.success(
+  //       `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`,
+  //     );
 
-      handleView("otp-verification");
-      // alert("Password reset instructions sent!");
-      // setView("signin");
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        setError(
-          (err.response?.data as { message?: string })?.message ||
-            "Failed to send reset email. Please try again.",
-        );
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to send reset email. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     handleView("otp-verification");
+  //     // alert("Password reset instructions sent!");
+  //     // setView("signin");
+  //   } catch (err: unknown) {
+  //     if (axios.isAxiosError(err)) {
+  //       setError(
+  //         (err.response?.data as { message?: string })?.message ||
+  //           "Failed to send reset email. Please try again.",
+  //       );
+  //     } else if (err instanceof Error) {
+  //       setError(err.message);
+  //     } else {
+  //       setError("Failed to send reset email. Please try again.");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // hanlde view change
   const handleView = (option: ModalView) => {
@@ -413,7 +411,6 @@ export default function AuthModal({
     setCustomerName("");
     setOtp("");
     setError("");
-    // useMobileForSignin ? setEmail("") : setMobileNumber("");
     setView(option);
   };
 
@@ -530,119 +527,6 @@ export default function AuthModal({
         </button>
 
         <div className="px-8 py-20">
-          {view === "password-reset" && (
-            <>
-              <h2 className="text-2xl font-light text-center mb-6 pb-3 border-b border-gray-200">
-                Forgot Password?
-              </h2>
-              <p className="text-sm text-gray-600 text-center mb-6">
-                Please enter your email address and we&apos;ll send you
-                instructions to reset your password.
-              </p>
-
-              <form onSubmit={handlePasswordReset}>
-                <div className="mb-6">
-                  <label className="block text-sm mb-2">
-                    {useMobileForSignin ? "Phone*" : "Email*"}
-                  </label>
-
-                  {useMobileForSignin ? (
-                    mobileNumberField()
-                  ) : (
-                    <input
-                      type={useMobileForSignin ? "text" : "email"}
-                      value={useMobileForSignin ? mobileNumber : email}
-                      onChange={(e) => {
-                        useMobileForSignin
-                          ? setMobileNumber(e.target.value)
-                          : setEmail(e.target.value);
-                      }}
-                      className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                      required
-                    />
-                  )}
-                </div>
-
-                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-                {/* buttons */}
-                <div className="space-y-2">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50"
-                  >
-                    {loading ? "SENDING..." : "RESET PASSWORD"}
-                  </button>
-                  {/* use mobile / email instead  */}
-                  <button
-                    type="button"
-                    onClick={handleMobileSignIn}
-                    className="w-full border border-gray-300 py-3 rounded hover:bg-gray-50 mb-4"
-                  >
-                    USE {!useMobileForSignin ? "MOBILE NUMBER" : "EMAIL"}{" "}
-                    INSTEAD
-                  </button>
-                </div>
-              </form>
-            </>
-          )}
-
-          {view === "enter-password" && (
-            <>
-              <h2 className="text-2xl font-light text-center mb-6 border-b-2 heading">
-                Sign In
-              </h2>
-              <p className="text-sm text-gray-600 text-center mb-4">
-                Enter your password to continue
-              </p>
-              <p className="text-sm text-center mb-6">
-                {email}{" "}
-                <button
-                  onClick={() => handleView("signin")}
-                  className="text-blue-600 hover:underline"
-                >
-                  Edit
-                </button>
-              </p>
-
-              <form onSubmit={handleSignIn}>
-                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50 mb-4 heading"
-                >
-                  {loading ? "SIGNING IN..." : "NEXT"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleView("password-reset")}
-                  className="w-full text-blue-600 hover:underline text-center"
-                >
-                  Forgot Your Password?
-                </button>
-              </form>
-
-              <div className="mt-8 pt-8 border-t">
-                <h3 className="text-xl font-light text-center mb-4 heading">
-                  Sign Up
-                </h3>
-                <p className="text-sm text-gray-600 text-center mb-4">
-                  Welcome! It&apos;s quick and easy to set up an account
-                </p>
-                <button
-                  onClick={() => handleView("create-account")}
-                  className="w-full border border-gray-700 text-gray-700 py-3 rounded hover:bg-gray-50 heading"
-                >
-                  CREATE AN ACCOUNT
-                </button>
-              </div>
-            </>
-          )}
-
           {view === "signin" && (
             <>
               <h2 className="text-2xl font-light text-center mb-6 border-b border-gray-200 heading">
@@ -652,7 +536,19 @@ export default function AuthModal({
                 Sign in so you can save items to your wishlists, track your
                 orders, and check out faster!
               </p>
-
+              {/* google sign in */}
+              <GoogleSignInButton />
+              {/* or line */}
+              <div className="mt-6">
+                <div className="relative flex items-center gap-3 my-6">
+                  <div className="flex-1 border-t border-gray-200" />
+                  <span className="text-xs text-gray-400 uppercase tracking-widest">
+                    or
+                  </span>
+                  <div className="flex-1 border-t border-gray-200" />
+                </div>
+              </div>
+              {/* or email password sign in */}
               <form onSubmit={handleSignIn}>
                 <div className="mb-4">
                   <label className="block text-sm mb-2">
@@ -675,7 +571,7 @@ export default function AuthModal({
                 </div>
 
                 {/* password  */}
-                {passWordField()}
+                {/* {passWordField()} */}
 
                 <div className="flex items-center mb-4">
                   <input
@@ -696,21 +592,21 @@ export default function AuthModal({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50 heading"
+                  className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800 disabled:opacity-50 heading mb-4"
                 >
                   {loading ? "LOADING..." : "NEXT"}
                 </button>
 
-                <p className="flex justify-center items-center w-full pb-4">
+                {/* <p className="flex justify-center items-center w-full pb-4">
                   <button
                     type="button"
                     onClick={() => handleView("password-reset")}
-                    className="text-sm blue-link hover:underline mt-2 cursor-pointer
+                    className="text-sm blue-link hover:underline cursor-pointer
           "
                   >
                     Forgot Your Password?
                   </button>
-                </p>
+                </p> */}
 
                 <button
                   type="button"
@@ -720,19 +616,6 @@ export default function AuthModal({
                   USE {!useMobileForSignin ? "MOBILE NUMBER" : "EMAIL"} INSTEAD
                 </button>
               </form>
-              {/* or google sign in */}
-              <div className="mt-6">
-                <div className="relative flex items-center gap-3 my-6">
-                  <div className="flex-1 border-t border-gray-200" />
-                  <span className="text-xs text-gray-400 uppercase tracking-widest">
-                    or
-                  </span>
-                  <div className="flex-1 border-t border-gray-200" />
-                </div>
-
-                <GoogleSignInButton />
-              </div>
-
               <div className="mt-8 pt-8 border-t border-gray-200">
                 <h3 className="text-xl font-light text-center mb-4 heading">
                   Sign Up
@@ -757,10 +640,20 @@ export default function AuthModal({
                 Create An Account
               </h2>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Welcome to Sakigai! It&apos;s quick and easy to set up an
+                Welcome to Ondorkotha! It&apos;s quick and easy to set up an
                 account.
               </p>
-
+              {/* google sign up  */}
+              <GoogleSignInButton label="Sign up with Google" />
+              {/* or line */}
+              <div className="relative flex items-center gap-3 my-4">
+                <div className="flex-1 border-t border-gray-200" />
+                <span className="text-xs text-gray-400 uppercase tracking-widest">
+                  or
+                </span>
+                <div className="flex-1 border-t border-gray-200" />
+              </div>
+              {/* email and password sign up */}
               <form onSubmit={handleSignUp}>
                 {/* name  */}
                 <div className="mb-4">
@@ -773,35 +666,12 @@ export default function AuthModal({
                     required
                   />
                 </div>
-                {/* email  */}
-                <div className="mb-4">
-                  <label className="block text-sm mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                  />
-                </div>
                 {/* mobile number  */}
                 <div className="mb-4">
                   <label className="block text-sm mb-2">Mobile Number*</label>
-                  <div className="flex gap-2">
-                    {/* <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      className="border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-                    >
-                      <option value="BD">🇧🇩 BD</option>
-                      <option value="US">🇺🇸 US</option>
-                    </select> */}
-                    {mobileNumberField()}
-                    {/* <span className="text-gray-400 cursor-help flex items-center">
-                      ⓘ
-                    </span> */}
-                  </div>
+                  <div className="flex gap-2">{mobileNumberField()}</div>
                 </div>
-                {passWordField()}
+                {/* {passWordField()} */}
                 {/* keep me signed in  */}
                 <div className="flex items-center mb-4">
                   <input
@@ -826,21 +696,9 @@ export default function AuthModal({
                 >
                   {loading ? "CREATING..." : "NEXT"}
                 </button>
-
-                {/* offer text  */}
-                {/* <div className="text-xs text-gray-600 mb-4">
-                  <label className="flex items-start">
-                    <input type="checkbox" className="mr-2 mt-1" />
-                    <span>
-                      Sign me up to receive Sakigai offers, promotions and other
-                      commercial messages. By creating an account, I agree to
-                      Sakigai's Terms of Service and Privacy Policy.
-                    </span>
-                  </label>
-                </div> */}
                 {/* condition  */}
                 <div className="text-xs text-gray-600">
-                  By creating an account, you agree to Sakigai&apos;s{" "}
+                  By creating an account, you agree to Ondorkotha&apos;s{" "}
                   <a href="#" className="text-blue-600 hover:underline">
                     arbitration agreement
                   </a>
@@ -848,17 +706,6 @@ export default function AuthModal({
                   prepaid phones are not supported.
                 </div>
               </form>
-
-              <div className="relative flex items-center gap-3 my-4">
-                <div className="flex-1 border-t border-gray-200" />
-                <span className="text-xs text-gray-400 uppercase tracking-widest">
-                  or
-                </span>
-                <div className="flex-1 border-t border-gray-200" />
-              </div>
-
-              <GoogleSignInButton label="Sign up with Google" />
-
               {/* already account  */}
               <div className="mt-8 pt-8 border-t border-gray-200">
                 <h3 className="text-xl font-light text-center mb-4 heading">

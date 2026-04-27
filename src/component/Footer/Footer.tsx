@@ -166,8 +166,8 @@ const EmailSignUp: React.FC = () => {
         </div>
 
         <p className="text-xs text-gray-500">
-          By signing up, you will receive Sakigai offers, promotions, and other
-          commercial messages. You are also agreeing to Sakigai&apos;s{" "}
+          By signing up, you will receive Ondorkotha offers, promotions, and other
+          commercial messages. You are also agreeing to Ondorkotha&apos;s{" "}
           <a href="#" className="underline hover:text-gray-700">
             Privacy Policy
           </a>

@@ -378,7 +378,7 @@ function ImageField({
 function SeoPreview({
   title,
   description,
-  url = "https://sakigai.com",
+  url = "https://ondorkotha.com",
 }: {
   title: string;
   description: string;
@@ -591,7 +591,7 @@ export default function CompanyInfoComp() {
                   <Input
                     value={val("name")}
                     onChange={(v) => set("name", v)}
-                    placeholder="Sakigai"
+                    placeholder="Ondorkotha"
                   />
                 </Field>
                 <Field label="Tagline">
@@ -661,7 +661,7 @@ export default function CompanyInfoComp() {
                   <Input
                     value={val("email")}
                     onChange={(v) => set("email", v)}
-                    placeholder="hello@sakigai.com"
+                    placeholder="hello@ondorkotha.com"
                     type="email"
                   />
                 </Field>
@@ -730,7 +730,7 @@ export default function CompanyInfoComp() {
               label="Facebook"
               value={val("facebook")}
               onChange={(v) => set("facebook", v)}
-              placeholder="https://facebook.com/sakigai"
+              placeholder="https://facebook.com/ondorkotha"
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -745,7 +745,7 @@ export default function CompanyInfoComp() {
               label="Instagram"
               value={val("instagram")}
               onChange={(v) => set("instagram", v)}
-              placeholder="https://instagram.com/sakigai"
+              placeholder="https://instagram.com/ondorkotha"
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -766,7 +766,7 @@ export default function CompanyInfoComp() {
               label="YouTube"
               value={val("youtube")}
               onChange={(v) => set("youtube", v)}
-              placeholder="https://youtube.com/@sakigai"
+              placeholder="https://youtube.com/@ondorkotha"
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -786,7 +786,7 @@ export default function CompanyInfoComp() {
               label="TikTok"
               value={val("tiktok")}
               onChange={(v) => set("tiktok", v)}
-              placeholder="https://tiktok.com/@sakigai"
+              placeholder="https://tiktok.com/@ondorkotha"
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -801,7 +801,7 @@ export default function CompanyInfoComp() {
               label="X / Twitter"
               value={val("twitter")}
               onChange={(v) => set("twitter", v)}
-              placeholder="https://x.com/sakigai"
+              placeholder="https://x.com/ondorkotha"
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -816,7 +816,7 @@ export default function CompanyInfoComp() {
               label="LinkedIn"
               value={val("linkedin")}
               onChange={(v) => set("linkedin", v)}
-              placeholder="https://linkedin.com/company/sakigai"
+              placeholder="https://linkedin.com/company/ondorkotha"
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -845,7 +845,7 @@ export default function CompanyInfoComp() {
                 <Input
                   value={val("metaTitle")}
                   onChange={(v) => set("metaTitle", v)}
-                  placeholder="Sakigai — Your brand tagline"
+                  placeholder="Ondorkotha — Your brand tagline"
                 />
               </Field>
 
@@ -856,7 +856,7 @@ export default function CompanyInfoComp() {
                 <Textarea
                   value={val("metaDescription")}
                   onChange={(v) => set("metaDescription", v)}
-                  placeholder="A short summary of what Sakigai offers…"
+                  placeholder="A short summary of what Ondorkotha offers…"
                   rows={3}
                 />
               </Field>
@@ -894,7 +894,7 @@ export default function CompanyInfoComp() {
                   />
                   <div className="px-4 py-3 bg-slate-50 border-t border-slate-200">
                     <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">
-                      sakigai.com
+                      ondorkotha.com
                     </p>
                     <p className="text-sm font-semibold text-slate-800 truncate">
                       {val("metaTitle") || "Page title"}

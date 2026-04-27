@@ -30,6 +30,34 @@ export default function GoogleSignInButton({
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
+  // const handleGoogleSignIn = () => {
+  //   setLoading(true);
+
+  //   const width = 500;
+  //   const height = 600;
+  //   const left = window.screenX + (window.innerWidth - width) / 2;
+  //   const top = window.screenY + (window.innerHeight - height) / 2;
+
+  //   const popup = window.open(
+  //     `${process.env.NEXT_PUBLIC_API_URL}/auth/google`,
+  //     "googleLogin",
+  //     `width=${width},height=${height},left=${left},top=${top}`,
+  //   );
+
+  //   if (!popup) {
+  //     setLoading(false);
+  //     alert("Popup blocked. Please allow popups.");
+  //     return;
+  //   }
+
+  //   const timer = setInterval(() => {
+  //     if (popup.closed) {
+  //       clearInterval(timer);
+  //       setLoading(false);
+  //     }
+  //   }, 500);
+  // };
+
   return (
     <button
       type="button"

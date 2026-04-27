@@ -76,9 +76,9 @@ export default function ProductTypeWiseProducts() {
   // title setup
   useEffect(() => {
     if (isLoading) {
-      document.title = `Sakigai - Product Type`;
+      document.title = `Ondorkotha - Product Type`;
     } else if (subCategory) {
-      document.title = `Sakigai - ${subCategory?.name}`;
+      document.title = `Ondorkotha - ${subCategory?.name}`;
     }
   }, [isLoading, subCategory]);
 

@@ -259,10 +259,10 @@ const ContactComponent = () => {
               Send us a message and we'll respond within 24 hours.
             </p>
             <a
-              href="mailto:hello@sakigai.com"
+              href="mailto:hello@ondorkotha.com"
               className="text-xl font-medium text-gray-900 hover:text-black transition block mb-2"
             >
-              hello@sakigai.com
+              hello@ondorkotha.com
             </a>
             <p className="text-sm text-gray-500 mt-4">For general inquiries</p>
           </div>

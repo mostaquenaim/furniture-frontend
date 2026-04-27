@@ -264,7 +264,7 @@ const AdminDrawer = () => {
             </div>
             {isAdminOpen && (
               <span className="ml-3 font-semibold text-gray-900">
-                Sakigai<span className="text-indigo-600 ml-0.5">Pro</span>
+                Ondorkotha<span className="text-indigo-600 ml-0.5">Pro</span>
               </span>
             )}
           </Link>
@@ -431,7 +431,7 @@ const AdminDrawer = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">
-                    Sakigai Admin
+                    Ondorkotha Admin
                   </p>
                   <p className="text-xs text-gray-500 truncate">Super Admin</p>
                 </div>
@@ -491,7 +491,7 @@ const AdminDrawer = () => {
                   <span className="text-white font-bold text-lg">S</span>
                 </div>
                 <span className="font-semibold text-gray-900">
-                  Sakigai<span className="text-indigo-600">Pro</span>
+                  Ondorkotha<span className="text-indigo-600">Pro</span>
                 </span>
               </Link>
               <button
@@ -567,7 +567,7 @@ const AdminDrawer = () => {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    Sakigai Admin
+                    Ondorkotha Admin
                   </p>
                   <p className="text-xs text-gray-500">Super Admin</p>
                 </div>

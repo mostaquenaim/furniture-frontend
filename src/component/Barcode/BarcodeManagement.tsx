@@ -150,7 +150,7 @@ export default function BarcodeManagement() {
       );
       const a = document.createElement("a");
       a.href = url;
-      a.download = `sakigai-labels-${Date.now()}.pdf`;
+      a.download = `ondorkotha-labels-${Date.now()}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       await load();

@@ -160,11 +160,7 @@ export default function CategoryWiseProduct() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-6 font-sans text-[#222222]">
-      {/* <Head>
-        <title>Sakigai - {slug}</title>
-      </Head> */}
-      {/* Breadcrumbs */}
+    <div className="max-w-360 mx-auto px-4 md:px-8 py-6 font-sans text-[#222222]">
       <nav className="text-xs mb-8 flex items-center gap-2 text-gray-500">
         <span className="hover:underline cursor-pointer capitalize">
           {subCategory?.category && (

@@ -84,9 +84,9 @@ export default function SeriesWiseProducts() {
 
   useEffect(() => {
     if (isLoading) {
-      document.title = `Sakigai - Series`;
+      document.title = `Ondorkotha - Series`;
     } else if (seriesName) {
-      document.title = `Sakigai - ${seriesName}`;
+      document.title = `Ondorkotha - ${seriesName}`;
     }
   }, [isLoading, seriesName]);
 
