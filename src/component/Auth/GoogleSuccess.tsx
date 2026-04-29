@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { mergeGuestUserWithRealUser } from '@/utils/merge';
+import { pushGTMEvent } from '@/lib/gtm';
 
 export default function GoogleSuccess() {
   const searchParams = useSearchParams();
@@ -29,6 +30,8 @@ export default function GoogleSuccess() {
       setUser(user);
 
       mergeGuestUserWithRealUser(token).catch(console.error);
+
+      pushGTMEvent({ event: "login", method: "google" });
 
       // Clean URL and redirect
       router.replace('/');

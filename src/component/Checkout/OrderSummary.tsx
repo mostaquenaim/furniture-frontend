@@ -7,6 +7,7 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import TakaIcon from "../TakaIcon";
 import { isAuthenticated } from "@/utils/auth";
 import { CartItem } from "@/types/product.types";
+import { pushGTMEvent } from "@/lib/gtm";
 
 interface OrderSummaryProps {
   cartId: number | null;

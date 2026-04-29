@@ -35,6 +35,7 @@ import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview
 import { getVisitorId } from "@/utils/visitor";
 import useIsWished from "@/hooks/Wish/useIsWished";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
+import { pushGTMEvent } from "@/lib/gtm";
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -224,6 +225,15 @@ export default function ShowEachProduct() {
       const visitorId = await getVisitorId();
 
       await axiosSecure.post(`/product/view/${product?.id}`, { visitorId });
+
+      if (product) {
+        pushGTMEvent({
+          event: "view_item",
+          item_id: String(product.id),
+          item_name: product.title,
+          price: discountedPrice,
+        });
+      }
     };
 
     product && addView();
@@ -273,14 +283,7 @@ export default function ShowEachProduct() {
 
     // Subtract cart quantity from available stock
     const inCartQuantity = cartItem?.quantity || 0;
-    // console.log(
-    //   cartItem,
-    //   "cartItem",
-    //   cartItem,
-    //   "inCartQuantity",
-    //   inCartQuantity,
-    //   currentVariant.size.quantity,
-    // );
+
     return currentVariant.size.quantity - inCartQuantity;
   }, [currentVariant, selectedSizeId, cartItems]);
 
@@ -311,9 +314,6 @@ export default function ShowEachProduct() {
     try {
       const productSizeId =
         selectedSizeId || currentVariant?.color?.sizes?.[0].id;
-
-      // console.log("Adding productSizeId:", productSizeId);
-      // console.log("Adding quantity:", quantity);
 
       const payload = {
         productSizeId,
@@ -347,6 +347,15 @@ export default function ShowEachProduct() {
 
       // Show success message
       toast.success(`Added ${quantity} item${quantity > 1 ? "s" : ""} to cart`);
+
+      if (product) {
+        pushGTMEvent({
+          event: "add_to_cart",
+          item_id: String(product.id),
+          item_name: product.title,
+          price: discountedPrice,
+        });
+      }
 
       setCartItemCount((prev) => prev + 1);
       setShowCartPreview(true);
@@ -391,11 +400,6 @@ export default function ShowEachProduct() {
     }
   };
 
-  const handleSelectProductTab = (label: string) => {
-    console.log(label);
-    setSelectedProductTab(label);
-  };
-
   const handleCheckOut = () => {
     router.push("/cart");
   };
@@ -405,6 +409,21 @@ export default function ShowEachProduct() {
       try {
         const res = await axiosSecure.patch(`wishlist/toggle/${product?.id}`);
         wishRefetch();
+
+        if (!isWished && product) {
+          pushGTMEvent({
+            event: "add_to_wishlist",
+            item_id: String(product.id),
+            item_name: product.title,
+            price: discountedPrice,
+          });
+        } else {
+          pushGTMEvent({
+            event: "remove_from_wishlist",
+            item_id: String(product?.id),
+            item_name: product?.title || "",
+          });
+        }
         // console.log(res.data);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {

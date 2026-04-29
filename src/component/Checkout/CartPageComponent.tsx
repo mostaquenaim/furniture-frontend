@@ -12,25 +12,18 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import Link from "next/link";
 import OrderSummary from "./OrderSummary";
 import useCartCount from "@/hooks/Cart/useCartCount";
-import { useEffect, useMemo, useState } from "react";
-import useFetchRelatedProducts, {
-  RelatedProduct,
-} from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
-import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
+import { useEffect, useMemo } from "react";
+import useFetchRelatedProducts from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import LoadingDots from "../Loading/LoadingDS";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
 import { isAuthenticated } from "@/utils/auth";
 import { getVisitorId } from "@/utils/visitor";
+import { pushGTMEvent } from "@/lib/gtm";
 
 const CartPageComponent = () => {
   const { cart, isLoading, isFetching, refetch } = useFetchCarts();
 
-  console.log(cart, "cartdetails");
-
   const { refetch: refetchCount } = useCartCount();
-  const axiosPublic = useAxiosPublic();
-
-  // devLog(cart, "cartslocal");
 
   useEffect(() => {
     refetch();
@@ -167,6 +160,14 @@ const CartItemComponent = ({
     await axiosSecure.patch(`/cart/items/${item.id}`, {
       quantity,
     });
+
+    pushGTMEvent({
+      event: "add_to_cart",
+      item_id: item.productSize?.color?.product.id.toString() || "",
+      item_name: item.productSize?.color?.product.title || "",
+      price: Number(item.priceAtAdd),
+    });
+
     refetch();
   };
 
@@ -177,6 +178,12 @@ const CartItemComponent = ({
     await axiosSecure.delete(`/cart/items/${item.id}`, {
       data: { visitorId },
     });
+
+    pushGTMEvent({
+      event: "remove_from_cart",
+      item_id: item.productSize?.color?.product.id.toString() || "",
+    });
+
     refetch();
     refetchCount();
   };

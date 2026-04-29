@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
 import useFetchZones from "@/hooks/Districts/useFetchZones";
 import useFetchAreaList from "@/hooks/Districts/useFetchAreaList";
+import { pushGTMEvent } from "@/lib/gtm";
 
 const CheckoutPageComponent = () => {
   const { user, loading } = useAuth();
@@ -113,6 +114,17 @@ const CheckoutPageComponent = () => {
     setSelectedArea("");
     setAddress((prev) => ({ ...prev, areaId: 0, areaName: "" }));
   }, [selectedZone]);
+
+  // google tag manager - begin_checkout event
+  useEffect(() => {
+    if (!cart || isCartLoading) return;
+
+    pushGTMEvent({
+      event: "begin_checkout",
+      value: subtotal,
+      currency: "BDT",
+    });
+  }, [cart?.id]);
 
   useEffect(() => {
     if (!selectedZone || !address.districtId || !cart?.id) return;
@@ -236,6 +248,13 @@ const CheckoutPageComponent = () => {
 
         toast.success("Order placed successfully!");
 
+        pushGTMEvent({
+          event: "purchase",
+          transaction_id: orderId,
+          value: total,
+          currency: "BDT",
+        });
+
         // pass orderId → SUCCESS PAGE
         router.replace(`/checkout/success?orderId=${orderId}`);
         return;
@@ -254,6 +273,14 @@ const CheckoutPageComponent = () => {
           toast.error("Order creation failed");
           return;
         }
+
+        // Online
+        pushGTMEvent({
+          event: "purchase",
+          transaction_id: orderId,
+          value: total,
+          currency: "BDT",
+        });
 
         router.push(`/checkout/payment?orderId=${orderId}`);
         return;

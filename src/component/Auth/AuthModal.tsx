@@ -12,6 +12,7 @@ import axios from "axios";
 import { mergeGuestUserWithRealUser } from "@/utils/merge";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { devLog } from "@/utils/devlog";
+import { pushGTMEvent } from "@/lib/gtm";
 
 type ModalView =
   | "signin"
@@ -203,6 +204,10 @@ export default function AuthModal({
         setUser(data.user);
 
         await mergeGuestUserWithRealUser(data.token);
+        pushGTMEvent({
+          event: "login",
+          method: useMobileForSignin ? "phone" : "email",
+        });
 
         toast.success(`Welcome to Ondorkotha`);
         handleView("signin");
@@ -334,7 +339,6 @@ export default function AuthModal({
       );
 
       const data = res.data;
-      // console.log(data,'otpdone');
       const token = data.token;
 
       localStorage.setItem("token", token);
@@ -343,6 +347,11 @@ export default function AuthModal({
       setUser(data.user);
 
       await mergeGuestUserWithRealUser(token);
+
+      pushGTMEvent({
+        event: data.user.isNewUser ? "sign_up" : "login",
+        method: "phone",
+      });
 
       toast.success(`Welcome to Ondorkotha`);
       handleView("signin");
@@ -363,47 +372,6 @@ export default function AuthModal({
       setLoading(false);
     }
   };
-
-  // password reset / forgot password
-  // const handlePasswordReset = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   setError("");
-
-  //   try {
-  //     const otpSent = await axiosPublic.post(
-  //       "/auth/reset-password",
-  //       useMobileForSignin
-  //         ? { emailOrPhone: mobileNumber, type: "phone" }
-  //         : { emailOrPhone: email, type: "email" },
-  //     );
-
-  //     // console.log(otpSent,'otpsent');
-  //     setReceivedOtp(otpSent.data);
-
-  //     // console.log(otpSent,'otpSent');
-  //     toast.success(
-  //       `OTP sent to your ${useMobileForSignin ? "phone" : "email"}`,
-  //     );
-
-  //     handleView("otp-verification");
-  //     // alert("Password reset instructions sent!");
-  //     // setView("signin");
-  //   } catch (err: unknown) {
-  //     if (axios.isAxiosError(err)) {
-  //       setError(
-  //         (err.response?.data as { message?: string })?.message ||
-  //           "Failed to send reset email. Please try again.",
-  //       );
-  //     } else if (err instanceof Error) {
-  //       setError(err.message);
-  //     } else {
-  //       setError("Failed to send reset email. Please try again.");
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   // hanlde view change
   const handleView = (option: ModalView) => {

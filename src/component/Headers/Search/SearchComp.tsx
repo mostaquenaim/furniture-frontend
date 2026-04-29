@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import useFetchTags from "@/hooks/Tags/useFetchTags";
+import { pushGTMEvent } from "@/lib/gtm";
 
 type SearchCompProps = {
   placeholder?: string;
@@ -182,6 +183,12 @@ const SearchComp = ({
     if (!query.trim()) return;
     setIsOpen(false);
     setIsExpanded(false);
+
+    pushGTMEvent({
+      event: "search",
+      search_term: query.trim(),
+    });
+
     router.push(`/products?q=${encodeURIComponent(query.trim())}`);
   };
 

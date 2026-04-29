@@ -8,6 +8,12 @@ import RoleBasedHeader from "@/component/Headers/RoleBasedHeader";
 import RoleBasedFooter from "@/component/Headers/RoleBasedFooter";
 import Header from "@/component/Headers/Header";
 import Footer from "@/component/Footer/Footer";
+import {
+  GTMNoScript,
+  GTMScript,
+} from "@/component/TagManager/GoogleTagManager";
+import { Suspense } from "react";
+import PageViewTracker from "@/component/PageView/PageViewTracker";
 
 const avenir = localFont({
   src: "../../public/fonts/avenir/AvenirNext-Regular.woff",
@@ -39,13 +45,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${bodoni.variable} ${cinzel.variable} regular`}>
-      <Providers>
-        <body>
-          <RoleBasedHeader></RoleBasedHeader>
-          {/* <Header></Header> */}
+      <head>
+        <GTMScript />
+      </head>
+      <body>
+        <GTMNoScript />
+        <Providers>
+          {/* page view tracker */}
+          <Suspense fallback={null}>
+            <PageViewTracker />
+          </Suspense>
+          <RoleBasedHeader />
           {children}
-          {/* <Footer></Footer> */}
-          <RoleBasedFooter></RoleBasedFooter>
+          <RoleBasedFooter />
           <Toaster
             position="top-center"
             toastOptions={{
@@ -72,8 +84,8 @@ export default function RootLayout({
               },
             }}
           />
-        </body>
-      </Providers>
+        </Providers>
+      </body>
     </html>
   );
 }

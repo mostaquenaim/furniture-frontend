@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import LoadingDots from "../../Loading/LoadingDS";
 import useWishlist from "@/hooks/Wish/useWishlist";
 import { useRouter } from "next/navigation";
+import { pushGTMEvent } from "@/lib/gtm";
 
 const WishlistComponent = () => {
   const router = useRouter();
@@ -31,6 +32,11 @@ const WishlistComponent = () => {
       await axiosSecure.patch(`/wishlist/toggle/${id}`);
       refetch();
       toast.success("Removed from your collection");
+      pushGTMEvent({
+        event: "remove_from_wishlist",
+        item_id: String(id),
+        item_name: wishlist.find((item) => item.id === id)?.title || "",
+      });
     } catch {
       toast.error("Failed to remove item");
     }
@@ -59,6 +65,15 @@ const WishlistComponent = () => {
       );
 
       toast.success(`${selectedIds.length} items removed`);
+
+      pushGTMEvent({
+        event: "remove_from_wishlist",
+        item_id: selectedIds.join(","),
+        item_name: selectedIds
+          .map((id) => wishlist.find((item) => item.id === id)?.title || "")
+          .join(","),
+      });
+
       setSelectedIds([]);
       setSelectionMode(false);
       refetch();

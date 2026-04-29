@@ -1,12 +1,11 @@
-import CheckoutPageComponent from '@/component/Checkout/CheckoutPageComponent';
-import React from 'react';
+import CheckoutPageComponent from "@/component/Checkout/CheckoutPageComponent";
 
 const ShippingAddress = () => {
-    return (
-        <div>
-            <CheckoutPageComponent></CheckoutPageComponent>
-        </div>
-    );
+  return (
+    <div>
+      <CheckoutPageComponent />
+    </div>
+  );
 };
 
 export default ShippingAddress;

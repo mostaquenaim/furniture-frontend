@@ -83,53 +83,6 @@ export function QuickShopModal({
     );
   };
 
-  // const handleAddToBasket = async () => {
-  //   if (!currentVariant?.size) {
-  //     alert("Please select a size");
-  //     return;
-  //   }
-
-  //   setIsAdding(true);
-
-  //   try {
-  //     const productSizeId =
-  //       selectedSizeId || currentVariant?.color?.sizes?.[0].id;
-
-  //     console.log(productSizeId, "productSizeId");
-
-  //     const payload = {
-  //       productSizeId,
-  //       quantity: 1,
-  //     };
-
-  //     console.log(payload, "payload");
-
-  //     const hasUser = isAuthenticated();
-
-  //     let data = null;
-
-  //     if (!hasUser) {
-  //       data = localStorage.setItem(JSON.stringify(payload), "cart");
-  //     } else {
-  //       const response = await axiosSecure.post("/cart/items", payload);
-  //       data = await response.data;
-  //     }
-
-  //     setCartItemCount((prev) => prev + 1);
-  //     setShowCartPreview(true);
-
-  //     // Hide cart preview after 3 seconds
-  //     setTimeout(() => {
-  //       setShowCartPreview(false);
-  //     }, 3000);
-  //   } catch (error) {
-  //     console.error("Error adding to cart:", error);
-  //     alert("Failed to add to basket");
-  //   } finally {
-  //     setIsAdding(false);
-  //   }
-  // };
-
   const handleAddToBasket = async () => {
     router.push(`/products/${product.slug}`);
     onClose();
