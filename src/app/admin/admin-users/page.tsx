@@ -1,5 +1,4 @@
-import AdminUsersComponent from "@/component/admin/User/UserManagement";
-import React from "react";
+import AdminUsersComponent from "@/component/admin/User/AdminManagement";
 
 const AdminUsers = () => {
   return (
