@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import toast from "react-hot-toast";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -590,6 +591,160 @@ function InviteModal({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Delete User Modal
+// ─────────────────────────────────────────────────────────────────────────────
+function DeleteUserModal({
+  user,
+  onConfirm,
+  onClose,
+}: {
+  user: AdminUser;
+  onConfirm: () => Promise<void>;
+  onClose: () => void;
+}) {
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const confirmValue = user.name ?? user.email ?? "";
+  const isMatch = input.trim() === confirmValue.trim();
+
+  async function handle() {
+    if (!isMatch) return;
+    setLoading(true);
+    await onConfirm();
+    setLoading(false);
+    onClose();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden border border-red-100">
+        {/* Header */}
+        <div className="bg-red-50 px-6 py-5 border-b border-red-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-red-800">
+                Delete user permanently
+              </h2>
+              <p className="text-xs text-red-500 mt-0.5">
+                This action cannot be undone
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 space-y-4">
+          {/* User preview */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${avatarColor(user.id)}`}
+            >
+              {getInitials(user.name, user.email)}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-800 truncate">
+                {user.name ?? (
+                  <span className="italic text-slate-400">No name</span>
+                )}
+              </p>
+              <p className="text-xs text-slate-400 truncate">
+                {user.email ?? user.phone ?? "—"}
+              </p>
+            </div>
+            <RoleBadge role={user.role} />
+          </div>
+
+          {/* Consequences */}
+          <ul className="space-y-1.5">
+            {[
+              "Account and all associated data will be deleted",
+              "User will immediately lose admin access",
+              "This cannot be recovered",
+            ].map((item) => (
+              <li
+                key={item}
+                className="flex items-start gap-2 text-xs text-slate-500"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          {/* Confirmation input */}
+          <div>
+            <p className="text-xs text-slate-500 mb-2">
+              Type{" "}
+              <strong className="text-slate-700 font-semibold select-all">
+                {confirmValue}
+              </strong>{" "}
+              to confirm:
+            </p>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onPaste={(e) => e.preventDefault()} // force manual typing
+              placeholder={confirmValue}
+              autoFocus
+              className={`w-full px-3 py-2.5 text-sm border rounded-xl bg-white text-slate-700 focus:outline-none focus:ring-2 placeholder:text-slate-300 transition ${
+                input && !isMatch
+                  ? "border-red-300 focus:ring-red-200"
+                  : input && isMatch
+                    ? "border-emerald-300 focus:ring-emerald-200"
+                    : "border-slate-200 focus:ring-red-200"
+              }`}
+            />
+            {input && !isMatch && (
+              <p className="text-[10px] text-red-500 mt-1">
+                Doesn't match — check spelling and spacing
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handle}
+            disabled={!isMatch || loading}
+            className="px-5 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-2"
+          >
+            {loading && <IconSpinner />}
+            {loading ? "Deleting…" : "Delete permanently"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Role Change Dropdown (inline)
 // ─────────────────────────────────────────────────────────────────────────────
 function RoleDropdown({
@@ -731,11 +886,13 @@ function ConfirmModal({
 function ActionMenu({
   user,
   onDeactivate,
+  onDelete,
   onResendOtp,
 }: {
   user: AdminUser;
   onDeactivate: () => void;
   onResendOtp: () => void;
+  onDelete: () => void;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -753,8 +910,8 @@ function ActionMenu({
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1.5 z-20 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden min-w-[200px]">
-            <button
+          <div className="absolute right-0 top-full mt-1.5 z-20 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden min-w-50">
+            {/* <button
               onClick={() => {
                 setOpen(false);
                 onResendOtp();
@@ -763,6 +920,15 @@ function ActionMenu({
             >
               <IconOTP />
               Resend login OTP
+            </button> */}
+            <button
+              onClick={() => {
+                setOpen(false);
+                onDelete();
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
+            >
+              Delete user
             </button>
             <div className="border-t border-slate-100" />
             <button
@@ -801,6 +967,7 @@ export default function AdminUsersComponent() {
     null,
   );
   const [otpTarget, setOtpTarget] = useState<AdminUser | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
 
   // ── Load ──────────────────────────────────────────────────────────────────
   const load = useCallback(async () => {
@@ -821,6 +988,31 @@ export default function AdminUsersComponent() {
   async function changeRole(id: number, role: AdminRole) {
     await axiosSecure.patch(`/admin/users/${id}/role`, { role });
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)));
+  }
+
+  function getErrorMessage(error: any): string {
+    if (error?.response?.data) {
+      const data = error.response.data;
+
+      if (typeof data.message === "string") return data.message;
+
+      if (Array.isArray(data.message)) return data.message[0];
+
+      return "Request failed. Try again.";
+    }
+
+    if (error?.message) return error.message;
+
+    return "Something went wrong.";
+  }
+
+  async function deleteUser(user: AdminUser) {
+    try {
+      await axiosSecure.delete(`/admin/users/${user.id}`);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    } catch (e) {
+      toast.error(getErrorMessage(e)); 
+    }
   }
 
   async function toggleActive(user: AdminUser) {
@@ -1053,6 +1245,7 @@ export default function AdminUsersComponent() {
                           user={user}
                           onDeactivate={() => setDeactivateTarget(user)}
                           onResendOtp={() => setOtpTarget(user)}
+                          onDelete={() => setDeleteTarget(user)}
                         />
                       </td>
                     </tr>
@@ -1083,6 +1276,14 @@ export default function AdminUsersComponent() {
           danger={deactivateTarget.isActive}
           onConfirm={() => toggleActive(deactivateTarget)}
           onClose={() => setDeactivateTarget(null)}
+        />
+      )}
+
+      {deleteTarget && (
+        <DeleteUserModal
+          user={deleteTarget}
+          onConfirm={() => deleteUser(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
         />
       )}
 
