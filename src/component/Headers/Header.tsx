@@ -455,9 +455,9 @@ const Header = () => {
               className="text-2xl font-serif font-bold text-gray-900 tracking-wider"
             >
               <img
-                src="/logo/sakigai logo.png"
+                src="/logo/ondorkotha-logo-2.png"
                 alt="Company Logo"
-                className="h-8 w-auto"
+                className="h-10 w-auto"
               />
             </Link>
 

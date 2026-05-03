@@ -70,8 +70,7 @@ export default function DashboardPageComp() {
     });
   };
 
-  // ── Loading ──────────────────────────────────────────────────────────────────
-
+  // ── Loading ────────────────
   if (loading && !data) {
     return (
       <FullScreenCenter>
@@ -80,8 +79,7 @@ export default function DashboardPageComp() {
     );
   }
 
-  // ── Error ────────────────────────────────────────────────────────────────────
-
+  // ── Error ──────────────────
   if (error && !data) {
     return (
       <FullScreenCenter>

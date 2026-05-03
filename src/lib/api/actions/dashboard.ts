@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/api/actions/dashboard.ts
 "use server";
 
+import axios from "axios";
 import { cookies } from "next/headers";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -73,30 +75,32 @@ export async function getDashboardData(dateRange: {
   start: string;
   end: string;
 }): Promise<DashboardData> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const params = new URLSearchParams({
     start: dateRange.start,
     end: dateRange.end,
   });
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/dashboard?${params}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  try {
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/dashboard`,
+      {
+        params: {
+          start: dateRange.start,
+          end: dateRange.end,
+        },
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       },
-      // Don't cache — dashboard should always be fresh
-      cache: "no-store",
-    },
-  );
+    );
 
-  if (!res.ok) {
-    throw new Error(`Dashboard fetch failed: ${res.status}`);
+    return res.data;
+  } catch (error: any) {
+    throw new Error(
+      `Dashboard fetch failed: ${error?.response?.status || error.message}`,
+    );
   }
-
-  return res.json();
 }
