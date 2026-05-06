@@ -35,7 +35,7 @@ import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview
 import { getVisitorId } from "@/utils/visitor";
 import useIsWished from "@/hooks/Wish/useIsWished";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
-import { pushGTMEvent } from "@/lib/gtm";
+import { GTMProduct, pushGTMEvent } from "@/lib/gtm";
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -229,9 +229,37 @@ export default function ShowEachProduct() {
       if (product) {
         pushGTMEvent({
           event: "view_item",
-          item_id: String(product.id),
-          item_name: product.title,
-          price: discountedPrice,
+          item: {
+            item_id: String(product.id),
+            item_name: product.title,
+            price: discountedPrice,
+            item_category:
+              product.subCategories?.[0]?.subCategory?.category?.name || "",
+            item_subCategory:
+              product.subCategories?.[0]?.subCategory?.name || "",
+            item_series:
+              product.subCategories?.[0]?.subCategory?.category?.series?.name ||
+              "",
+            item_color: currentVariant?.color?.color?.name || "",
+            item_size: currentVariant?.size?.size?.name || "",
+            item_material: product.material?.name || "",
+            item_variant: [
+              currentVariant?.color?.color?.name,
+              currentVariant?.size?.size?.name,
+              product.material?.name,
+            ]
+              .filter(Boolean)
+              .join(" / "),
+            is_on_sale: product.basePrice - product.price >= 1,
+            discount:
+              product.basePrice - product.price >= 1
+                ? product.basePrice - product.price
+                : 0,
+            availability:
+              (currentVariant?.size?.quantity ?? 0) > 0
+                ? "instock"
+                : "outofstock",
+          },
         });
       }
     };
@@ -349,11 +377,41 @@ export default function ShowEachProduct() {
       toast.success(`Added ${quantity} item${quantity > 1 ? "s" : ""} to cart`);
 
       if (product) {
+        const salePrice = discountedPrice;
+        const base = currentVariant?.size?.basePrice || product.basePrice;
+
         pushGTMEvent({
           event: "add_to_cart",
-          item_id: String(product.id),
-          item_name: product.title,
-          price: discountedPrice,
+          currency: "BDT",
+          value: salePrice * quantity,
+          items: [
+            {
+              item_id: String(product.id),
+              item_name: product.title,
+              price: salePrice,
+              quantity,
+              item_category:
+                product.subCategories?.[0]?.subCategory?.category?.name || "",
+              item_subCategory:
+                product.subCategories?.[0]?.subCategory?.name || "",
+              item_series:
+                product.subCategories?.[0]?.subCategory?.category?.series
+                  ?.name || "",
+              item_color: currentVariant?.color?.color?.name || "",
+              item_size: currentVariant?.size?.size?.name || "",
+              item_material: product.material?.name || "",
+              item_variant: [
+                currentVariant?.color?.color?.name,
+                currentVariant?.size?.size?.name,
+                product.material?.name,
+              ]
+                .filter(Boolean)
+                .join(" / "),
+              is_on_sale: base - salePrice >= 1,
+              discount: Math.max(0, base - salePrice),
+              availability: "instock", // user just added it, stock exists
+            },
+          ],
         });
       }
 
@@ -410,21 +468,45 @@ export default function ShowEachProduct() {
         const res = await axiosSecure.patch(`wishlist/toggle/${product?.id}`);
         wishRefetch();
 
-        if (!isWished && product) {
-          pushGTMEvent({
-            event: "add_to_wishlist",
+        if (product) {
+          const salePrice = discountedPrice;
+          const base = currentVariant?.size?.basePrice || product.basePrice;
+
+          const wishlistItem: GTMProduct = {
             item_id: String(product.id),
             item_name: product.title,
-            price: discountedPrice,
-          });
-        } else {
-          pushGTMEvent({
-            event: "remove_from_wishlist",
-            item_id: String(product?.id),
-            item_name: product?.title || "",
-          });
+            price: salePrice,
+            item_category:
+              product.subCategories?.[0]?.subCategory?.category?.name || "",
+            item_subCategory:
+              product.subCategories?.[0]?.subCategory?.name || "",
+            item_series:
+              product.subCategories?.[0]?.subCategory?.category?.series?.name ||
+              "",
+            item_color: currentVariant?.color?.color?.name || "",
+            item_size: currentVariant?.size?.size?.name || "",
+            item_material: product.material?.name || "",
+            item_variant: [
+              currentVariant?.color?.color?.name,
+              currentVariant?.size?.size?.name,
+              product.material?.name,
+            ]
+              .filter(Boolean)
+              .join(" / "),
+            is_on_sale: base - salePrice >= 1,
+            discount: Math.max(0, base - salePrice),
+            availability:
+              (currentVariant?.size?.quantity ?? 0) > 0
+                ? "instock"
+                : "outofstock",
+          };
+
+          if (!isWished) {
+            pushGTMEvent({ event: "add_to_wishlist", item: wishlistItem });
+          } else {
+            pushGTMEvent({ event: "remove_from_wishlist", item: wishlistItem });
+          }
         }
-        // console.log(res.data);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           console.error(
