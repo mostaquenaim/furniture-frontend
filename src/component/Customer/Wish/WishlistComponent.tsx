@@ -30,13 +30,24 @@ const WishlistComponent = () => {
   const removeItem = async (id: number) => {
     try {
       await axiosSecure.patch(`/wishlist/toggle/${id}`);
+
+      const found = wishlist.find((item) => item.id === id);
+      if (found) {
+        pushGTMEvent({
+          event: "remove_from_wishlist",
+          item: {
+            item_id: String(found.id),
+            item_name: found.title,
+            price: found.price,
+            discount:
+              found.basePrice > found.price ? found.basePrice - found.price : 0,
+            is_on_sale: found.basePrice > found.price,
+          },
+        });
+      }
+
       refetch();
       toast.success("Removed from your collection");
-      pushGTMEvent({
-        event: "remove_from_wishlist",
-        item_id: String(id),
-        item_name: wishlist.find((item) => item.id === id)?.title || "",
-      });
     } catch {
       toast.error("Failed to remove item");
     }
@@ -64,15 +75,26 @@ const WishlistComponent = () => {
         selectedIds.map((id) => axiosSecure.patch(`/wishlist/toggle/${id}`)),
       );
 
-      toast.success(`${selectedIds.length} items removed`);
-
-      pushGTMEvent({
-        event: "remove_from_wishlist",
-        item_id: selectedIds.join(","),
-        item_name: selectedIds
-          .map((id) => wishlist.find((item) => item.id === id)?.title || "")
-          .join(","),
+      selectedIds.forEach((id) => {
+        const found = wishlist.find((item) => item.id === id);
+        if (found) {
+          pushGTMEvent({
+            event: "remove_from_wishlist",
+            item: {
+              item_id: String(found.id),
+              item_name: found.title,
+              price: found.price,
+              discount:
+                found.basePrice > found.price
+                  ? found.basePrice - found.price
+                  : 0,
+              is_on_sale: found.basePrice > found.price,
+            },
+          });
+        }
       });
+
+      toast.success(`${selectedIds.length} items removed`);
 
       setSelectedIds([]);
       setSelectionMode(false);
@@ -106,7 +128,7 @@ const WishlistComponent = () => {
 
   return (
     <div className="min-h-screen bg-[#fffdfa]">
-      <div className="max-w-[1600px] mx-auto px-6 py-12">
+      <div className="max-w-400 mx-auto px-6 py-12">
         {/* Breadcrumb & Header */}
         <nav className="text-[11px] uppercase tracking-[0.2em] text-gray-400 mb-8">
           <Link href="/" className="hover:text-black">

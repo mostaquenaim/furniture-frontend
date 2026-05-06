@@ -14,8 +14,8 @@ export type GTMProduct = {
   quantity?: number;
   // Category & Classification
   item_category?: string;  // Main category  — e.g. Lighting
-  item_category2?: string; // Subcategory    — e.g. Table Lamp
-  item_category3?: string; // Series         — e.g. Rattan Series
+  item_subCategory?: string; // Subcategory    — e.g. Table Lamp
+  item_series?: string; // Series         — e.g. Rattan Series
   // Variants
   item_color?: string;
   item_size?: string;

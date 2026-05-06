@@ -141,8 +141,8 @@ const CheckoutPageComponent = () => {
         price: salePrice,
         item_category:
           product?.subCategories?.[0]?.subCategory?.category?.name || "",
-        item_category2: product?.subCategories?.[0]?.subCategory?.name || "",
-        item_category3:
+        item_subCategory: product?.subCategories?.[0]?.subCategory?.name || "",
+        item_series:
           product?.subCategories?.[0]?.subCategory?.category?.series?.name ||
           "",
         item_color: item.productSize?.color?.color?.name || "",
