@@ -11,7 +11,6 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { mergeGuestUserWithRealUser } from "@/utils/merge";
 import GoogleSignInButton from "./GoogleSignInButton";
-import { devLog } from "@/utils/devlog";
 import { pushGTMEvent } from "@/lib/gtm";
 
 type ModalView =

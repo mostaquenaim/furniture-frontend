@@ -1,28 +1,67 @@
+export type GTMUserData = {
+  em?: string;      // hashed email
+  ph?: string;      // hashed phone (880...)
+  fn?: string;      // hashed first name
+  ln?: string;      // hashed last name
+  ct?: string;      // hashed city
+  country?: string; // hashed 'bd'
+};
+
+export type GTMProduct = {
+  item_id: string;
+  item_name: string;
+  price: number;
+  quantity?: number;
+  // Category & Classification
+  item_category?: string;  // Main category  — e.g. Lighting
+  item_category2?: string; // Subcategory    — e.g. Table Lamp
+  item_category3?: string; // Series         — e.g. Rattan Series
+  // Variants
+  item_color?: string;
+  item_size?: string;
+  item_material?: string;
+  item_variant?: string; // Combined — e.g. 'Brown / Large / Rattan'
+  // Status
+  is_new?: boolean;
+  is_on_sale?: boolean;
+  discount?: number;
+  availability?: "instock" | "outofstock";
+};
+
+// Reusable shape for all ecommerce events that carry a cart/item list
+type GTMCartPayload = {
+  currency: "BDT";
+  value: number;
+  items: GTMProduct[];
+};
+
 export type GTMEvent =
-  | { event: "view_item"; item_id: string; item_name: string; price: number }
-  | {
-      event: "add_to_wishlist";
-      item_id: string;
-      item_name: string;
-      price: number;
-    }
-  | { event: "remove_from_wishlist"; item_id: string; item_name: string }
-  | { event: "page_view"; page_path: string } 
-  //now here 
-  //now here 
-  //now here 
+  | { event: "page_view"; page_path: string }
   | { event: "sign_up"; method: "phone" | "google" }
   | { event: "login"; method: "phone" | "email" | "google" }
-  | { event: "add_to_cart"; item_id: string; item_name: string; price: number }
-  | { event: "remove_from_cart"; item_id: string }
-  | { event: "begin_checkout"; value: number; currency: "BDT" }
+  | { event: "search"; search_term: string }
+
+  // ── Single-item events (PDP / wishlist) ───────────────────────────────────
+  | { event: "view_item"; item: GTMProduct }
+  | { event: "add_to_wishlist"; item: GTMProduct }
+  | { event: "remove_from_wishlist"; item: GTMProduct } // was: flat item_id/item_name
+
+  // ── Item list events (PLP / search results) ───────────────────────────────
   | {
-      event: "purchase";
-      transaction_id: string;
-      value: number;
-      currency: "BDT";
+      event: "view_item_list";
+      item_list_id?: string;   // added — e.g. 'homepage_featured'
+      item_list_name: string;
+      items: GTMProduct[];     // widened from Pick<> — full shape available on list pages
     }
-  | { event: "search"; search_term: string };
+
+  // ── Cart events ───────────────────────────────────────────────────────────
+  | ({ event: "view_cart" } & GTMCartPayload)    // added
+  | ({ event: "add_to_cart" } & GTMCartPayload)  // was: { item: GTMProduct }
+  | ({ event: "remove_from_cart" } & GTMCartPayload) // was: flat item_id/item_name
+
+  // ── Checkout & purchase ───────────────────────────────────────────────────
+  | ({ event: "begin_checkout"; user_data: GTMUserData } & GTMCartPayload)
+  | ({ event: "purchase"; transaction_id: string; user_data: GTMUserData } & GTMCartPayload);
 
 export function pushGTMEvent(data: GTMEvent) {
   if (typeof window === "undefined") return;

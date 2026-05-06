@@ -1,5 +1,6 @@
 import { OrderItem } from "@/hooks/Order/useOrders";
 import { SubCategory } from "./menu";
+import { Material } from "@/hooks/Attributes/useFetchMaterials";
 
 export interface Product {
   id: number;
@@ -26,6 +27,7 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
   materialId?: number | null;
+  material?: Material;
   isFeatured?: boolean;
   brand?: string | null;
   tags?: Tag[];
@@ -37,6 +39,7 @@ export interface Product {
 
 export interface ProductSubCategory {
   productId: number;
+  name?: string;
   subCategoryId: number;
   product: Product;
   subCategory: SubCategory;

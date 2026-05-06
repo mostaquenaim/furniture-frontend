@@ -20,6 +20,50 @@ import { isAuthenticated } from "@/utils/auth";
 import { getVisitorId } from "@/utils/visitor";
 import { pushGTMEvent } from "@/lib/gtm";
 
+const buildCartItem = (item: any) => {
+  const product = item.productSize?.color?.product;
+  const createdAt = product?.createdAt;
+  const isNew = createdAt
+    ? Date.now() - new Date(createdAt).getTime() < 60 * 24 * 60 * 60 * 1000
+    : false;
+  const basePrice = Number(item.productSize?.basePrice ?? 0);
+  const salePrice = Number(item.priceAtAdd ?? 0);
+  const isOnSale = basePrice - salePrice >= 1;
+  const totalStock =
+    product?.colors?.reduce(
+      (acc: number, c: any) =>
+        acc +
+        (c.sizes?.reduce((a: number, s: any) => a + (s.quantity ?? 0), 0) ?? 0),
+      0,
+    ) ?? 0;
+
+  return {
+    item_id: product?.id?.toString() || "",
+    item_name: product?.title || "",
+    price: salePrice,
+    item_category:
+      product?.subCategories?.[0]?.subCategory?.category?.name || "",
+    item_category2: product?.subCategories?.[0]?.subCategory?.name || "",
+    item_category3:
+      product?.subCategories?.[0]?.subCategory?.category?.series?.name || "",
+    item_color: item.productSize?.color?.color?.name || "",
+    item_size: item.productSize?.size?.name || "",
+    item_material: product?.material?.name || "",
+    item_variant: [
+      item.productSize?.color?.color?.name,
+      item.productSize?.size?.name,
+      product?.material?.name,
+    ]
+      .filter(Boolean)
+      .join(" / "),
+    is_new: isNew,
+    is_on_sale: isOnSale,
+    discount: Math.max(0, basePrice - salePrice),
+    availability:
+      totalStock > 0 ? ("instock" as const) : ("outofstock" as const),
+  };
+};
+
 const CartPageComponent = () => {
   const { cart, isLoading, isFetching, refetch } = useFetchCarts();
 
@@ -163,9 +207,9 @@ const CartItemComponent = ({
 
     pushGTMEvent({
       event: "add_to_cart",
-      item_id: item.productSize?.color?.product.id.toString() || "",
-      item_name: item.productSize?.color?.product.title || "",
-      price: Number(item.priceAtAdd),
+      currency: "BDT",
+      value: Number(item.priceAtAdd) * quantity,
+      items: [{ ...buildCartItem(item), quantity }],
     });
 
     refetch();
@@ -181,7 +225,9 @@ const CartItemComponent = ({
 
     pushGTMEvent({
       event: "remove_from_cart",
-      item_id: item.productSize?.color?.product.id.toString() || "",
+      currency: "BDT",
+      value: Number(item.priceAtAdd) * item.quantity,
+      items: [{ ...buildCartItem(item), quantity: item.quantity }],
     });
 
     refetch();

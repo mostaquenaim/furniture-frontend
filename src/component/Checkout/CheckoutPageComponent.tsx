@@ -19,6 +19,7 @@ import { FullScreenCenter } from "../Screen/FullScreenCenter";
 import useFetchZones from "@/hooks/Districts/useFetchZones";
 import useFetchAreaList from "@/hooks/Districts/useFetchAreaList";
 import { pushGTMEvent } from "@/lib/gtm";
+import { buildUserData } from "@/lib/hash";
 
 const CheckoutPageComponent = () => {
   const { user, loading } = useAuth();
@@ -115,15 +116,75 @@ const CheckoutPageComponent = () => {
     setAddress((prev) => ({ ...prev, areaId: 0, areaName: "" }));
   }, [selectedZone]);
 
+  const buildCartItems = () =>
+    (cart?.items ?? []).map((item) => {
+      const product = item.productSize?.color?.product;
+      const createdAt = product?.createdAt;
+      const isNew = createdAt
+        ? Date.now() - new Date(createdAt).getTime() < 60 * 24 * 60 * 60 * 1000
+        : false;
+      const basePrice = Number(item.productSize?.basePrice ?? 0);
+      const salePrice = Number(item.priceAtAdd ?? 0);
+      const isOnSale = basePrice - salePrice >= 1;
+      const totalStock =
+        product?.colors?.reduce(
+          (acc: number, c: any) =>
+            acc +
+            (c.sizes?.reduce((a: number, s: any) => a + (s.quantity ?? 0), 0) ??
+              0),
+          0,
+        ) ?? 0;
+
+      return {
+        item_id: product?.id?.toString() || "",
+        item_name: product?.title || "",
+        price: salePrice,
+        item_category:
+          product?.subCategories?.[0]?.subCategory?.category?.name || "",
+        item_category2: product?.subCategories?.[0]?.subCategory?.name || "",
+        item_category3:
+          product?.subCategories?.[0]?.subCategory?.category?.series?.name ||
+          "",
+        item_color: item.productSize?.color?.color?.name || "",
+        item_size: item.productSize?.size?.name || "",
+        item_material: product?.material?.name || "",
+        item_variant: [
+          item.productSize?.color?.color?.name,
+          item.productSize?.size?.name,
+          product?.material?.name,
+        ]
+          .filter(Boolean)
+          .join(" / "),
+        is_new: isNew,
+        is_on_sale: isOnSale,
+        discount: Math.max(0, basePrice - salePrice),
+        availability:
+          totalStock > 0 ? ("instock" as const) : ("outofstock" as const),
+      };
+    });
+
   // google tag manager - begin_checkout event
   useEffect(() => {
     if (!cart || isCartLoading) return;
 
-    pushGTMEvent({
-      event: "begin_checkout",
-      value: subtotal,
-      currency: "BDT",
-    });
+    const fire = async () => {
+      const userData = await buildUserData({
+        email: user?.email,
+        phone: user?.phone,
+        name: user?.name,
+        city: selectedDistrict?.name,
+      });
+
+      pushGTMEvent({
+        event: "begin_checkout",
+        value: subtotal + deliveryFee,
+        currency: "BDT",
+        items: buildCartItems(),
+        user_data: userData,
+      });
+    };
+
+    fire();
   }, [cart?.id]);
 
   useEffect(() => {
@@ -234,6 +295,22 @@ const CheckoutPageComponent = () => {
     try {
       setPlacingOrder(true);
 
+      const userData = await buildUserData({
+        email: user?.email,
+        phone: address.phone,
+        name: address.name,
+        city: selectedDistrict?.name,
+      });
+
+      const cartItem = {
+        item_id: cart.items[0]?.productSize?.color?.product.id.toString() || "",
+        item_name: cart.items[0]?.productSize?.color?.product.title || "",
+        price: Number(cart.items[0]?.priceAtAdd) || 0,
+        item_category:
+          cart.items[0]?.productSize?.color?.product.subCategories?.[0]?.name ||
+          "",
+      };
+
       if (paymentMethod === "cod") {
         console.log(cart.id, address, paymentMethod, "order details");
         const { data } = await axiosSecure.post(`/orders/create`, {
@@ -250,9 +327,11 @@ const CheckoutPageComponent = () => {
 
         pushGTMEvent({
           event: "purchase",
-          transaction_id: orderId,
-          value: total,
+          transaction_id: String(orderId),
+          value: subtotal + deliveryFee,
           currency: "BDT",
+          items: buildCartItems(), 
+          user_data: userData,
         });
 
         // pass orderId → SUCCESS PAGE
@@ -277,9 +356,11 @@ const CheckoutPageComponent = () => {
         // Online
         pushGTMEvent({
           event: "purchase",
-          transaction_id: orderId,
-          value: total,
+          transaction_id: String(orderId),
+          value: subtotal + deliveryFee,
           currency: "BDT",
+          items: buildCartItems(),
+          user_data: userData,
         });
 
         router.push(`/checkout/payment?orderId=${orderId}`);

@@ -10,13 +10,10 @@ import StatsGrid from "./Components/StatsGrid";
 import SalesChart from "./Components/SalesChart";
 import TopProductsTable from "./Components/TopProductsTable";
 import RecentOrders from "./Components/RecentOrders";
-import SearchAnalytics from "./Components/SearchAnalytics";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { Calendar, RefreshCw } from "lucide-react";
 import TopViewedProducts from "./Components/TopViewedProducts";
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const toDateInput = (d: Date) => d.toISOString().split("T")[0];
 
