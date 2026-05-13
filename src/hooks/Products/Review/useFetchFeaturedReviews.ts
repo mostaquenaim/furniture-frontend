@@ -1,28 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
-import { Review } from "@/types/product.types";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
+import { Review } from "@/types/product.types";
 
-const useFetchFeaturedReview = () => {
+const useFetchFeaturedReviews = () => {
   const axiosPublic = useAxiosPublic();
 
-  const fetchReview = async (): Promise<Review> => {
-    const { data } = await axiosPublic.get<Review>(`/product/reviews/random-featured`);
+  const fetchReviews = async (): Promise<Review[]> => {
+    const { data } = await axiosPublic.get<Review[]>(`/product/reviews/all-featured`);
     return data;
   };
 
   const { data, isError, error, refetch, isFetching, isLoading } = useQuery<
-    Review,
+    Review[],
     Error
   >({
-    queryKey: ["featured-review"],
-    queryFn: fetchReview,
-    // enabled: !!slug,
+    queryKey: ["all-featured-reviews"],
+    queryFn: fetchReviews,
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
 
   return {
-    review: data,
+    reviews: data ?? [],
     isLoading,
     isFetching,
     isError,
@@ -31,4 +30,4 @@ const useFetchFeaturedReview = () => {
   };
 };
 
-export default useFetchFeaturedReview;
+export default useFetchFeaturedReviews;

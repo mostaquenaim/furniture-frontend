@@ -11,6 +11,7 @@ import RecommendedProducts from "./Recommended/RecommendedProducts";
 import RecentlyViewedProducts from "./RecentlyViewed/RecentlyViewedProducts";
 import FeaturedReview from "./Reviews/FeaturedReview";
 import BroadBanner from "./Homepage/BroadBanner";
+import TestimonialsSection from "@/hooks/Homepage/Testimonial/Testimonial";
 
 export default function Homepage() {
   return (
@@ -48,10 +49,15 @@ export default function Homepage() {
           <RecentlyViewedProducts />
         </div>
 
-        {/* Featured Review */}
+        {/* Testimonial section */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">
-          <FeaturedReview />
+          <TestimonialsSection />
         </div>
+
+        {/* Featured Review */}
+        {/* <div className="px-4 md:px-12 lg:px-40 pb-8">
+          <FeaturedReview />
+        </div> */}
       </div>
     </div>
   );

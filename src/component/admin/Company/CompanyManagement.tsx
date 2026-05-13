@@ -445,11 +445,13 @@ export default function CompanyInfoComp() {
   // Track dirty state
   const isDirty = JSON.stringify(form) !== JSON.stringify(data ?? {});
 
-  // ── Load ──────────────────────────────────────────────────────────────────
+  // ── Load ───
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axiosSecure.get("/company");
+
+      console.log(res.data, "company - resdata");
       setData(res.data);
       setForm(res.data);
     } finally {
@@ -482,6 +484,8 @@ export default function CompanyInfoComp() {
     setError(null);
     try {
       const res = await axiosSecure.patch("/company", form);
+
+      console.log(res.data, "resdata - patch company");
       setData(res.data);
       setForm(res.data);
       setSavedFlash(true);
