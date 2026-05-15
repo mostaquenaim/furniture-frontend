@@ -1,5 +1,4 @@
 import AllColorsComp from "@/component/admin/Attribute/AllColorsComp";
-import React from "react";
 
 const AllColors = () => {
   return (

@@ -172,9 +172,12 @@ const AdminDrawer = () => {
       label: "Content",
       items: [
         {
-          name: "Content",
-          icon: Newspaper, // blog/content related
-          sub: [{ href: "/admin/blog/add", label: "Create Blog" }],
+          name: "Blog",
+          icon: Newspaper,
+          sub: [
+            { href: "/admin/blog/add", label: "Create Blog" },
+            { href: "/admin/blog/all-blogs", label: "All Blogs" },
+          ],
         },
         {
           name: "Banners",

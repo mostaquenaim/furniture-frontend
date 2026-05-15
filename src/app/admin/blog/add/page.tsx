@@ -1,9 +1,10 @@
-import CreateBlog from "@/component/Blog/CreateBlogPageComp";
+import CreateEditBlogPage from "@/component/Blog/CreateBlogPageComp";
 
 const BlogAddPage = () => {
     return (
         <div>
-            <CreateBlog></CreateBlog>
+            {/* <CreateBlog></CreateBlog> */}
+            <CreateEditBlogPage></CreateEditBlogPage>
         </div>
     );
 };

@@ -1,5 +1,4 @@
 import AllBlogsComponent from "@/component/Blog/AllBlogsComponent";
-import React from "react";
 
 const Blogs = () => {
   return (

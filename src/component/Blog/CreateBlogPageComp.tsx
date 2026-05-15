@@ -35,6 +35,10 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { optimizeImage } from "@/utils/imageOptimizer";
 import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
 import { generateSlug } from "@/utils/validation";
+import useFetchABlog from "@/hooks/Blog/useFetchABlog";
+import { useParams, useRouter } from "next/navigation";
+import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
+import LoadingDots from "@/component/Loading/LoadingDS";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface BlogPost {
@@ -46,11 +50,6 @@ interface BlogPost {
   published: boolean;
   blogCategoryId: number | null;
   selectedSubCategoryIds: number[];
-}
-
-interface Props {
-  /** Pass an existing blog post to switch into edit mode */
-  initialData?: BlogPost & { id: number };
 }
 
 type Step = "basics" | "content" | "media" | "associations" | "publish";
@@ -322,8 +321,15 @@ const CategoryModal: React.FC<{
 };
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export default function CreateEditBlogPage({ initialData }: Props) {
-  const isEdit = !!initialData?.id;
+export default function CreateEditBlogPage() {
+  const { slug } = useParams();
+  const router = useRouter();
+  const isEdit = !!slug;
+
+  const { blog, isLoading: isBlogLoading } = useFetchABlog(
+    slug ? String(slug) : undefined,
+  );
+
   const axiosSecure = useAxiosSecure();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -342,17 +348,37 @@ export default function CreateEditBlogPage({ initialData }: Props) {
   const [formData, setFormData] = useState<
     BlogPost & { imageFile: File | null }
   >({
-    title: initialData?.title ?? "",
-    slug: initialData?.slug ?? "",
-    content: initialData?.content ?? "",
-    image: initialData?.image ?? null,
+    title: "",
+    slug: "",
+    content: "",
+    image: null,
     imageFile: null,
-    published: initialData?.published ?? false,
-    blogCategoryId: initialData?.blogCategoryId ?? null,
-    selectedSubCategoryIds: initialData?.selectedSubCategoryIds ?? [],
+    published: false,
+    blogCategoryId: null,
+    selectedSubCategoryIds: [],
     selectedSeriesIds: [] as any,
     selectedCategoryIds: [] as any,
   } as any);
+
+  useEffect(() => {
+    if (blog && slug) {
+      setFormData((prev: any) => ({
+        ...prev,
+        title: (blog as any).title ?? "",
+        slug: (blog as any).slug ?? "",
+        content: (blog as any).content ?? "",
+        image: (blog as any).image ?? null,
+        imageFile: null,
+        published: (blog as any).published ?? false,
+        blogCategoryId:
+          (blog as any).blogCategoryId ?? (blog as any).categoryId ?? null,
+        selectedSubCategoryIds:
+          (blog as any).selectedSubCategoryIds ??
+          (blog as any).subCategories?.map((sc: any) => sc.id) ??
+          [],
+      }));
+    }
+  }, [blog, slug]);
 
   const { categoryList } = useFetchCategoriesBySeriesIds(
     (formData as any).selectedSeriesIds ?? [],
@@ -438,7 +464,7 @@ export default function CreateEditBlogPage({ initialData }: Props) {
       };
 
       if (isEdit) {
-        await axiosSecure.patch(`/blogs/${initialData.id}`, payload);
+        await axiosSecure.patch(`/blogs/${blog?.id}`, payload);
         toast.success("Blog post updated!");
       } else {
         await axiosSecure.post("/blogs", payload);
@@ -456,6 +482,7 @@ export default function CreateEditBlogPage({ initialData }: Props) {
           selectedCategoryIds: [],
         } as any);
         setActiveStep("basics");
+        router.push("/admin/blog/all-blogs");
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -600,6 +627,14 @@ export default function CreateEditBlogPage({ initialData }: Props) {
       cls: "",
     },
   ];
+
+  if (slug && isBlogLoading) {
+    return (
+      <FullScreenCenter>
+        <LoadingDots />
+      </FullScreenCenter>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
