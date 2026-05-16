@@ -35,14 +35,20 @@ const WishlistComponent = () => {
       if (found) {
         pushGTMEvent({
           event: "remove_from_wishlist",
-          item: {
-            item_id: String(found.id),
-            item_name: found.title,
-            price: found.price,
-            discount:
-              found.basePrice > found.price ? found.basePrice - found.price : 0,
-            is_on_sale: found.basePrice > found.price,
-          },
+          currency: "BDT",
+          value: found.price,
+          items: [
+            {
+              item_id: String(found.id),
+              item_name: found.title,
+              price: found.price,
+              discount:
+                found.basePrice > found.price
+                  ? found.basePrice - found.price
+                  : 0,
+              is_on_sale: found.basePrice > found.price,
+            },
+          ],
         });
       }
 
@@ -80,16 +86,20 @@ const WishlistComponent = () => {
         if (found) {
           pushGTMEvent({
             event: "remove_from_wishlist",
-            item: {
-              item_id: String(found.id),
-              item_name: found.title,
-              price: found.price,
-              discount:
-                found.basePrice > found.price
-                  ? found.basePrice - found.price
-                  : 0,
-              is_on_sale: found.basePrice > found.price,
-            },
+            currency: "BDT",
+            value: found.price,
+            items: [
+              {
+                item_id: String(found.id),
+                item_name: found.title,
+                price: found.price,
+                discount:
+                  found.basePrice > found.price
+                    ? found.basePrice - found.price
+                    : 0,
+                is_on_sale: found.basePrice > found.price,
+              },
+            ],
           });
         }
       });
