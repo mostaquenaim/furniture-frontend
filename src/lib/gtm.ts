@@ -42,9 +42,9 @@ export type GTMEvent =
   | { event: "search"; search_term: string }
 
   // ── Single-item events (PDP / wishlist) ───────────────────────────────────
-  | { event: "view_item"; item: GTMProduct }
-  | { event: "add_to_wishlist"; item: GTMProduct }
-  | { event: "remove_from_wishlist"; item: GTMProduct } // was: flat item_id/item_name
+  | ({ event: "view_item" } & GTMCartPayload)
+  | ({ event: "add_to_wishlist" } & GTMCartPayload)
+  | ({ event: "remove_from_wishlist" } & GTMCartPayload)
 
   // ── Item list events (PLP / search results) ───────────────────────────────
   | {
@@ -68,5 +68,5 @@ export function pushGTMEvent(data: GTMEvent) {
   if (!process.env.NEXT_PUBLIC_GTM_ID) return;
 
   window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push(data);
+  window.dataLayer.push({ page_path: window.location.pathname, ...data });
 }

@@ -229,37 +229,41 @@ export default function ShowEachProduct() {
       if (product) {
         pushGTMEvent({
           event: "view_item",
-          item: {
-            item_id: String(product.id),
-            item_name: product.title,
-            price: discountedPrice,
-            item_category:
-              product.subCategories?.[0]?.subCategory?.category?.name || "",
-            item_subCategory:
-              product.subCategories?.[0]?.subCategory?.name || "",
-            item_series:
-              product.subCategories?.[0]?.subCategory?.category?.series?.name ||
-              "",
-            item_color: currentVariant?.color?.color?.name || "",
-            item_size: currentVariant?.size?.size?.name || "",
-            item_material: product.material?.name || "",
-            item_variant: [
-              currentVariant?.color?.color?.name,
-              currentVariant?.size?.size?.name,
-              product.material?.name,
-            ]
-              .filter(Boolean)
-              .join(" / "),
-            is_on_sale: product.basePrice - product.price >= 1,
-            discount:
-              product.basePrice - product.price >= 1
-                ? product.basePrice - product.price
-                : 0,
-            availability:
-              (currentVariant?.size?.quantity ?? 0) > 0
-                ? "instock"
-                : "outofstock",
-          },
+          currency: "BDT",
+          value: discountedPrice,
+          items: [
+            {
+              item_id: String(product.id),
+              item_name: product.title,
+              price: discountedPrice,
+              item_category:
+                product.subCategories?.[0]?.subCategory?.category?.name || "",
+              item_subCategory:
+                product.subCategories?.[0]?.subCategory?.name || "",
+              item_series:
+                product.subCategories?.[0]?.subCategory?.category?.series
+                  ?.name || "",
+              item_color: currentVariant?.color?.color?.name || "",
+              item_size: currentVariant?.size?.size?.name || "",
+              item_material: product.material?.name || "",
+              item_variant: [
+                currentVariant?.color?.color?.name,
+                currentVariant?.size?.size?.name,
+                product.material?.name,
+              ]
+                .filter(Boolean)
+                .join(" / "),
+              is_on_sale: product.basePrice - product.price >= 1,
+              discount:
+                product.basePrice - product.price >= 1
+                  ? product.basePrice - product.price
+                  : 0,
+              availability:
+                (currentVariant?.size?.quantity ?? 0) > 0
+                  ? "instock"
+                  : "outofstock",
+            },
+          ],
         });
       }
     };
@@ -502,9 +506,9 @@ export default function ShowEachProduct() {
           };
 
           if (!isWished) {
-            pushGTMEvent({ event: "add_to_wishlist", item: wishlistItem });
+            pushGTMEvent({ event: "add_to_wishlist", currency: "BDT", value: salePrice, items: [wishlistItem] });
           } else {
-            pushGTMEvent({ event: "remove_from_wishlist", item: wishlistItem });
+            pushGTMEvent({ event: "remove_from_wishlist", currency: "BDT", value: salePrice, items: [wishlistItem] });
           }
         }
       } catch (err: unknown) {
