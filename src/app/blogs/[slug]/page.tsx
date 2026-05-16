@@ -1,5 +1,4 @@
 import BlogPageComponent from "@/component/Blog/BlogPageComponent";
-import React from "react";
 
 const BlogPage = () => {
   return (
