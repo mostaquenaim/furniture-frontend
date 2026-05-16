@@ -1,20 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+export interface BarcodeItem {
+  id: number;
+  barcode: string;
+  warehouse: string;
+  rack: string;
+  bin: string;
+  quantity: number;
+  product?: { name: string };
+}
 
-export default function BarcodeRow({ item, refresh }: any) {
+interface BarcodeRowProps {
+  item: BarcodeItem;
+  refresh: () => void;
+}
+
+export default function BarcodeRow({ item, refresh }: BarcodeRowProps) {
   const viewBarcode = () => {
     window.open(
       `${process.env.NEXT_PUBLIC_API_URL}/barcodes/${item.id}/image`
     );
   };
 
-  const handleAddStock = async () => {
+  const handleAddStock = () => {
     // await updateQuantity(item.id, 1);
     refresh();
   };
 
-  const handlePrint = async () => {
+  const handlePrint = () => {
     // await printLabels([item.id]);
   };
 
@@ -41,24 +54,15 @@ export default function BarcodeRow({ item, refresh }: any) {
       </td>
 
       <td className="p-3 flex gap-2">
-        <button
-          onClick={viewBarcode}
-          className="px-2 py-1 border rounded"
-        >
+        <button onClick={viewBarcode} className="px-2 py-1 border rounded">
           View
         </button>
 
-        <button
-          onClick={handlePrint}
-          className="px-2 py-1 border rounded"
-        >
+        <button onClick={handlePrint} className="px-2 py-1 border rounded">
           Print
         </button>
 
-        <button
-          onClick={handleAddStock}
-          className="px-2 py-1 border rounded"
-        >
+        <button onClick={handleAddStock} className="px-2 py-1 border rounded">
           +1
         </button>
       </td>

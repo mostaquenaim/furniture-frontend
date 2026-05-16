@@ -134,6 +134,8 @@ enum UserRole {
 export interface Variant {
   id: number;
   name: string;
+  sortOrder?: number;
+  isActive?: boolean;
   sizes?: {
     name: string;
     id: number;

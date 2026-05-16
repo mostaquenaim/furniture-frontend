@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
@@ -17,7 +15,7 @@ const AllSeriesComp = () => {
   const { seriesList, isLoading } = useFetchSeries({ isActive: null });
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = async (payload: any) => {
+  const handleSave = async (payload: { id: number | string; sortOrder: number }[]) => {
     setIsSaving(true);
     try {
       await axiosSecure.patch("/series/reorder", { orders: payload });

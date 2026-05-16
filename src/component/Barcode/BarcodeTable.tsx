@@ -1,10 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import BarcodeRow from "./BarcodeRow";
+import BarcodeRow, { BarcodeItem } from "./BarcodeRow";
 
+interface BarcodeTableProps {
+  data: BarcodeItem[];
+  loading: boolean;
+  refresh: () => void;
+}
 
-export default function BarcodeTable({ data, loading, refresh }: any) {
+export default function BarcodeTable({ data, loading, refresh }: BarcodeTableProps) {
   if (loading) {
     return <div className="text-center py-10">Loading...</div>;
   }
@@ -23,12 +27,8 @@ export default function BarcodeTable({ data, loading, refresh }: any) {
         </thead>
 
         <tbody>
-          {data.map((item: any) => (
-            <BarcodeRow
-              key={item.id}
-              item={item}
-              refresh={refresh}
-            />
+          {data.map((item) => (
+            <BarcodeRow key={item.id} item={item} refresh={refresh} />
           ))}
         </tbody>
       </table>

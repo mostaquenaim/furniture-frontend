@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
@@ -26,23 +25,11 @@ import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
-import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
+import useFetchBlogCategories, { BlogCategory } from "@/hooks/Blog/useFetchBlogCategories";
 import useFetchBlogsAdmin from "@/hooks/Admin/Blog/useFetchBlogsAdmin";
+import { BlogPost } from "@/types/blog";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface Blog {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  image?: string | null;
-  published: boolean;
-  categoryId: number | null;
-  category?: { id: number; name: string; slug: string };
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 type FilterStatus = "all" | "published" | "draft";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -118,7 +105,7 @@ const AllBlogsAdminComp: React.FC = () => {
 
   // ── Actions ──
   const togglePublish = useCallback(
-    async (blog: Blog) => {
+    async (blog: BlogPost) => {
       setTogglingId(blog.id);
       try {
         await axiosSecure.patch(`/blogs/${blog.id}`, {
@@ -145,8 +132,9 @@ const AllBlogsAdminComp: React.FC = () => {
       toast.success("Blog post deleted");
       setDeleteId(null);
       await refetch();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Delete failed");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg || "Delete failed");
     } finally {
       setIsDeleting(false);
     }
@@ -305,7 +293,7 @@ const AllBlogsAdminComp: React.FC = () => {
                   >
                     All
                   </button>
-                  {blogCategories?.map((cat: any) => (
+                  {blogCategories?.map((cat: BlogCategory) => (
                     <button
                       key={cat.id}
                       onClick={() => handleCategoryChange(cat.slug)}
@@ -364,7 +352,7 @@ const AllBlogsAdminComp: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
-                    {blogPosts.map((blog: Blog) => (
+                    {blogPosts.map((blog) => (
                       <BlogRow
                         key={blog.id}
                         blog={blog}
@@ -433,7 +421,7 @@ const AllBlogsAdminComp: React.FC = () => {
 
 // ── BlogRow ───────────────────────────────────────────────────────────────────
 interface BlogRowProps {
-  blog: Blog;
+  blog: BlogPost;
   isToggling: boolean;
   onTogglePublish: () => void;
   onDelete: () => void;

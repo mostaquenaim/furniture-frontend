@@ -14,9 +14,12 @@ export interface BlogPost {
   title: string;
   slug?: string;
   content: string;
-  image?: string;
+  image?: string | null;
+  published?: boolean;
+  categoryId?: number | null;
   tags?: { tag: { id: number; name: string } }[];
   createdAt: string;
-  category: BlogCategory;
+  updatedAt?: string;
+  category?: BlogCategory & { id?: number; slug?: string };
   subCategories?: BlogSubCategory[];
 }
