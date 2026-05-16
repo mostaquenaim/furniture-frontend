@@ -175,7 +175,7 @@ export default function BlogPostPage() {
           <span className="w-px h-4 bg-gray-200" />
           <span className="flex items-center gap-2">
             <Tag className="w-3 h-3" />
-            {post.category.name}
+            {post.category?.name}
           </span>
         </div>
       </header>
