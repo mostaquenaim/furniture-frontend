@@ -99,15 +99,15 @@ const AllBlogsAdminComp: React.FC = () => {
 
   // backend: category=slug|null, published=boolean|null (not string)
   const { blogPosts, meta, summary, isLoading, refetch } = useFetchBlogsAdmin({
-    category: filterCategorySlug,
+    activeCategory: filterCategorySlug,
     page,
     limit: 10,
     search: debouncedSearch,
     published:
       filterStatus === "published"
-        ? true
+        ? "true"
         : filterStatus === "draft"
-          ? false
+          ? "false"
           : null,
   });
 
