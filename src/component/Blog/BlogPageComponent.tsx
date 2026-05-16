@@ -151,7 +151,7 @@ export default function BlogPostPage() {
           <span>
             stories:{" "}
             <span className="italic lowercase font-normal">
-              {post.category.name}
+              {post.category?.name}
             </span>
           </span>
           <span className="block w-6 border-b border-[#b2965d]" />
