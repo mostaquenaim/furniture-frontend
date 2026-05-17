@@ -54,8 +54,7 @@ const TestimonialCard = ({
   review: Review;
   onClick: () => void;
 }) => {
-  const userName =
-    review.orderItem?.order?.user?.name ?? "A valued customer";
+  const userName = review.orderItem?.order?.user?.name ?? "A valued customer";
   const productTitle = review.orderItem?.product?.title;
 
   return (
@@ -184,13 +183,16 @@ export default function TestimonialsSection() {
 
   const hasReviews = !isLoading && reviews && reviews.length > 0;
 
+  if (reviews.length === 0) {
+    return null; // Don't render the section if there are no reviews
+  }
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: swiperStyles }} />
 
       <section className="bg-[#0a0908] border-y border-[#1a1814] py-16 md:py-20 overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-8">
-
           {/* Section header */}
           <header className="text-center mb-12">
             <div
@@ -237,7 +239,7 @@ export default function TestimonialsSection() {
                       onClick={() =>
                         review.orderItem?.product?.slug &&
                         router.push(
-                          `/products/${review.orderItem.product.slug}`
+                          `/products/${review.orderItem.product.slug}`,
                         )
                       }
                     />
