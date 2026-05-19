@@ -8,7 +8,6 @@ import { useAuth } from "@/context/AuthContext";
 import useAxiosSecure from "../Axios/useAxiosSecure";
 import { devLog } from "@/utils/devlog";
 import { Product } from "@/types/product.types";
-import { User } from "@/types/auth";
 
 // ============================================================================
 // Types
@@ -22,6 +21,13 @@ export type OrderStatus =
   | "DELIVERED"
   | "CANCELLED"
   | "RETURNED";
+
+export type FraudStatus = "SAFE" | "SUSPICIOUS" | "DOUBTFUL" | "BLOCKED";
+
+export interface OrderUser {
+  id: number;
+  fraudStatus: FraudStatus;
+}
 
 export interface OrderItem {
   id: number;
@@ -65,7 +71,7 @@ export interface FullOrder {
   awbNumber?: string | null;
   createdAt: string;
   updatedAt: string;
-  user?: User;
+  user?: OrderUser | null;
   items: OrderItem[];
   payments: any[];
   paymentStatus: PaymentStatus;

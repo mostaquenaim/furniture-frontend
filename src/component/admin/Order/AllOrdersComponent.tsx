@@ -1,12 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useOrders, {
   FullOrder,
+  FraudStatus,
   OrderStatus,
   PaymentStatus,
 } from "@/hooks/Order/useOrders";
+import {
+  useCheckFraud,
+  useFraudHistory,
+  useUpdateFraudStatus,
+  type FraudHistoryRecord,
+} from "@/hooks/Admin/useFraud";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
 import {
@@ -19,6 +26,11 @@ import {
   Clock,
   RotateCcw,
   Ban,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldQuestion,
+  ShieldX,
+  RefreshCw,
 } from "lucide-react";
 
 import {
@@ -36,7 +48,7 @@ import {
   DrawerRow,
   PageHeader,
 } from "@/component/Shared/Admin/AdminUI/AdminUI";
-import useTrackOrder, { TrackedOrder } from "@/hooks/Track/useTrack";
+import useTrackOrder from "@/hooks/Track/useTrack";
 import { useRouter } from "next/navigation";
 
 // ── Status configs ─────────────────────────────────────────────────────────────
@@ -103,6 +115,45 @@ const PAYMENT_STATUS: Record<PaymentStatus, { label: string; color: string }> =
     EXPIRED: { label: "Expired", color: "bg-slate-100 text-slate-500" },
     ON_HOLD: { label: "On Hold", color: "bg-yellow-50 text-yellow-700" },
   };
+
+const FRAUD_STATUS: Record<
+  FraudStatus,
+  { label: string; color: string; icon: React.ReactNode }
+> = {
+  SAFE: {
+    label: "Safe",
+    color: "bg-emerald-50 text-emerald-700",
+    icon: <ShieldCheck className="w-3 h-3" />,
+  },
+  SUSPICIOUS: {
+    label: "Suspicious",
+    color: "bg-amber-50 text-amber-700",
+    icon: <ShieldAlert className="w-3 h-3" />,
+  },
+  DOUBTFUL: {
+    label: "Doubtful",
+    color: "bg-orange-50 text-orange-700",
+    icon: <ShieldQuestion className="w-3 h-3" />,
+  },
+  BLOCKED: {
+    label: "Blocked",
+    color: "bg-red-50 text-red-700",
+    icon: <ShieldX className="w-3 h-3" />,
+  },
+};
+
+function FraudBadge({ status }: { status: FraudStatus | null | undefined }) {
+  if (!status) return <span className="text-[10px] text-slate-300">—</span>;
+  const cfg = FRAUD_STATUS[status];
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${cfg.color}`}
+    >
+      {cfg.icon}
+      {cfg.label}
+    </span>
+  );
+}
 
 const taka = (n: number) =>
   `৳ ${Number(n).toLocaleString("en-BD", { minimumFractionDigits: 0 })}`;
@@ -282,7 +333,6 @@ function OrderDetailDrawer({
   onRefresh: () => void;
 }) {
   const axiosSecure = useAxiosSecure();
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const { order, isLoading, refetch } = useTrackOrder({
@@ -332,7 +382,7 @@ function OrderDetailDrawer({
         </button>
       }
     >
-      {loading || isLoading || !order ? (
+      {isLoading || !order ? (
         <div className="py-16 text-center text-slate-400 text-sm">Loading…</div>
       ) : (
         <>
@@ -518,18 +568,107 @@ function OrderDetailDrawer({
   );
 }
 
+// ── Fraud History Drawer ──────────────────────────────────────────────────────
+function FraudHistoryDrawer({
+  phone,
+  onClose,
+}: {
+  phone: string;
+  onClose: () => void;
+}) {
+  const { load, loading, history } = useFraudHistory();
+
+  useEffect(() => {
+    load(phone);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone]);
+
+  return (
+    <DetailDrawer
+      open={!!phone}
+      onClose={onClose}
+      title="Fraud History"
+      subtitle={phone}
+    >
+      {loading ? (
+        <div className="py-16 text-center text-slate-400 text-sm">
+          Loading…
+        </div>
+      ) : history.length === 0 ? (
+        <div className="py-16 text-center text-slate-400 text-sm">
+          No fraud checks recorded for this number.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {history.map((record: FraudHistoryRecord) => {
+            const cfg = FRAUD_STATUS[record.computedStatus];
+            return (
+              <div
+                key={record.id}
+                className="border border-slate-100 rounded-xl p-3"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] text-slate-400">
+                    {fmtDateTime(record.checkedAt)}
+                  </p>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${cfg.color}`}
+                  >
+                    {cfg.icon}
+                    {cfg.label}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                  <span className="text-slate-400">Risk Score</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {record.riskScore}
+                  </span>
+                  <span className="text-slate-400">Risk Level</span>
+                  <span className="font-semibold text-slate-800">
+                    {record.riskLevel}
+                  </span>
+                  <span className="text-slate-400">Fraud Reports</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {record.fraudReportCount}
+                  </span>
+                  <span className="text-slate-400">Total Orders</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {record.totalOrders}
+                  </span>
+                  <span className="text-slate-400">Returns</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {record.returned}
+                  </span>
+                  <span className="text-slate-400">Success Ratio</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {(record.successRatio * 100).toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </DetailDrawer>
+  );
+}
+
 // ── Row action menu ───────────────────────────────────────────────────────────
 function RowMenu({
   order,
   onView,
   onRefresh,
+  onViewFraudHistory,
 }: {
   order: FullOrder;
   onView: () => void;
   onRefresh: () => void;
+  onViewFraudHistory: (phone: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { check, loading: checkLoading } = useCheckFraud();
+  const { update, loading: updateLoading } = useUpdateFraudStatus();
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -539,6 +678,107 @@ function RowMenu({
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
+
+  const handleCheckFraud = async () => {
+    setOpen(false);
+    if (!order.customerPhone) {
+      toast.error("No phone number for this order");
+      return;
+    }
+    try {
+      const result = await check(order.customerPhone);
+
+      // Auto-update the DB with the computed status
+      if (order.user?.id) {
+        await update(order.user.id, result.fraudStatus);
+      }
+
+      onRefresh();
+
+      const cfg = FRAUD_STATUS[result.fraudStatus];
+      toast(
+        (t) => (
+          <div className="text-xs w-64">
+            <div className="flex items-center justify-between mb-2">
+              <p className="font-semibold text-slate-800">FraudSpyBD Check</p>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${cfg.color}`}
+              >
+                {cfg.icon}
+                {cfg.label}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 bg-slate-50 rounded-lg p-2 mb-2">
+              <span className="text-slate-500">Risk Score</span>
+              <span className="font-mono font-semibold text-slate-800">
+                {result.riskScore}
+              </span>
+              <span className="text-slate-500">Risk Level</span>
+              <span className="font-semibold text-slate-800">
+                {result.riskLevel}
+              </span>
+              <span className="text-slate-500">Fraud Reports</span>
+              <span className="font-mono font-semibold text-slate-800">
+                {result.fraudReports}
+              </span>
+              <span className="text-slate-500">Total Orders</span>
+              <span className="font-mono font-semibold text-slate-800">
+                {result.totalOrders}
+              </span>
+              <span className="text-slate-500">Returns</span>
+              <span className="font-mono font-semibold text-slate-800">
+                {result.returned}
+              </span>
+              <span className="text-slate-500">Success Ratio</span>
+              <span className="font-mono font-semibold text-slate-800">
+                {(result.successRatio * 100).toFixed(0)}%
+              </span>
+            </div>
+
+            <p className="text-[10px] text-slate-400 mb-2">
+              {order.user?.id
+                ? `✓ Status saved as ${result.fraudStatus}`
+                : "Guest order — no user account to update"}
+            </p>
+
+            {order.user?.id && (
+              <div>
+                <p className="text-[10px] text-slate-400 mb-1">
+                  Override status:
+                </p>
+                <div className="flex gap-1 flex-wrap">
+                  {(
+                    ["SAFE", "DOUBTFUL", "SUSPICIOUS", "BLOCKED"] as const
+                  ).map((s) => {
+                    const c = FRAUD_STATUS[s];
+                    return (
+                      <button
+                        key={s}
+                        onClick={async () => {
+                          toast.dismiss(t.id);
+                          await update(order.user!.id, s);
+                          toast.success(`Fraud status overridden → ${s}`);
+                          onRefresh();
+                        }}
+                        disabled={updateLoading || s === result.fraudStatus}
+                        className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors disabled:opacity-40 ${c.color}`}
+                      >
+                        {c.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        ),
+        { duration: 20000 },
+      );
+    } catch {
+      toast.error("Fraud check failed");
+    }
+  };
 
   return (
     <div ref={ref} className="relative">
@@ -550,7 +790,7 @@ function RowMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-20 py-1.5 min-w-[140px] overflow-hidden">
+        <div className="absolute right-0 top-full mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-20 py-1.5 min-w-40 overflow-hidden">
           <button
             onClick={() => {
               onView();
@@ -559,6 +799,26 @@ function RowMenu({
             className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium"
           >
             View Details
+          </button>
+          <button
+            onClick={handleCheckFraud}
+            disabled={checkLoading}
+            className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3 h-3 ${checkLoading ? "animate-spin" : ""}`} />
+            Check Fraud
+          </button>
+          <button
+            onClick={() => {
+              if (order.customerPhone) {
+                onViewFraudHistory(order.customerPhone);
+              }
+              setOpen(false);
+            }}
+            className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2"
+          >
+            <ShieldAlert className="w-3 h-3" />
+            Fraud History
           </button>
         </div>
       )}
@@ -580,6 +840,9 @@ export default function AllOrdersComponent() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [fraudHistoryPhone, setFraudHistoryPhone] = useState<string | null>(
+    null,
+  );
 
   const {
     orders,
@@ -747,6 +1010,7 @@ export default function AllOrdersComponent() {
             "Total",
             "Order Status",
             "Payment",
+            "Fraud",
             "Date",
             "",
           ]}
@@ -842,6 +1106,11 @@ export default function AllOrdersComponent() {
                 />
               </td>
 
+              {/* Fraud status */}
+              <td className="px-4 py-3.5">
+                <FraudBadge status={order.user?.fraudStatus} />
+              </td>
+
               {/* Date */}
               <td className="px-4 py-3.5">
                 <p className="text-xs text-slate-500">
@@ -858,6 +1127,7 @@ export default function AllOrdersComponent() {
                   order={order}
                   onView={() => setDetailId(order.orderId)}
                   onRefresh={refetch}
+                  onViewFraudHistory={(phone) => setFraudHistoryPhone(phone)}
                 />
               </td>
             </tr>
@@ -879,6 +1149,14 @@ export default function AllOrdersComponent() {
           orderId={detailId}
           onClose={() => setDetailId(null)}
           onRefresh={refetch}
+        />
+      )}
+
+      {/* Fraud History Drawer */}
+      {fraudHistoryPhone && (
+        <FraudHistoryDrawer
+          phone={fraudHistoryPhone}
+          onClose={() => setFraudHistoryPhone(null)}
         />
       )}
     </div>
