@@ -26,6 +26,7 @@ export type FraudStatus = "SAFE" | "SUSPICIOUS" | "DOUBTFUL" | "BLOCKED";
 
 export interface OrderUser {
   id: number;
+  name?: string;
   fraudStatus: FraudStatus;
 }
 
