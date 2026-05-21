@@ -580,7 +580,7 @@ function FraudHistoryDrawer({
 
   useEffect(() => {
     load(phone);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phone]);
 
   return (
@@ -591,9 +591,7 @@ function FraudHistoryDrawer({
       subtitle={phone}
     >
       {loading ? (
-        <div className="py-16 text-center text-slate-400 text-sm">
-          Loading…
-        </div>
+        <div className="py-16 text-center text-slate-400 text-sm">Loading…</div>
       ) : history.length === 0 ? (
         <div className="py-16 text-center text-slate-400 text-sm">
           No fraud checks recorded for this number.
@@ -748,26 +746,26 @@ function RowMenu({
                   Override status:
                 </p>
                 <div className="flex gap-1 flex-wrap">
-                  {(
-                    ["SAFE", "DOUBTFUL", "SUSPICIOUS", "BLOCKED"] as const
-                  ).map((s) => {
-                    const c = FRAUD_STATUS[s];
-                    return (
-                      <button
-                        key={s}
-                        onClick={async () => {
-                          toast.dismiss(t.id);
-                          await update(order.user!.id, s);
-                          toast.success(`Fraud status overridden → ${s}`);
-                          onRefresh();
-                        }}
-                        disabled={updateLoading || s === result.fraudStatus}
-                        className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors disabled:opacity-40 ${c.color}`}
-                      >
-                        {c.label}
-                      </button>
-                    );
-                  })}
+                  {(["SAFE", "DOUBTFUL", "SUSPICIOUS", "BLOCKED"] as const).map(
+                    (s) => {
+                      const c = FRAUD_STATUS[s];
+                      return (
+                        <button
+                          key={s}
+                          onClick={async () => {
+                            toast.dismiss(t.id);
+                            await update(order.user!.id, s);
+                            toast.success(`Fraud status overridden → ${s}`);
+                            onRefresh();
+                          }}
+                          disabled={updateLoading || s === result.fraudStatus}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors disabled:opacity-40 ${c.color}`}
+                        >
+                          {c.label}
+                        </button>
+                      );
+                    },
+                  )}
                 </div>
               </div>
             )}
@@ -805,7 +803,9 @@ function RowMenu({
             disabled={checkLoading}
             className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2 disabled:opacity-50"
           >
-            <RefreshCw className={`w-3 h-3 ${checkLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`w-3 h-3 ${checkLoading ? "animate-spin" : ""}`}
+            />
             Check Fraud
           </button>
           <button

@@ -12,6 +12,7 @@ import {
   Plus,
   StarHalf,
   Heart,
+  X,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import useFetchAProduct from "@/hooks/Products/useFetchAProduct";
@@ -134,16 +135,6 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
             </div>
           ))}
       </div>
-
-      {/* Write Review Button */}
-      {/* <div className="border-t border-gray-100 pt-12 flex flex-col items-center">
-        <button
-          onClick={handleWriteReview}
-          className="border border-[#262626] px-24 py-3 text-[12px] uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-colors"
-        >
-          Write a Review
-        </button>
-      </div> */}
     </section>
   );
 };
@@ -181,7 +172,6 @@ export default function ShowEachProduct() {
   });
 
   const {
-    isLoading: isWishLoading,
     isWished,
     refetch: wishRefetch,
   } = useIsWished(slug);
@@ -194,9 +184,24 @@ export default function ShowEachProduct() {
   const [activeImgIndex, setActiveImgIndex] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [showCartPreview, setShowCartPreview] = useState(false);
-  const [cartItemCount, setCartItemCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // Lock body scroll while lightbox is open
+  useEffect(() => {
+    document.body.style.overflow = isLightboxOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isLightboxOpen]);
+
+  const handleImageMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setZoomOrigin(`${x}% ${y}%`);
+  };
 
   const axiosSecure = useAxiosSecure();
   const axiosPublic = useAxiosPublic();
@@ -325,7 +330,7 @@ export default function ShowEachProduct() {
   const displayImages = useMemo(() => {
     if (!currentVariant?.color) return product?.images || [];
     return currentVariant.color.images?.length
-      ? currentVariant.color.images.length > 0 && currentVariant.color.images
+      ? currentVariant.color.images
       : product?.images || [];
   }, [product, currentVariant]);
 
@@ -356,11 +361,7 @@ export default function ShowEachProduct() {
 
       const hasUser = isAuthenticated();
 
-      let data = null;
-
       if (!hasUser) {
-        console.log("user nai");
-
         const visitorId = await getVisitorId();
 
         await axiosPublic.post("/guest/cart/items", {
@@ -369,10 +370,7 @@ export default function ShowEachProduct() {
           quantity,
         });
       } else {
-        console.log("user ache");
-        // Authenticated user - send to server
-        const response = await axiosSecure.post("/cart/items", payload);
-        data = await response.data;
+        await axiosSecure.post("/cart/items", payload);
       }
 
       refetch(); // Update cart count in header
@@ -419,7 +417,6 @@ export default function ShowEachProduct() {
         });
       }
 
-      setCartItemCount((prev) => prev + 1);
       setShowCartPreview(true);
 
       // Reset quantity to 1 after adding to cart
@@ -632,7 +629,12 @@ export default function ShowEachProduct() {
                 </button>
               ))}
           </div>
-          <div className="flex-1 relative aspect-4/5 bg-gray-100 overflow-hidden">
+          <div
+            className="flex-1 relative aspect-4/5 bg-gray-100 overflow-hidden cursor-crosshair"
+            onMouseMove={handleImageMouseMove}
+            onMouseEnter={() => setIsZoomed(true)}
+            onMouseLeave={() => setIsZoomed(false)}
+          >
             <Heart
               onClick={handleToggleWish}
               className={`
@@ -643,17 +645,51 @@ export default function ShowEachProduct() {
               strokeWidth={2}
             />
 
+            {/* Mobile prev/next arrows */}
+            {activeImgIndex > 0 && (
+              <button
+                onClick={() => setActiveImgIndex((i) => i - 1)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 md:hidden bg-white/80 rounded-full p-1 shadow"
+              >
+                <ChevronLeft size={20} />
+              </button>
+            )}
+            {displayImages && activeImgIndex < displayImages.length - 1 && (
+              <button
+                onClick={() => setActiveImgIndex((i) => i + 1)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 md:hidden bg-white/80 rounded-full p-1 shadow"
+              >
+                <ChevronRight size={20} />
+              </button>
+            )}
+
             <img
-              src={
-                (displayImages &&
-                  displayImages[activeImgIndex] &&
-                  displayImages[activeImgIndex]?.image &&
-                  displayImages[activeImgIndex]?.image) ||
-                ""
-              }
+              src={displayImages?.[activeImgIndex]?.image || ""}
               alt={product.title}
+              onClick={() => setIsLightboxOpen(true)}
               className="w-full h-full object-cover transition-opacity duration-300"
+              style={{
+                transform: isZoomed ? "scale(2)" : "scale(1)",
+                transformOrigin: zoomOrigin,
+                transition: isZoomed ? "transform-origin 0s" : "transform 0.3s ease",
+              }}
             />
+
+            {/* Mobile dot indicators */}
+            {displayImages && displayImages.length > 1 && (
+              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 md:hidden">
+                {displayImages.map((_: any, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImgIndex(idx)}
+                    className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                      activeImgIndex === idx ? "bg-black" : "bg-black/30"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
             {product.basePrice - product.price >= 1 && (
               <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase">
                 -{product.discount}% OFF
@@ -911,7 +947,7 @@ export default function ShowEachProduct() {
       )}
 
       {/* Ratings & Reviews Section */}
-      <section id="review">
+      <section>
         <ReviewsSection
           reviews={reviewsData}
           averageRating={averageRating}
@@ -933,6 +969,68 @@ export default function ShowEachProduct() {
 
       <LikeItShareIt />
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+      {/* Lightbox */}
+      {isLightboxOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+          {/* Close */}
+          <button
+            onClick={() => setIsLightboxOpen(false)}
+            className="absolute top-4 right-4 z-10 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
+          >
+            <X size={24} />
+          </button>
+
+          {/* Prev */}
+          {activeImgIndex > 0 && (
+            <button
+              onClick={() => setActiveImgIndex((i) => i - 1)}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
+            >
+              <ChevronLeft size={28} />
+            </button>
+          )}
+
+          {/* Next */}
+          {displayImages && activeImgIndex < displayImages.length - 1 && (
+            <button
+              onClick={() => setActiveImgIndex((i) => i + 1)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
+            >
+              <ChevronRight size={28} />
+            </button>
+          )}
+
+          {/* Zoomable image — touch-action lets browser handle native pinch-zoom */}
+          <div
+            className="w-full h-full overflow-auto flex items-center justify-center"
+            style={{ touchAction: "pinch-zoom" }}
+            onClick={() => setIsLightboxOpen(false)}
+          >
+            <img
+              src={displayImages?.[activeImgIndex]?.image || ""}
+              alt={product.title}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-screen object-contain select-none"
+              style={{ touchAction: "pinch-zoom" }}
+            />
+          </div>
+
+          {/* Dot indicators */}
+          {displayImages && displayImages.length > 1 && (
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 pointer-events-none">
+              {displayImages.map((_: any, idx: number) => (
+                <span
+                  key={idx}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    activeImgIndex === idx ? "bg-white" : "bg-white/30"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
