@@ -155,6 +155,11 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   // Hydration guard – prevents size-reset effect from running during initial data load
   const isHydrating = React.useRef(isEditMode);
 
+  // Track whether color/size/image data was actually changed by the user
+  // Only send `colors` in the update payload when true, to avoid triggering
+  // the backend's cart-conflict guard unnecessarily
+  const colorsChanged = React.useRef(!isEditMode);
+
   // ─── Form state ──────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
 
@@ -459,6 +464,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
   const handleColorToggle = (colorId: number) => {
     const isSelected = formData.selectedColors.includes(colorId);
+    colorsChanged.current = true;
 
     setFormData((prev) => ({
       ...prev,
@@ -503,6 +509,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     field: keyof SizeDetail,
     value: string | number | null,
   ) => {
+    colorsChanged.current = true;
     setSizeSelections((prev) => {
       if (!prev[colorId]) return prev;
 
@@ -526,10 +533,15 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   const handleColorImagesChange = (
     colorId: number,
     images: ProductImageItem[],
-  ) => setColorImages((prev) => ({ ...prev, [colorId]: images }));
+  ) => {
+    colorsChanged.current = true;
+    setColorImages((prev) => ({ ...prev, [colorId]: images }));
+  };
 
-  const handleColorUseDefaultChange = (colorId: number, useDefault: boolean) =>
+  const handleColorUseDefaultChange = (colorId: number, useDefault: boolean) => {
+    colorsChanged.current = true;
     setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
+  };
 
   const handleDiscountTypeChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
@@ -736,44 +748,66 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           })),
         );
 
-        const colorVariants = await Promise.all(
-          formData.selectedColors.map(async (colorId) => {
-            const images = colorUseDefault[colorId]
-              ? []
-              : await Promise.all(
-                  (colorImages[colorId] || []).map(uploadIfNew),
-                );
+        // Only rebuild and send colors when user actually changed color/size/image data.
+        // Skipping this avoids the backend's cart-conflict guard for unrelated edits.
+        const colorVariants = colorsChanged.current
+          ? await Promise.all(
+              formData.selectedColors.map(async (colorId) => {
+                const images = colorUseDefault[colorId]
+                  ? []
+                  : await Promise.all(
+                      (colorImages[colorId] || []).map(uploadIfNew),
+                    );
 
-            const sizes = (sizeSelections[colorId] || [])
-              .filter((s) => s.sku !== "")
-              .map((size) => ({
-                sizeId: size.sizeId,
-                sku: size.sku || "",
-                price: Number(size.price) || Number(formData.basePrice),
-                quantity: size.quantity,
-                discountType: size.discountType,
-                discount: size.discount,
-              }));
+                const sizes = (sizeSelections[colorId] || [])
+                  .filter((s) => s.sku !== "")
+                  .map((size) => ({
+                    sizeId: size.sizeId,
+                    sku: size.sku || "",
+                    price: Number(size.price) || Number(formData.basePrice),
+                    quantity: size.quantity,
+                    discountType: size.discountType,
+                    discount: size.discount,
+                  }));
 
-            return {
-              colorId,
-              useDefaultImages: colorUseDefault[colorId],
-              images,
-              sizes,
-            };
-          }),
-        );
+                return {
+                  colorId,
+                  useDefaultImages: colorUseDefault[colorId],
+                  images,
+                  sizes,
+                };
+              }),
+            )
+          : undefined;
 
         const payload = {
-          ...formData,
+          title: formData.title,
+          slug: formData.slug,
+          sku: formData.sku || undefined,
+          basePrice: Number(formData.basePrice),
+          description: formData.description || undefined,
+          brand: formData.brand || undefined,
+          hasColorVariants: formData.hasColorVariants,
+          showColor: formData.showColor,
+          weight: Number(formData.weight),
+          discountType: formData.discountType,
+          discount: Number(formData.discount),
           discountStart: formData.discountStart
             ? new Date(formData.discountStart)
             : null,
           discountEnd: formData.discountEnd
             ? new Date(formData.discountEnd)
             : null,
+          note: formData.note || undefined,
+          deliveryEstimate: formData.deliveryEstimate || undefined,
+          productDetails: formData.productDetails || undefined,
+          dimension: formData.dimension || undefined,
+          shippingReturn: formData.shippingReturn || undefined,
+          isActive: formData.isActive,
+          isFeatured: formData.isFeatured,
+          materialId: formData.materialId || undefined,
           images: defaultImageUrls,
-          colors: colorVariants,
+          ...(colorVariants !== undefined && { colors: colorVariants }),
           subCategories: formData.selectedSubCategoryIds,
           tags: selectedTags.map((t) => t.id),
         };

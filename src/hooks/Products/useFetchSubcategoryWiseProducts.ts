@@ -17,11 +17,46 @@ export interface ProductsResponse {
   };
 }
 
+// Synthetic subCategory returned when viewing "All Sales" page
+const SALE_ALL_SUBCATEGORY: SubCategory = {
+  id: 0,
+  name: "All Sale Items",
+  slug: "sale-all",
+  image: null,
+  sortOrder: 1,
+  isActive: true,
+  categoryId: 0,
+  createdAt: "",
+  updatedAt: "",
+  category: {
+    id: 0,
+    slug: "sale",
+    name: "Sale",
+    image: null,
+    sortOrder: 9999,
+    isActive: true,
+    seriesId: 0,
+    createdAt: "",
+    updatedAt: "",
+    series: {
+      id: 0,
+      name: "Sale",
+      slug: "sale",
+      image: null,
+      notice: null,
+      sortOrder: 9999,
+      seriesType: "SALE",
+    },
+    subCategories: [],
+  },
+};
+
 const useFetchSubcategoryWiseProducts = (
   subCategorySlug: string,
   params?: FetchProductsParams,
 ) => {
   const axiosPublic = useAxiosPublic();
+  const isSaleAll = subCategorySlug === "sale-all";
 
   const fetchProducts = async (): Promise<ProductsResponse> => {
     const cleanParams: Record<string, any> = {};
@@ -47,6 +82,21 @@ const useFetchSubcategoryWiseProducts = (
 
     if (typeof params?.isActive === "boolean") {
       cleanParams.isActive = params.isActive;
+    }
+
+    // "All Sales" page — calls the dedicated on-sale endpoint
+    if (isSaleAll) {
+      const { data } = await axiosPublic.get<{
+        data: Product[];
+        meta: ProductsResponse["meta"];
+      }>("/product/on-sale", { params: cleanParams });
+
+      return {
+        products: data.data,
+        blog: null,
+        subCategory: SALE_ALL_SUBCATEGORY,
+        meta: data.meta,
+      };
     }
 
     const { data } = await axiosPublic.get<ProductsResponse>(

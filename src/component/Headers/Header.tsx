@@ -210,29 +210,36 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               )}
             </div>
 
-            {navItems?.map((item) => (
-              <Link
-                key={item.id}
-                href={hasDrillDown(item.slug) ? "#" : `/shop/${item.slug}`}
-                className={`py-3 text-gray-700 hover:text-amber-700 border-b border-gray-100 text-lg font-medium flex justify-between items-center`}
-                onClick={(e) => {
-                  if (hasDrillDown(item.slug)) {
-                    e.preventDefault();
-                    setMobileActiveCategory({
-                      slug: item.slug,
-                      name: item.name,
-                    });
-                  } else {
-                    setIsMenuOpen(false);
-                  }
-                }}
-              >
-                {item.name}
-                {hasDrillDown(item.slug) && (
-                  <ChevronRight size={20} className="text-gray-400" />
-                )}
-              </Link>
-            ))}
+            {navItems?.map((item) => {
+              const isSale = item.seriesType === "SALE";
+              return (
+                <Link
+                  key={item.id}
+                  href={hasDrillDown(item.slug) ? "#" : `/shop/${item.slug}`}
+                  className={`py-3 border-b border-gray-100 text-lg font-medium flex justify-between items-center ${
+                    isSale
+                      ? "text-red-500 hover:text-red-600"
+                      : "text-gray-700 hover:text-amber-700"
+                  }`}
+                  onClick={(e) => {
+                    if (hasDrillDown(item.slug)) {
+                      e.preventDefault();
+                      setMobileActiveCategory({
+                        slug: item.slug,
+                        name: item.name,
+                      });
+                    } else {
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                >
+                  {item.name}
+                  {hasDrillDown(item.slug) && (
+                    <ChevronRight size={20} className="text-gray-400" />
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
 
@@ -538,24 +545,32 @@ const Header = () => {
           {/* Desktop Full Navigation (unchanged for brevity) */}
           <nav className="hidden lg:flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
             {!isLoading &&
-              navItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/series/${item.slug}`}
-                  onMouseEnter={() => {
-                    setHoveredItem(item.slug);
-                  }}
-                  className={`font-semibold heading text-xs relative border-b-2 pb-4
-          ${
-            derivedActiveNavItem === item.slug
-              ? "text-amber-700 border-amber-700"
-              : "text-gray-700 hover:text-amber-700 border-transparent"
-          }
-        `}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              navItems.map((item) => {
+                const isSale = item.seriesType === "SALE";
+                const isActive = derivedActiveNavItem === item.slug;
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/series/${item.slug}`}
+                    onMouseEnter={() => {
+                      setHoveredItem(item.slug);
+                    }}
+                    className={`font-semibold heading text-xs relative border-b-2 pb-4
+              ${
+                isSale
+                  ? isActive
+                    ? "text-red-600 border-red-600"
+                    : "text-red-500 hover:text-red-600 border-transparent"
+                  : isActive
+                    ? "text-amber-700 border-amber-700"
+                    : "text-gray-700 hover:text-amber-700 border-transparent"
+              }
+            `}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
           </nav>
 
           {/* Mega Menu Dropdown */}

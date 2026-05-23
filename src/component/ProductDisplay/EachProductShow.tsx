@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { Product } from "@/types/product.types";
 import Link from "next/link";
+import TakaIcon from "../TakaIcon";
 
 interface EachProductShowProps {
   products: Product[];
@@ -21,6 +22,7 @@ const EachProductShow = ({
   getDisplayPrice,
   productImage,
 }: EachProductShowProps) => {
+  console.log("Products in EachProductShow:", products);
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-12">
       {products?.map((product: Product) => {
@@ -92,14 +94,16 @@ const EachProductShow = ({
               {product.basePrice - product.price >= 1 ? (
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-red-600 font-medium">
-                    ${product.price}
+                    <TakaIcon /> {product.price}
                   </p>
                   <p className="text-[10px] text-gray-400 line-through">
-                    ${product.basePrice}
+                    <TakaIcon /> {product.basePrice}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-gray-600">${product.basePrice}</p>
+                <p className="text-xs text-gray-600">
+                  <TakaIcon /> {product.basePrice}
+                </p>
               )}
             </div>
 

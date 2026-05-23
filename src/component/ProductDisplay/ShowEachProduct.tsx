@@ -37,6 +37,7 @@ import { getVisitorId } from "@/utils/visitor";
 import useIsWished from "@/hooks/Wish/useIsWished";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
 import { GTMProduct, pushGTMEvent } from "@/lib/gtm";
+import { devLog } from "@/utils/devlog";
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -143,6 +144,7 @@ export default function ShowEachProduct() {
   const { slug } = useParams<{ slug: string }>();
   const { refetch } = useCartCount();
   const { product, isLoading } = useFetchAProduct(slug);
+  devLog('single product,', product);
   const {
     cart: cartObject,
     isLoading: isCartLoading,
@@ -258,11 +260,8 @@ export default function ShowEachProduct() {
               ]
                 .filter(Boolean)
                 .join(" / "),
-              is_on_sale: product.basePrice - product.price >= 1,
-              discount:
-                product.basePrice - product.price >= 1
-                  ? product.basePrice - product.price
-                  : 0,
+              is_on_sale: isDiscountActive,
+              discount: isDiscountActive ? product.basePrice - product.price : 0,
               availability:
                 (currentVariant?.size?.quantity ?? 0) > 0
                   ? "instock"
@@ -539,11 +538,19 @@ export default function ShowEachProduct() {
 
   // Price Calculation
   const basePrice = currentVariant?.size?.basePrice || product.basePrice;
-
-  const discountedPrice = currentVariant?.size?.price || product.price;
+  const now = new Date();
+  const isDiscountActive =
+    product.discount > 0 &&
+    product.discountStart &&
+    product.discountEnd &&
+    new Date(product.discountStart) <= now &&
+    new Date(product.discountEnd) >= now;
+  const discountedPrice = isDiscountActive
+    ? currentVariant?.size?.price || product.price
+    : basePrice;
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-8 font-sans text-[#222222]">
+    <div className="max-w-360 mx-auto px-4 md:px-12 py-8 font-sans text-[#222222]">
       {/* Breadcrumbs */}
       <nav className="text-[10px] uppercase tracking-widest text-gray-400 mb-6 flex flex-wrap gap-2">
         <Link
@@ -690,7 +697,7 @@ export default function ShowEachProduct() {
               </div>
             )}
 
-            {product.basePrice - product.price >= 1 && (
+            {isDiscountActive && (
               <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase">
                 -{product.discount}% OFF
               </div>
@@ -755,7 +762,7 @@ export default function ShowEachProduct() {
             <p className="text-2xl font-medium">
               ৳{discountedPrice.toLocaleString()}
             </p>
-            {product.basePrice - product.price >= 1 && (
+            {isDiscountActive && (
               <p className="text-gray-400 line-through text-lg">৳{basePrice}</p>
             )}
           </div>
@@ -841,13 +848,17 @@ export default function ShowEachProduct() {
               <p className="text-xs text-gray-500 mt-2">Checking stock...</p>
             ) : remainingQuantity > 0 ? (
               <p className="text-xs text-gray-500 mt-2">
-                Max: {maxQuantity} units (
-                {cartItems?.find(
-                  (item: any) =>
-                    item.productSizeId ===
-                    (selectedSizeId || currentVariant?.color?.sizes?.[0]?.id),
-                )?.quantity || 0}{" "}
-                already in cart)
+                Max: {maxQuantity} units
+                {(() => {
+                  const inCart =
+                    cartItems?.find(
+                      (item: any) =>
+                        item.productSizeId ===
+                        (selectedSizeId ||
+                          currentVariant?.color?.sizes?.[0]?.id),
+                    )?.quantity || 0;
+                  return inCart > 0 ? ` (${inCart} already in cart)` : null;
+                })()}
               </p>
             ) : cartItems.length > 0 ? (
               <p className="text-xs text-red-500 mt-2">

@@ -29,6 +29,9 @@ const CheckoutPageComponent = () => {
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
   const [showModal, setShowModal] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [resendCountdown, setResendCountdown] = useState(0);
   const axiosSecure = useAxiosSecure();
   const router = useRouter();
 
@@ -236,6 +239,19 @@ const CheckoutPageComponent = () => {
     }
   }, [finalCODAvailable, paymentMethod]);
 
+  // Reset OTP state whenever the phone number changes
+  useEffect(() => {
+    setOtpRequired(false);
+    setOtpValue("");
+  }, [address.phone]);
+
+  // Resend countdown ticker
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const t = setTimeout(() => setResendCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCountdown]);
+
   // loading state
   if (loading || isCartLoading || isFetching) {
     return (
@@ -271,24 +287,22 @@ const CheckoutPageComponent = () => {
     setShowModal(true);
   };
 
+  const buildOrderPayload = (withOtp?: string) => ({
+    cartId: cart!.id,
+    address,
+    paymentMethod: paymentMethod === "cod" ? "COD" : "ONLINE",
+    deliveryFee,
+    ...(withOtp ? { otp: withOtp } : {}),
+  });
+
   const handlePlaceOrder = async () => {
-    if (!cart?.id) {
-      toast.error("Cart not found");
-      return;
-    }
+    if (!cart?.id) { toast.error("Cart not found"); return; }
+    if (!address.postCode) { toast.error("Please enter postcode"); return; }
+    if (!selectedZone) { toast.error("Please select zone"); return; }
 
-    if (!address) {
-      toast.error("Please select a delivery address");
-      return;
-    }
-
-    if (!address.postCode) {
-      toast.error("Please enter postcode");
-      return;
-    }
-
-    if (!selectedZone) {
-      toast.error("Please select zone");
+    // If OTP step is active, require a 6-digit code before submitting
+    if (otpRequired && otpValue.length !== 6) {
+      toast.error("Please enter the 6-digit OTP");
       return;
     }
 
@@ -302,73 +316,57 @@ const CheckoutPageComponent = () => {
         city: selectedDistrict?.name,
       });
 
-      const cartItem = {
-        item_id: cart.items[0]?.productSize?.color?.product.id.toString() || "",
-        item_name: cart.items[0]?.productSize?.color?.product.title || "",
-        price: Number(cart.items[0]?.priceAtAdd) || 0,
-        item_category:
-          cart.items[0]?.productSize?.color?.product.subCategories?.[0]?.name ||
-          "",
-      };
+      const { data } = await axiosSecure.post(
+        `/orders/create`,
+        buildOrderPayload(otpRequired ? otpValue : undefined),
+      );
 
-      if (paymentMethod === "cod") {
-        console.log(cart.id, address, paymentMethod, "order details");
-        const { data } = await axiosSecure.post(`/orders/create`, {
-          cartId: cart.id,
-          address,
-          paymentMethod: "COD",
-          deliveryFee,
-        });
-
-        // expect backend to return orderId
-        const orderId = data?.orderId;
-
-        toast.success("Order placed successfully!");
-
-        pushGTMEvent({
-          event: "purchase",
-          transaction_id: String(orderId),
-          value: subtotal + deliveryFee,
-          currency: "BDT",
-          items: buildCartItems(), 
-          user_data: userData,
-        });
-
-        // pass orderId → SUCCESS PAGE
-        router.replace(`/checkout/success?orderId=${orderId}`);
+      // Backend returns this shape when phone differs and no OTP was sent yet
+      if (data?.status === "OTP_REQUIRED") {
+        setOtpRequired(true);
+        setOtpValue("");
+        setResendCountdown(60);
+        toast("OTP sent to +880" + address.phone);
         return;
       }
 
-      if (paymentMethod === "online") {
-        const { data } = await axiosSecure.post(`/orders/create`, {
-          cartId: cart.id,
-          address,
-          paymentMethod: "ONLINE",
-        });
+      const orderId = data?.orderId;
+      if (!orderId) { toast.error("Order creation failed"); return; }
 
-        const orderId = data?.orderId;
+      toast.success("Order placed successfully!");
+      pushGTMEvent({
+        event: "purchase",
+        transaction_id: String(orderId),
+        value: subtotal + deliveryFee,
+        currency: "BDT",
+        items: buildCartItems(),
+        user_data: userData,
+      });
 
-        if (!orderId) {
-          toast.error("Order creation failed");
-          return;
-        }
-
-        // Online
-        pushGTMEvent({
-          event: "purchase",
-          transaction_id: String(orderId),
-          value: subtotal + deliveryFee,
-          currency: "BDT",
-          items: buildCartItems(),
-          user_data: userData,
-        });
-
+      if (paymentMethod === "cod") {
+        router.replace(`/checkout/success?orderId=${orderId}`);
+      } else {
         router.push(`/checkout/payment?orderId=${orderId}`);
-        return;
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Order failed");
-      setShowModal(false);
+      // Keep modal open on OTP failure so user can retry
+      if (!otpRequired) setShowModal(false);
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCountdown > 0) return;
+    setOtpValue("");
+    setPlacingOrder(true);
+    try {
+      await axiosSecure.post(`/orders/create`, buildOrderPayload());
+      setResendCountdown(60);
+      toast("New OTP sent to +880" + address.phone);
+    } catch {
+      toast.error("Failed to resend OTP");
     } finally {
       setPlacingOrder(false);
     }
@@ -645,50 +643,109 @@ const CheckoutPageComponent = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-2xl w-100 max-w-full p-6 space-y-4">
-            <h3 className="text-lg font-bold">Confirm Your Order</h3>
-            <div className="space-y-2 text-sm">
-              <p>
-                <span className="font-medium">Name:</span> {address.name}
-              </p>
-              <p>
-                <span className="font-medium">Phone:</span> +880{address.phone}
-              </p>
-              <p>
-                <span className="font-medium">Address:</span>{" "}
-                {address.fullAddress}
-              </p>
-              <p>
-                <span className="font-medium">Subtotal:</span> <TakaIcon />{" "}
-                {subtotal.toLocaleString()}
-              </p>
-              <p>
-                <span className="font-medium">Shipping:</span>{" "}
-                {deliveryFee ? <TakaIcon /> : ""} {deliveryFee ?? "TBD"}
-              </p>
-              <p className="font-bold">
-                <span className="font-medium">Total:</span> <TakaIcon /> {total}
-              </p>
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handlePlaceOrder}
-                disabled={placingOrder}
-                className="px-4 py-2 bg-[#4a5568] text-white rounded-lg text-sm hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {placingOrder
-                  ? "Placing..."
-                  : paymentMethod === "cod"
-                    ? "Place Order"
-                    : "Proceed to payment"}
-              </button>
-            </div>
+            {otpRequired ? (
+              /* ── OTP verification step ── */
+              <>
+                <h3 className="text-lg font-bold">Verify Phone Number</h3>
+                <p className="text-sm text-gray-600">
+                  A 6-digit OTP was sent to{" "}
+                  <span className="font-medium">+880{address.phone}</span>.
+                  Enter it below to place your order.
+                </p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otpValue}
+                  onChange={(e) =>
+                    setOtpValue(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  placeholder="______"
+                  className="w-full border border-gray-300 px-4 py-3 text-center text-2xl tracking-[0.5em] outline-none focus:border-gray-900 transition-colors"
+                />
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>Didn&apos;t receive it?</span>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendCountdown > 0 || placingOrder}
+                    className="text-blue-600 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {resendCountdown > 0
+                      ? `Resend in ${resendCountdown}s`
+                      : "Resend OTP"}
+                  </button>
+                </div>
+                <div className="flex justify-end gap-2 mt-2">
+                  <button
+                    onClick={() => {
+                      setShowModal(false);
+                      setOtpRequired(false);
+                      setOtpValue("");
+                    }}
+                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePlaceOrder}
+                    disabled={placingOrder || otpValue.length !== 6}
+                    className="px-4 py-2 bg-[#4a5568] text-white rounded-lg text-sm hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {placingOrder ? "Verifying..." : "Verify & Place Order"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* ── Normal order confirmation step ── */
+              <>
+                <h3 className="text-lg font-bold">Confirm Your Order</h3>
+                <div className="space-y-2 text-sm">
+                  <p>
+                    <span className="font-medium">Name:</span> {address.name}
+                  </p>
+                  <p>
+                    <span className="font-medium">Phone:</span> +880
+                    {address.phone}
+                  </p>
+                  <p>
+                    <span className="font-medium">Address:</span>{" "}
+                    {address.fullAddress}
+                  </p>
+                  <p>
+                    <span className="font-medium">Subtotal:</span> <TakaIcon />{" "}
+                    {subtotal.toLocaleString()}
+                  </p>
+                  <p>
+                    <span className="font-medium">Shipping:</span>{" "}
+                    {deliveryFee ? <TakaIcon /> : ""} {deliveryFee ?? "TBD"}
+                  </p>
+                  <p className="font-bold">
+                    <span className="font-medium">Total:</span> <TakaIcon />{" "}
+                    {total}
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePlaceOrder}
+                    disabled={placingOrder}
+                    className="px-4 py-2 bg-[#4a5568] text-white rounded-lg text-sm hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {placingOrder
+                      ? "Placing..."
+                      : paymentMethod === "cod"
+                        ? "Place Order"
+                        : "Proceed to payment"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

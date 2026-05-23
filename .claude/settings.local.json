@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(Get-ChildItem -Path \"e:\\\\Sammtech\\\\furniture-bideshi\\\\furniture-frontend\\\\sakigai\" -Directory)",
+      "Bash(Select-Object Name)"
     ]
   }
 }

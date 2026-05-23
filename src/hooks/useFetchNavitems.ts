@@ -24,7 +24,7 @@ const useFetchNavItems = () => {
         const data = response.data;
 
         // Sort Series → Categories → SubCategories (defensive, traditional)
-        const sortedData = data
+        const sorted = data
           .sort((a, b) => a.sortOrder - b.sortOrder)
           ?.map((series) => ({
             ...series,
@@ -38,7 +38,14 @@ const useFetchNavItems = () => {
               })),
           }));
 
-        // console.log(sortedData);
+        // NEW is always first, SALE is always last — admin cannot reorder these
+        const newSeries = sorted.filter((s) => s.seriesType === "NEW");
+        const saleSeries = sorted.filter((s) => s.seriesType === "SALE");
+        const normal = sorted.filter(
+          (s) => s.seriesType !== "NEW" && s.seriesType !== "SALE",
+        );
+        const sortedData = [...newSeries, ...normal, ...saleSeries];
+
         setNavItems(sortedData);
       } catch (err) {
         if (axios.isAxiosError(err)) {

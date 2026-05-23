@@ -65,7 +65,17 @@ export function QuickShopModal({
   if (!product) return null;
 
   const basePrice = currentVariant?.size?.basePrice || product.basePrice;
-  const discountedPrice = currentVariant?.size?.price || product.price;
+
+  const now = new Date();
+  const isDiscountActive =
+    product.discount > 0 &&
+    product.discountStart &&
+    product.discountEnd &&
+    new Date(product.discountStart) <= now &&
+    new Date(product.discountEnd) >= now;
+  const discountedPrice = isDiscountActive
+    ? currentVariant?.size?.price || product.price
+    : basePrice;
 
   console.log(discountedPrice, "discountedPrice");
 

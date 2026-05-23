@@ -77,6 +77,8 @@ export interface Category {
   subCategories: SubCategory[];
 }
 
+export type SeriesType = "NORMAL" | "SALE" | "NEW";
+
 export interface Series {
   id: number;
   name: string;
@@ -85,6 +87,7 @@ export interface Series {
   notice: string | null;
   isActive?: boolean;
   sortOrder: number;
+  seriesType?: SeriesType;
   createdAt?: string;
   updatedAt?: string;
   categories?: Category[];
@@ -103,6 +106,7 @@ export interface SeriesWithRelations {
   notice: string | null;
   // isActive: boolean;
   sortOrder: number;
+  seriesType?: SeriesType;
   // createdAt: string;
   // updatedAt: string;
   categories: Category[];
