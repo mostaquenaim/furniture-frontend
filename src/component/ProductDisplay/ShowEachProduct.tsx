@@ -260,7 +260,7 @@ export default function ShowEachProduct() {
               ]
                 .filter(Boolean)
                 .join(" / "),
-              is_on_sale: isDiscountActive,
+              is_on_sale: isDiscountActive || false,
               discount: isDiscountActive ? product.basePrice - product.price : 0,
               availability:
                 (currentVariant?.size?.quantity ?? 0) > 0
