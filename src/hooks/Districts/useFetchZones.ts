@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 interface Zone {
   id: number;
   name: string;
-//   cityId: number;
+  //   cityId: number;
 }
 
 const useFetchZones = ({ id, enabled }: { id?: number; enabled: boolean }) => {
@@ -19,12 +19,10 @@ const useFetchZones = ({ id, enabled }: { id?: number; enabled: boolean }) => {
     error,
     refetch,
   } = useQuery<Zone[]>({
-    queryKey: ["zones", id], // ✅ important
-    enabled: !loading && enabled && !!id, // ✅ safe
+    queryKey: ["zones", id],
+    enabled: !loading && enabled && !!id,
     queryFn: async () => {
-      const response = await axiosSecure.get<Zone[]>(
-        `/zones?cityId=${id}`,
-      );
+      const response = await axiosSecure.get<Zone[]>(`/zones?cityId=${id}`);
       return response.data;
     },
   });
