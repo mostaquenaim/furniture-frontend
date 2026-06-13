@@ -59,18 +59,19 @@ const useFetchSeriesWiseProducts = (
 
     // Sale series — same endpoint as "All Sales" subcategory page
     if (seriesSlug === "sale") {
-      const { data } = await axiosPublic.get<{
-        data: Product[];
-        meta: SeriesProductResponse["meta"];
-      }>("/product/on-sale", { params: cleanParams });
+      const { data } = await axiosPublic.get<SeriesProductResponse>(
+        "/product/on-sale",
+        { params: cleanParams },
+      );
 
-      return {
-        products: data.data,
-        subcategories: [],
-        blog: null,
-        series: "Sale",
-        meta: data.meta,
-      };
+      return data;
+      // {
+      //   products: data.products,
+      //   subcategories: data.subcategories,
+      //   blog: data.blog,
+      //   series: "Sale",
+      //   meta: data.meta,
+      // };
     }
 
     const response = await axiosPublic.get<SeriesProductResponse>(

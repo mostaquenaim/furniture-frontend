@@ -12,6 +12,7 @@ import {
   GTMNoScript,
   GTMScript,
 } from "@/component/TagManager/GoogleTagManager";
+import WhatsAppButton from "@/component/WhatsApp/WhatsAppButton";
 import { Suspense } from "react";
 import PageViewTracker from "@/component/PageView/PageViewTracker";
 
@@ -58,6 +59,7 @@ export default function RootLayout({
           <RoleBasedHeader />
           {children}
           <RoleBasedFooter />
+          <WhatsAppButton />
           <Toaster
             position="top-center"
             toastOptions={{

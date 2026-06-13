@@ -13,6 +13,9 @@ import FeaturedReview from "./Reviews/FeaturedReview";
 import BroadBanner from "./Homepage/BroadBanner";
 import TestimonialsSection from "@/hooks/Homepage/Testimonial/Testimonial";
 import TrendingProducts from "./Trending/TrendingProducts";
+import HomepageFlashSale from "./Sales/HomepageFlashSale";
+
+const SALE_END = process.env.NEXT_PUBLIC_FLASH_SALE_END ?? null;
 
 export default function Homepage() {
   return (
@@ -20,6 +23,9 @@ export default function Homepage() {
       <div className="min-h-screen bg-white">
         {/* Sale Banner */}
         <HomepageBanner />
+
+        {/* Flash Sale strip */}
+        {/* <HomepageFlashSale saleEndDate={SALE_END} productCount={4} /> */}
 
         {/* seasonal categories  */}
         <SeasonalCategory />

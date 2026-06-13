@@ -61,8 +61,6 @@ export default function BarcodeModal({
   const [applyingId, setApplyingId] = useState<string | null>(null);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
-  const token =
-    typeof window !== "undefined" ? (localStorage.getItem("token") ?? "") : "";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -82,9 +80,9 @@ export default function BarcodeModal({
     }
   }, [axiosSecure, productId]);
 
-    useEffect(() => {
-      load();
-    }, [load, productId]);
+  useEffect(() => {
+    load();
+  }, [load, productId]);
 
   // ── Create inventory item ──────────────────────────────────────────────────
   const handleCreate = async () => {
@@ -97,9 +95,20 @@ export default function BarcodeModal({
     }
   };
 
-  // ── Assign location ────────────────────────────────────────────────────────
+  // ── Assign / remove location ───────────────────────────────────────────────
   const handleAssignLocation = async (itemId: string, locationId: string) => {
+    console.log(itemId, locationId, "locationId");
+    if(locationId === "") {
+      return handleRemoveLocation(itemId);
+    }
     await axiosSecure.patch(`/barcodes/${itemId}/location`, { locationId });
+    await load();
+  };
+
+  const handleRemoveLocation = async (itemId: string) => {
+    await axiosSecure.patch(`/barcodes/${itemId}/location`, {
+      locationId: null,
+    });
     await load();
   };
 
@@ -129,14 +138,21 @@ export default function BarcodeModal({
         { barcodeIds: ids },
         { responseType: "blob" },
       );
-      const url = URL.createObjectURL(
-        new Blob([res.data], { type: "application/pdf" }),
-      );
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `labels-${productId}-${Date.now()}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      const printWindow = window.open(url, "_blank");
+      if (!printWindow) {
+        // Fallback for Safari / popup-blocked browsers: trigger download
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `labels-${productId}-${Date.now()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
       await load();
     } finally {
       setPrinting(false);

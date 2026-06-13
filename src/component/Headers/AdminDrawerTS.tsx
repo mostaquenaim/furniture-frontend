@@ -565,7 +565,7 @@ const AdminDrawer = () => {
             {/* Mobile Footer */}
             <div className="border-t border-gray-100 p-4">
               <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg mb-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
+                <div className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">SA</span>
                 </div>
                 <div>

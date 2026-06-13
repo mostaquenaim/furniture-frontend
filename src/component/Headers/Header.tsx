@@ -215,14 +215,14 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               return (
                 <Link
                   key={item.id}
-                  href={hasDrillDown(item.slug) ? "#" : `/shop/${item.slug}`}
+                  href={isSale ? "/sales" : hasDrillDown(item.slug) ? "#" : `/shop/${item.slug}`}
                   className={`py-3 border-b border-gray-100 text-lg font-medium flex justify-between items-center ${
                     isSale
                       ? "text-red-500 hover:text-red-600"
                       : "text-gray-700 hover:text-amber-700"
                   }`}
                   onClick={(e) => {
-                    if (hasDrillDown(item.slug)) {
+                    if (!isSale && hasDrillDown(item.slug)) {
                       e.preventDefault();
                       setMobileActiveCategory({
                         slug: item.slug,
@@ -240,6 +240,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 </Link>
               );
             })}
+
           </div>
         </div>
 
@@ -542,7 +543,7 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Desktop Full Navigation (unchanged for brevity) */}
+          {/* Desktop Full Navigation */}
           <nav className="hidden lg:flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
             {!isLoading &&
               navItems.map((item) => {
@@ -551,14 +552,14 @@ const Header = () => {
                 return (
                   <Link
                     key={item.id}
-                    href={`/series/${item.slug}`}
+                    href={isSale ? "/sales" : `/series/${item.slug}`}
                     onMouseEnter={() => {
-                      setHoveredItem(item.slug);
+                      setHoveredItem(isSale ? null : item.slug);
                     }}
                     className={`font-semibold heading text-xs relative border-b-2 pb-4
               ${
                 isSale
-                  ? isActive
+                  ? isActive || pathname === "/sales"
                     ? "text-red-600 border-red-600"
                     : "text-red-500 hover:text-red-600 border-transparent"
                   : isActive
@@ -571,6 +572,7 @@ const Header = () => {
                   </Link>
                 );
               })}
+
           </nav>
 
           {/* Mega Menu Dropdown */}
