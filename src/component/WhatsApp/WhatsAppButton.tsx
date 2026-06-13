@@ -1,8 +1,13 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 const phone = (process.env.NEXT_PUBLIC_PHONE_NUMBER ?? "").replace(/\D/g, "");
 const message = encodeURIComponent("Hello! I have a question about a product.");
 
 export default function WhatsAppButton() {
-  if (!phone) return null;
+  const pathname = usePathname();
+  if (!phone || pathname.startsWith("/admin")) return null;
 
   return (
     <a
