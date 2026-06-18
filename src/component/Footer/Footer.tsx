@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Mail,
   User,
@@ -12,8 +12,14 @@ import {
   ChevronUp,
   Instagram,
   Facebook,
+  Youtube,
+  Twitter,
+  Linkedin,
 } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 import Image from "next/image";
+import useFetchCompany from "@/hooks/Company/useFetchCompany";
+import { CompanyInfo } from "@/types/company";
 
 // --- FOOTER DATA ---
 const footerData = [
@@ -62,30 +68,25 @@ const countries = ["US", "Canada", "France", "Germany", "Italy", "Spain", "UK"];
 const legalLinks = [
   { label: "Privacy Policy", href: "/privacy-policy" },
   { label: "Terms & Conditions", href: "/terms-and-conditions" },
-  { label: "CA Transparency", href: "#" },
-  { label: "Accessibility", href: "#" },
-  { label: "URBN.com", href: "#" },
-  { label: "Support Code", href: "#" },
-  { label: "Your Privacy Choices", href: "#" },
 ];
 
-// Social media links (mocked, as images aren't used for icons)
-const socialLinks = [
-  {
-    name: "Instagram",
-    icon: <Instagram size={30} />,
-  },
-  {
-    name: "Facebook",
-    icon: <Facebook size={30} />,
-  },
-  //   "Instagram",
-  //   "TikTok",
-  //   "Pinterest",
-  //   "Facebook",
-  //   "Twitter",
-  //   "RSS",
-];
+// Social links — only rendered when the admin has set a real URL in Company settings
+function getSocialLinks(company?: CompanyInfo) {
+  if (!company) return [];
+  const all = [
+    { name: "Facebook", href: company.facebook, icon: <Facebook size={26} /> },
+    { name: "Instagram", href: company.instagram, icon: <Instagram size={26} /> },
+    { name: "YouTube", href: company.youtube, icon: <Youtube size={26} /> },
+    { name: "TikTok", href: company.tiktok, icon: <FaTiktok size={22} /> },
+    { name: "Twitter", href: company.twitter, icon: <Twitter size={26} /> },
+    { name: "LinkedIn", href: company.linkedin, icon: <Linkedin size={26} /> },
+  ];
+  return all.filter((s) => Boolean(s.href)) as {
+    name: string;
+    href: string;
+    icon: ReactNode;
+  }[];
+}
 
 // --- REUSABLE COMPONENTS ---
 
@@ -204,7 +205,9 @@ const SmsAppBanner: React.FC = () => (
 );
 
 // 4. Social Media & App Download Links
-const SocialAndAppLinks: React.FC = () => (
+const SocialAndAppLinks: React.FC<{
+  socials: { name: string; href: string; icon: ReactNode }[];
+}> = ({ socials }) => (
   <div className="flex flex-col md:flex-row justify-center lg:gap-4 items-center py-6">
     {/* App Store Image - Mocked as a button/div */}
     <div className="mb-4 md:mb-0">
@@ -217,24 +220,30 @@ const SocialAndAppLinks: React.FC = () => (
     </div>
 
     {/* Social Icons */}
-    <div className="flex space-x-6 text-gray-700">
-      {socialLinks?.map((item) => (
-        <a
-          key={item.name}
-          href="#"
-          aria-label={item.name}
-          className="hover:text-amber-700 transition-colors"
-        >
-          {/* Placeholder Icons */}
-          {item.icon}
-        </a>
-      ))}
-    </div>
+    {socials.length > 0 && (
+      <div className="flex space-x-6 text-gray-700">
+        {socials.map((item) => (
+          <a
+            key={item.name}
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={item.name}
+            className="hover:text-amber-700 transition-colors"
+          >
+            {item.icon}
+          </a>
+        ))}
+      </div>
+    )}
   </div>
 );
 
 // --- MAIN FOOTER COMPONENT ---
 const Footer: React.FC = () => {
+  const { company } = useFetchCompany();
+  const socials = getSocialLinks(company);
+
   return (
     <footer className="bg-stone-100 text-gray-800 pt-8 border-t border-stone-200 ">
       <div className="max-w-7xl mx-auto">
@@ -295,7 +304,7 @@ const Footer: React.FC = () => {
             ))}
           </div>
 
-          <SocialAndAppLinks />
+          <SocialAndAppLinks socials={socials} />
         </div>
 
         {/* Bottom Banner */}
@@ -303,6 +312,38 @@ const Footer: React.FC = () => {
 
         {/* Bottom Footer Links and Copyright */}
         <div className="py-4 text-xs text-gray-500 border-t border-gray-200">
+          {/* Contact info */}
+          {(company?.phone || company?.email || company?.address) && (
+            <div className="flex flex-wrap justify-center items-center gap-4 pt-6 pb-2 text-gray-600">
+              {company.phone && (
+                <a
+                  href={`tel:${company.phone}`}
+                  className="flex items-center gap-1.5 hover:underline"
+                >
+                  <Phone size={12} />
+                  {company.phone}
+                </a>
+              )}
+              {company.email && (
+                <a
+                  href={`mailto:${company.email}`}
+                  className="flex items-center gap-1.5 hover:underline"
+                >
+                  <Mail size={12} />
+                  {company.email}
+                </a>
+              )}
+              {company.address && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin size={12} />
+                  {[company.address, company.city, company.country]
+                    .filter(Boolean)
+                    .join(", ")}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Country Links */}
           <div className="flex flex-wrap justify-center mb-2 lg:mb-0 pb-8 space-y-2">
             {countries?.map((country, idx) => (
@@ -333,7 +374,8 @@ const Footer: React.FC = () => {
               </div>
             </div>
             <div className="text-center mt-2 text-xs">
-              © 2023 URBN. All Rights Reserved.
+              © {new Date().getFullYear()} {company?.name ?? "Ondorkotha"}. All
+              Rights Reserved.
             </div>
           </div>
         </div>

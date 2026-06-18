@@ -1,12 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import useFetchCompany from "@/hooks/Company/useFetchCompany";
 
-const phone = (process.env.NEXT_PUBLIC_PHONE_NUMBER ?? "").replace(/\D/g, "");
 const message = encodeURIComponent("Hello! I have a question about a product.");
 
 export default function WhatsAppButton() {
   const pathname = usePathname();
+  const { company } = useFetchCompany();
+  const phone = (company?.whatsapp ?? "").replace(/\D/g, "");
+
   if (!phone || pathname.startsWith("/admin")) return null;
 
   return (

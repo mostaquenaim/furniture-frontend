@@ -18,7 +18,10 @@ import {
   Instagram,
   Twitter,
   Youtube,
+  Linkedin,
 } from "lucide-react";
+import { FaTiktok, FaWhatsapp } from "react-icons/fa";
+import useFetchCompany from "@/hooks/Company/useFetchCompany";
 
 const ContactComponent = () => {
   const [formData, setFormData] = useState({
@@ -66,29 +69,20 @@ const ContactComponent = () => {
     },
   ];
 
-  const storeLocations = [
-    {
-      city: "New York",
-      address: "123 Madison Avenue",
-      phone: "+1 (212) 555-7890",
-      hours: "Mon-Sat: 10AM-8PM, Sun: 11AM-7PM",
-      image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e",
-    },
-    {
-      city: "Los Angeles",
-      address: "456 Rodeo Drive",
-      phone: "+1 (310) 555-1234",
-      hours: "Mon-Sat: 10AM-9PM, Sun: 11AM-7PM",
-      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
-    },
-    {
-      city: "Chicago",
-      address: "789 Michigan Avenue",
-      phone: "+1 (312) 555-5678",
-      hours: "Mon-Sat: 10AM-8PM, Sun: 11AM-6PM",
-      image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7",
-    },
-  ];
+  const { company } = useFetchCompany();
+
+  const socials = (
+    company
+      ? [
+          { name: "Instagram", href: company.instagram, icon: <Instagram className="w-6 h-6" /> },
+          { name: "Facebook", href: company.facebook, icon: <Facebook className="w-6 h-6" /> },
+          { name: "Twitter", href: company.twitter, icon: <Twitter className="w-6 h-6" /> },
+          { name: "YouTube", href: company.youtube, icon: <Youtube className="w-6 h-6" /> },
+          { name: "TikTok", href: company.tiktok, icon: <FaTiktok className="w-6 h-6" /> },
+          { name: "LinkedIn", href: company.linkedin, icon: <Linkedin className="w-6 h-6" /> },
+        ]
+      : []
+  ).filter((s) => Boolean(s.href)) as { name: string; href: string; icon: React.ReactNode }[];
 
   const faqs = [
     {
@@ -168,7 +162,9 @@ const ContactComponent = () => {
                 <Phone className="w-8 h-8 text-gray-700 mb-4" />
                 <p className="font-medium">Need Immediate Help?</p>
                 <p className="text-sm text-gray-600 mt-2">
-                  Call us at +1 (800) 123-4567
+                  {company?.phone
+                    ? `Call us at ${company.phone}`
+                    : "We'll get back to you shortly"}
                 </p>
               </div>
               <div className="p-6 bg-gray-50 rounded-xl">
@@ -213,13 +209,15 @@ const ContactComponent = () => {
                 Send a Message
                 <Send className="w-4 h-4" />
               </a>
-              <a
-                href="tel:+18001234567"
-                className="px-8 py-3 bg-transparent text-white border border-white/30 rounded-lg hover:bg-white/10 transition font-medium flex items-center gap-2"
-              >
-                Call Now
-                <Phone className="w-4 h-4" />
-              </a>
+              {company?.phone && (
+                <a
+                  href={`tel:${company.phone}`}
+                  className="px-8 py-3 bg-transparent text-white border border-white/30 rounded-lg hover:bg-white/10 transition font-medium flex items-center gap-2"
+                >
+                  Call Now
+                  <Phone className="w-4 h-4" />
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -237,16 +235,16 @@ const ContactComponent = () => {
             <p className="text-gray-600 mb-4">
               Speak directly with our customer service team.
             </p>
-            <a
-              href="tel:+18001234567"
-              className="text-2xl font-bold text-gray-900 hover:text-black transition block mb-2"
-            >
-              +1 (800) 123-4567
-            </a>
-            <div className="flex items-center gap-2 text-gray-500 mt-4">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm">Mon-Fri 9AM-8PM EST</span>
-            </div>
+            {company?.phone ? (
+              <a
+                href={`tel:${company.phone}`}
+                className="text-2xl font-bold text-gray-900 hover:text-black transition block mb-2"
+              >
+                {company.phone}
+              </a>
+            ) : (
+              <p className="text-sm text-gray-400">Not available yet</p>
+            )}
           </div>
 
           {/* Email */}
@@ -258,30 +256,40 @@ const ContactComponent = () => {
             <p className="text-gray-600 mb-4">
               Send us a message and we'll respond within 24 hours.
             </p>
-            <a
-              href="mailto:hello@ondorkotha.com"
-              className="text-xl font-medium text-gray-900 hover:text-black transition block mb-2"
-            >
-              hello@ondorkotha.com
-            </a>
+            {company?.email ? (
+              <a
+                href={`mailto:${company.email}`}
+                className="text-xl font-medium text-gray-900 hover:text-black transition block mb-2"
+              >
+                {company.email}
+              </a>
+            ) : (
+              <p className="text-sm text-gray-400">Not available yet</p>
+            )}
             <p className="text-sm text-gray-500 mt-4">For general inquiries</p>
           </div>
 
-          {/* Live Chat */}
+          {/* WhatsApp */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
-              <MessageSquare className="w-7 h-7 text-purple-600" />
+            <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
+              <FaWhatsapp className="w-7 h-7 text-emerald-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Live Chat</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">WhatsApp</h3>
             <p className="text-gray-600 mb-4">
               Chat instantly with our support team.
             </p>
-            <button className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium w-full">
-              Start Live Chat
-            </button>
-            <p className="text-sm text-gray-500 text-center mt-4">
-              Available 9AM-8PM EST
-            </p>
+            {company?.whatsapp ? (
+              <a
+                href={`https://wa.me/${company.whatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium w-full inline-flex items-center justify-center"
+              >
+                Start Chat
+              </a>
+            ) : (
+              <p className="text-sm text-gray-400">Not available yet</p>
+            )}
           </div>
         </div>
       </div>
@@ -430,120 +438,74 @@ const ContactComponent = () => {
             </div>
           </div>
 
-          {/* Store Locations & Social */}
+          {/* Visit Us & Social */}
           <div>
-            {/* Store Locations */}
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Visit Our Stores
-              </h2>
-              <p className="text-gray-600 mb-8">
-                Experience our furniture in person at one of our flagship
-                locations.
-              </p>
+            {/* Visit Us */}
+            {company?.address && (
+              <div className="mb-12">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  Visit Us
+                </h2>
+                <p className="text-gray-600 mb-8">
+                  Experience our furniture in person.
+                </p>
 
-              <div className="space-y-6">
-                {storeLocations?.map((store, index) => (
-                  <div
-                    key={index}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200"
-                  >
-                    <div
-                      className="h-48 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${store.image})` }}
-                    />
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">
-                            {store.city}
-                          </h3>
-                          <div className="flex items-center gap-2 text-gray-600 mb-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{store.address}</span>
-                          </div>
-                        </div>
-                        <a
-                          href={`https://maps.google.com/?q=${store.address}`}
-                          target="_blank"
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
-                        >
-                          Directions
-                        </a>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Phone className="w-4 h-4" />
-                          <span>{store.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Clock className="w-4 h-4" />
-                          <span>{store.hours}</span>
-                        </div>
-                      </div>
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-4 h-4 shrink-0" />
+                      <span>
+                        {[company.address, company.city, company.country]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
                     </div>
+                    {company.googleMapUrl && (
+                      <a
+                        href={company.googleMapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium shrink-0"
+                      >
+                        Directions
+                      </a>
+                    )}
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Social Media */}
-            <div className="bg-linear-to-br from-gray-900 to-black text-white rounded-2xl p-8">
-              <h3 className="text-2xl font-bold mb-6">Connect With Us</h3>
-              <p className="text-gray-300 mb-8">
-                Follow along for design inspiration, new arrivals, and exclusive
-                offers.
-              </p>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition flex flex-col items-center gap-3"
-                >
-                  <Instagram className="w-6 h-6" />
-                  <span className="font-medium">Instagram</span>
-                </a>
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition flex flex-col items-center gap-3"
-                >
-                  <Facebook className="w-6 h-6" />
-                  <span className="font-medium">Facebook</span>
-                </a>
-                <a
-                  href="https://twitter.com"
-                  target="_blank"
-                  className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition flex flex-col items-center gap-3"
-                >
-                  <Twitter className="w-6 h-6" />
-                  <span className="font-medium">Twitter</span>
-                </a>
-                <a
-                  href="https://youtube.com"
-                  target="_blank"
-                  className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition flex flex-col items-center gap-3"
-                >
-                  <Youtube className="w-6 h-6" />
-                  <span className="font-medium">YouTube</span>
-                </a>
-              </div>
-
-              <div className="pt-8 border-t border-white/20">
-                <h4 className="font-medium mb-4">Newsletter Signup</h4>
-                <div className="flex gap-3">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50"
-                  />
-                  <button className="px-6 py-3 bg-white text-black font-medium rounded-lg hover:bg-gray-100 transition">
-                    Subscribe
-                  </button>
+                  {company.phone && (
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Phone className="w-4 h-4" />
+                      <span>{company.phone}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Social Media */}
+            {socials.length > 0 && (
+              <div className="bg-linear-to-br from-gray-900 to-black text-white rounded-2xl p-8">
+                <h3 className="text-2xl font-bold mb-6">Connect With Us</h3>
+                <p className="text-gray-300 mb-8">
+                  Follow along for design inspiration, new arrivals, and
+                  exclusive offers.
+                </p>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {socials.map((s) => (
+                    <a
+                      key={s.name}
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition flex flex-col items-center gap-3"
+                    >
+                      {s.icon}
+                      <span className="font-medium">{s.name}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -560,17 +522,19 @@ const ContactComponent = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="/shop"
+              href="/products"
               className="px-8 py-3 bg-white text-black font-medium rounded-lg hover:bg-gray-100 transition"
             >
               Shop Collection
             </a>
-            <a
-              href="tel:+18001234567"
-              className="px-8 py-3 bg-transparent text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition"
-            >
-              Call Now
-            </a>
+            {company?.phone && (
+              <a
+                href={`tel:${company.phone}`}
+                className="px-8 py-3 bg-transparent text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition"
+              >
+                Call Now
+              </a>
+            )}
           </div>
         </div>
       </div>

@@ -36,6 +36,7 @@ import Image from "next/image";
 import { MdDashboard } from "react-icons/md";
 import useCartCount from "@/hooks/Cart/useCartCount";
 import SearchComp from "./Search/SearchComp";
+import useFetchCompany from "@/hooks/Company/useFetchCompany";
 
 // Desktop MegaMenu Component (Unchanged)
 const MegaMenu: FC<MegaMenuProps> = ({ data, image }) => {
@@ -335,6 +336,7 @@ const Header = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { cartCount, isLoading: isCartLoading } = useCartCount();
+  const { company } = useFetchCompany();
 
   const router = useRouter();
   // Generate dynamic Navigation Items (Series names)
@@ -463,8 +465,8 @@ const Header = () => {
               className="text-2xl font-serif font-bold text-gray-900 tracking-wider"
             >
               <img
-                src="/logo/ondorkotha-logo-2.png"
-                alt="Company Logo"
+                src={company?.logo || "/logo/ondorkotha-logo-2.png"}
+                alt={company?.name || "Company Logo"}
                 className="h-10 w-auto"
               />
             </Link>

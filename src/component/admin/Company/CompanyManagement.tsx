@@ -453,7 +453,7 @@ export default function CompanyInfoComp() {
     try {
       const res = await axiosSecure.get("/company");
 
-      console.log(res.data, "company - resdata");
+      // console.log(res.data, "company - resdata");
       setData(res.data);
       setForm(res.data);
     } finally {

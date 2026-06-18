@@ -34,10 +34,39 @@ export const cinzel = Cinzel({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Ondorkotha",
-  description: "Premium Furniture Marketplace",
-};
+interface Company {
+  name: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  favicon: string | null;
+  ogImage: string | null;
+}
+
+async function getCompany(): Promise<Company | null> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/company`, {
+      next: { revalidate: 1800 },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const company = await getCompany();
+
+  return {
+    title: company?.metaTitle || company?.name || "Ondorkotha",
+    description:
+      company?.metaDescription || "Premium Furniture Marketplace",
+    ...(company?.favicon && { icons: { icon: company.favicon } }),
+    ...(company?.ogImage && {
+      openGraph: { images: [company.ogImage] },
+    }),
+  };
+}
 
 export default function RootLayout({
   children,
