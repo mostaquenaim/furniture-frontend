@@ -55,6 +55,7 @@ const AdminDrawer = () => {
     Customers: false,
     Marketing: false,
     Content: false,
+    "Static Pages": false,
   });
   const [mounted, setMounted] = useState(false);
 
@@ -177,6 +178,20 @@ const AdminDrawer = () => {
           sub: [
             { href: "/admin/blog/add", label: "Create Blog" },
             { href: "/admin/blog/all-blogs", label: "All Blogs" },
+          ],
+        },
+        {
+          name: "Static Pages",
+          icon: FileText,
+          sub: [
+            // { href: "/admin/cms/static-pages", label: "All Pages" },
+          ],
+        },
+        {
+          name: "Terms & Conditions",
+          icon: FileText,
+          sub: [
+            { href: "/admin/cms/terms-and-conditions", label: "All Sections" },
           ],
         },
         {

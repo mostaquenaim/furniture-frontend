@@ -9,12 +9,8 @@ import {
   Truck,
   Shield,
   RefreshCw,
-  CreditCard,
   Package,
-  User,
   MessageSquare,
-  Home,
-  Globe,
   Filter,
 } from "lucide-react";
 

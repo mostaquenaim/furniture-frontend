@@ -60,12 +60,13 @@ const countries = ["US", "Canada", "France", "Germany", "Italy", "Spain", "UK"];
 
 // legal links for bottom links
 const legalLinks = [
-  "Privacy Policy",
-  "CA Transparency",
-  "Accessibility",
-  "URBN.com",
-  "Support Code",
-  "Your Privacy Choices",
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms & Conditions", href: "/terms-and-conditions" },
+  { label: "CA Transparency", href: "#" },
+  { label: "Accessibility", href: "#" },
+  { label: "URBN.com", href: "#" },
+  { label: "Support Code", href: "#" },
+  { label: "Your Privacy Choices", href: "#" },
 ];
 
 // Social media links (mocked, as images aren't used for icons)
@@ -168,7 +169,7 @@ const EmailSignUp: React.FC = () => {
         <p className="text-xs text-gray-500">
           By signing up, you will receive Ondorkotha offers, promotions, and other
           commercial messages. You are also agreeing to Ondorkotha&apos;s{" "}
-          <a href="#" className="underline hover:text-gray-700">
+          <a href="/privacy-policy" className="underline hover:text-gray-700">
             Privacy Policy
           </a>
           . You may unsubscribe at any time.
@@ -322,11 +323,11 @@ const Footer: React.FC = () => {
               <div className="flex flex-row flex-wrap sm:space-y-0 sm:space-x-3 sm:text-left space-y-2 items-center justify-center ">
                 {legalLinks?.map((link, idx) => (
                   <a
-                    key={link}
-                    href="#"
+                    key={link.label}
+                    href={link.href}
                     className={`hover:underline blue-link px-2 ${idx != legalLinks.length - 1 ? "border-gray-200 border-r-2" : ""}`}
                   >
-                    {link}
+                    {link.label}
                   </a>
                 ))}
               </div>

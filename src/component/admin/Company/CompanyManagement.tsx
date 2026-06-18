@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -13,6 +14,7 @@ interface CompanyInfo {
   favicon: string | null;
   tagline: string | null;
   about: string | null;
+  privacyPolicy: string | null;
   email: string | null;
   phone: string | null;
   whatsapp: string | null;
@@ -647,6 +649,23 @@ export default function CompanyInfoComp() {
                   onChange={(v) => set("about", v)}
                   placeholder="Tell your brand story…"
                   rows={5}
+                />
+              </Field>
+            </Section>
+
+            <Section
+              title="Privacy Policy"
+              description="Full privacy policy text shown on your storefront"
+            >
+              <Field
+                label="Privacy policy content"
+                hint="Supports HTML — shown at ondorkotha.com/privacy-policy"
+              >
+                <Textarea
+                  value={val("privacyPolicy")}
+                  onChange={(v) => set("privacyPolicy", v)}
+                  placeholder="<h2>Privacy Policy</h2>&#10;<p>We collect…</p>"
+                  rows={10}
                 />
               </Field>
             </Section>

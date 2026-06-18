@@ -12,6 +12,17 @@
   color: #387cd6;
 }
 
+.prose-static h1 { font-size: 1.75rem; font-weight: 300; margin-bottom: 1rem; }
+.prose-static h2 { font-size: 1.35rem; font-weight: 400; margin-top: 2rem; margin-bottom: 0.75rem; }
+.prose-static h3 { font-size: 1.1rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+.prose-static p  { font-size: 0.9rem; line-height: 1.8; color: #444; margin-bottom: 1rem; }
+.prose-static ul, .prose-static ol { padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem; color: #444; line-height: 1.8; }
+.prose-static ul { list-style-type: disc; }
+.prose-static ol { list-style-type: decimal; }
+.prose-static a  { color: #387cd6; text-decoration: underline; }
+.prose-static strong { font-weight: 600; }
+.prose-static em { font-style: italic; }
+
 .admin {
   font-family: var(--font-inter);
 }
