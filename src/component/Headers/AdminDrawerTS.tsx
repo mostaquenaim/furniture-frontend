@@ -21,6 +21,7 @@ import {
   FileText,
   Grid,
   Newspaper,
+  Boxes,
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { MdCategory } from "react-icons/md";
@@ -99,6 +100,11 @@ const AdminDrawer = () => {
             { href: "/admin/barcode", label: "Barcodes" },
             { href: "/admin/product/reviews", label: "Reviews" },
           ],
+        },
+        {
+          name: "Inventory",
+          icon: Boxes,
+          sub: [{ href: "/admin/inventory", label: "Stock Levels" }],
         },
         // purchases
         // {

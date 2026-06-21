@@ -208,6 +208,11 @@ const OrderDetails = () => {
       </div>
     );
 
+  const latestPayment = order?.payments?.[0];
+  const isPartiallyPaid = order.paymentStatus === "PARTIALLY_PAID";
+  const isPaymentIncomplete =
+    !!latestPayment && latestPayment.status !== "PAID";
+
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#262626] antialiased">
       <div className="max-w-6xl mx-auto px-6 py-12 md:py-20">
@@ -243,19 +248,19 @@ const OrderDetails = () => {
               <span className="text-[10px] uppercase tracking-widest px-5 py-2.5 bg-black text-white font-bold">
                 {order.status}
               </span>
-              {order?.payment && (
+              {latestPayment && (
                 <span
                   className={`text-[10px] uppercase tracking-widest px-5 py-2.5 border font-bold
-                ${order.payment.status === "PAID" ? "border-green-600 text-green-600" : "border-orange-500 text-orange-500"}`}
+                ${latestPayment.status === "PAID" ? "border-green-600 text-green-600" : "border-orange-500 text-orange-500"}`}
                 >
-                  Payment: {order.payment.status}
+                  Payment: {isPartiallyPaid ? "Partially Paid" : latestPayment.status}
                 </span>
               )}
             </div>
           </div>
 
           {/* Independent Retry Payment Banner */}
-          {order?.payment?.status !== "PAID" && (
+          {isPaymentIncomplete && (
             <div className="mt-8 p-6 bg-white border border-red-100 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
               <div className="flex gap-4 items-center">
                 <FiAlertCircle className="text-red-500 text-2xl shrink-0" />
@@ -276,6 +281,25 @@ const OrderDetails = () => {
               >
                 {retrying ? "Processing..." : "Retry Payment Now"}
               </button>
+            </div>
+          )}
+
+          {/* Deposit Paid — Balance Due Banner */}
+          {!isPaymentIncomplete && isPartiallyPaid && order.remainingAmount! > 0 && (
+            <div className="mt-8 p-6 bg-white border border-amber-100 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
+              <div className="flex gap-4 items-center">
+                <FiCreditCard className="text-amber-500 text-2xl shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-amber-700 uppercase tracking-tight">
+                    Deposit Paid — Balance Due on Delivery
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    You&apos;ve paid a {order.advancePercentage}% deposit. The
+                    remaining ৳{order.remainingAmount} is due when your order
+                    is delivered.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </header>
@@ -365,42 +389,44 @@ const OrderDetails = () => {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Payment Info */}
-            {order.payment && (
+            {order.payments && order.payments.length > 0 && (
               <div className="bg-white p-8 border border-gray-100 shadow-sm">
                 <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-6 flex items-center gap-3 text-gray-400">
                   <FiCreditCard className="text-black" /> Payment Information
                 </h3>
                 <div className="text-xs space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500 uppercase tracking-wider">
-                      Method
-                    </span>
-                    <span className="font-bold">
-                      {order?.payment?.method
-                        ? order.payment.method
-                        : order.paymentMethod}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500 uppercase tracking-wider">
-                      Status
-                    </span>
-                    <span
-                      className={`font-bold ${order?.payment?.status === "PAID" ? "text-green-600" : "text-orange-500"}`}
+                  {order.payments.map((p: any, idx: number) => (
+                    <div
+                      key={p.id ?? idx}
+                      className={
+                        idx > 0 ? "pt-4 border-t border-gray-100" : ""
+                      }
                     >
-                      {order?.payment?.status ?? order.paymentMethod}
-                    </span>
-                  </div>
-                  {order?.payment?.transactionId && (
-                    <div className="pt-4 border-t border-gray-100">
-                      <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-2">
-                        Transaction ID
-                      </p>
-                      <p className="break-all font-mono text-[10px] bg-gray-50 p-2 text-gray-600 uppercase leading-relaxed">
-                        {order.payment.transactionId}
-                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500 uppercase tracking-wider">
+                          {p.phase && p.phase !== "FULL"
+                            ? `${p.phase === "ADVANCE" ? "Deposit" : "Remainder"} · ${p.method}`
+                            : p.method}
+                        </span>
+                        <span
+                          className={`font-bold ${p.status === "PAID" ? "text-green-600" : "text-orange-500"}`}
+                        >
+                          {p.status}
+                        </span>
+                      </div>
+                      {p.amount != null && (
+                        <div className="flex justify-between items-center mt-1 text-gray-400">
+                          <span>Amount</span>
+                          <span className="font-mono">৳{p.amount}</span>
+                        </div>
+                      )}
+                      {p.transactionId && (
+                        <p className="break-all font-mono text-[10px] bg-gray-50 p-2 mt-2 text-gray-600 uppercase leading-relaxed">
+                          {p.transactionId}
+                        </p>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
@@ -451,12 +477,28 @@ const OrderDetails = () => {
                 )}
                 <div className="pt-6 border-t border-white/10 flex justify-between items-end">
                   <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">
-                    Amount Paid
+                    Total
                   </span>
                   <span className="text-2xl font-serif italic">
                     ৳{order.total}
                   </span>
                 </div>
+                {isPartiallyPaid && (order.remainingAmount ?? 0) > 0 && (
+                  <>
+                    <div className="flex justify-between opacity-70">
+                      <span>Deposit Paid</span>
+                      <span>৳{order.advanceAmount}</span>
+                    </div>
+                    <div className="flex justify-between items-end text-amber-400">
+                      <span className="text-[10px] uppercase tracking-[0.2em] font-bold">
+                        Balance Due
+                      </span>
+                      <span className="text-lg font-serif italic">
+                        ৳{order.remainingAmount}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -153,8 +153,8 @@ const AddOrUpdateCategoryComp = () => {
 
     // advance payment
     if (formData.isAdvancePayment) {
-      if (formData.advancePercentage <= 0 || formData.advancePercentage > 100) {
-        toast.error("Advance percentage must be between 1 and 100");
+      if (formData.advancePercentage < 10 || formData.advancePercentage > 50) {
+        toast.error("Advance percentage must be between 10 and 50");
         setIsLoading(false);
         return;
       }
@@ -452,8 +452,8 @@ const AddOrUpdateCategoryComp = () => {
               </label>
               <input
                 type="number"
-                min={1}
-                max={100}
+                min={10}
+                max={50}
                 value={formData.advancePercentage}
                 onChange={(e) =>
                   setFormData((prev) => ({

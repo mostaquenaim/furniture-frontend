@@ -105,6 +105,10 @@ const PAYMENT_STATUS: Record<PaymentStatus, { label: string; color: string }> =
     PENDING: { label: "Pending", color: "bg-slate-100 text-slate-600" },
     PROCESSING: { label: "Processing", color: "bg-blue-50 text-blue-700" },
     PAID: { label: "Paid", color: "bg-emerald-50 text-emerald-700" },
+    PARTIALLY_PAID: {
+      label: "Deposit Paid",
+      color: "bg-amber-50 text-amber-700",
+    },
     FAILED: { label: "Failed", color: "bg-red-50 text-red-700" },
     REFUNDED: { label: "Refunded", color: "bg-orange-50 text-orange-700" },
     PARTIALLY_REFUNDED: {
@@ -340,6 +344,35 @@ function OrderDetailDrawer({
     details: true,
   });
 
+  const [collectingRemainder, setCollectingRemainder] = useState(false);
+  const [collectedBy, setCollectedBy] = useState("");
+  const [submittingRemainder, setSubmittingRemainder] = useState(false);
+
+  const handleCollectRemainder = async () => {
+    if (!order || !collectedBy.trim()) {
+      toast.error("Please enter who collected the payment");
+      return;
+    }
+    setSubmittingRemainder(true);
+    try {
+      await axiosSecure.patch(
+        `/admin/orders/${order.orderNumber}/collect-remainder`,
+        { collectedBy: collectedBy.trim() },
+      );
+      toast.success("Remainder collected — order marked as paid");
+      setCollectingRemainder(false);
+      setCollectedBy("");
+      refetch();
+      onRefresh();
+    } catch (e: any) {
+      toast.error(
+        e?.response?.data?.message ?? "Failed to collect remainder",
+      );
+    } finally {
+      setSubmittingRemainder(false);
+    }
+  };
+
   const handlePrintInvoice = async () => {
     if (!order) return;
     try {
@@ -501,6 +534,18 @@ function OrderDetailDrawer({
               value={order.deliveryCharge ? taka(order.deliveryCharge) : "Free"}
             />
             <DrawerRow label="Total" value={taka(order.total)} highlight />
+            {order.advanceRequired && (
+              <>
+                <DrawerRow
+                  label={`Deposit (${order.advancePercentage}%)`}
+                  value={taka(order.advanceAmount ?? 0)}
+                />
+                <DrawerRow
+                  label="Balance Due"
+                  value={taka(order.remainingAmount ?? 0)}
+                />
+              </>
+            )}
             <div className="mt-3 pt-3 border-t border-slate-100">
               <DrawerRow
                 label="Payment Status"
@@ -529,7 +574,9 @@ function OrderDetailDrawer({
                 >
                   <div>
                     <p className="text-xs font-medium text-slate-700">
-                      {p.method}
+                      {p.phase && p.phase !== "FULL"
+                        ? `${p.phase === "ADVANCE" ? "Deposit" : "Remainder"} · ${p.method}`
+                        : p.method}
                     </p>
                     <p className="text-[10px] text-slate-400 font-mono">
                       {p.transactionId}
@@ -551,6 +598,52 @@ function OrderDetailDrawer({
               ))}
             </DrawerSection>
           )}
+
+          {/* Collect Remainder */}
+          {order.paymentStatus === "PARTIALLY_PAID" &&
+            (order.remainingAmount ?? 0) > 0 && (
+              <DrawerSection title="Collect Remainder" tint="slate">
+                {collectingRemainder ? (
+                  <div className="space-y-2 pt-1">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={collectedBy}
+                      onChange={(e) => setCollectedBy(e.target.value)}
+                      placeholder="Courier / staff name"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-slate-400"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleCollectRemainder}
+                        disabled={submittingRemainder}
+                        className="flex-1 py-2 bg-[#0f172a] text-white text-xs font-medium rounded-lg disabled:opacity-50"
+                      >
+                        {submittingRemainder
+                          ? "Collecting..."
+                          : `Confirm ৳${order.remainingAmount} Collected`}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCollectingRemainder(false);
+                          setCollectedBy("");
+                        }}
+                        className="px-3 py-2 border border-slate-200 text-slate-500 text-xs font-medium rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setCollectingRemainder(true)}
+                    className="w-full py-2.5 bg-amber-50 text-amber-700 text-xs font-semibold rounded-xl hover:bg-amber-100 transition-colors"
+                  >
+                    Collect Remainder (৳{order.remainingAmount})
+                  </button>
+                )}
+              </DrawerSection>
+            )}
 
           {/* Actions */}
           <div className="flex gap-2 pt-2">

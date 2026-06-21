@@ -14,6 +14,8 @@ import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { Calendar, RefreshCw } from "lucide-react";
 import TopViewedProducts from "./Components/TopViewedProducts";
+import SearchAnalytics from "./Components/SearchAnalytics";
+import UserRetentionChart from "./Components/UserRetentionChart";
 
 const toDateInput = (d: Date) => d.toISOString().split("T")[0];
 
@@ -228,6 +230,31 @@ export default function DashboardPageComp() {
                 <p className="text-sm text-gray-500">Last 10 orders</p>
               </div>
               <RecentOrders orders={data.recentOrders} />
+            </div>
+          </div>
+
+          {/* User Retention + Top Searched Keywords */}
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-base font-semibold text-gray-900">
+                  User Retention
+                </h2>
+                <p className="text-sm text-gray-500">
+                  New vs. returning customers by month
+                </p>
+              </div>
+              <UserRetentionChart data={data.userRetention} />
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <h2 className="text-base font-semibold text-gray-900">
+                  Top Searched Keywords
+                </h2>
+                <p className="text-sm text-gray-500">This period</p>
+              </div>
+              <SearchAnalytics keywords={data.topSearchKeywords} />
             </div>
           </div>
         </div>

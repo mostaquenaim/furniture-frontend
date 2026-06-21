@@ -1,8 +1,8 @@
 // app/dashboard/Components/SearchAnalytics.tsx
-import type { TopKeyword } from "@/lib/api/actions/dashboard";
+import type { TopSearchKeyword } from "@/lib/api/actions/dashboard";
 
 interface Props {
-  keywords: TopKeyword[];
+  keywords: TopSearchKeyword[];
 }
 
 export default function SearchAnalytics({ keywords }: Props) {
@@ -14,7 +14,7 @@ export default function SearchAnalytics({ keywords }: Props) {
     );
   }
 
-  const maxSearches = Math.max(...keywords.map((k) => k.searches), 1);
+  const maxCount = Math.max(...keywords.map((k) => k.count), 1);
 
   return (
     <div className="space-y-4">
@@ -29,37 +29,20 @@ export default function SearchAnalytics({ keywords }: Props) {
                 {kw.keyword}
               </span>
             </div>
-            <div className="flex items-center gap-3 shrink-0 ml-2">
-              <span className="text-xs text-gray-500">
-                {kw.searches.toLocaleString()}
-              </span>
-              <span
-                className={`text-xs font-semibold ${
-                  kw.conversionRate >= 4
-                    ? "text-emerald-600"
-                    : kw.conversionRate >= 2
-                      ? "text-amber-600"
-                      : "text-gray-400"
-                }`}
-              >
-                {kw.conversionRate}%
-              </span>
-            </div>
+            <span className="text-xs text-gray-500 shrink-0 ml-2">
+              {kw.count.toLocaleString()}
+            </span>
           </div>
 
           {/* Search volume bar */}
           <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-indigo-400 rounded-full transition-all"
-              style={{ width: `${(kw.searches / maxSearches) * 100}%` }}
+              style={{ width: `${(kw.count / maxCount) * 100}%` }}
             />
           </div>
         </div>
       ))}
-
-      <p className="text-xs text-gray-400 pt-1">
-        % = conversion rate · bar = relative search volume
-      </p>
     </div>
   );
 }

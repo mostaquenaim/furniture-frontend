@@ -31,9 +31,12 @@ export interface ShippingAddress {
 }
 
 export interface PaymentInfo {
+  id?: number;
   method: string;
   status: string;
   transactionId?: string;
+  amount?: number;
+  phase?: "FULL" | "ADVANCE" | "REMAINDER";
 }
 
 export interface TrackedOrder {
@@ -46,9 +49,12 @@ export interface TrackedOrder {
   deliveryCharge?: number;
   discount?: number;
   total: number;
-  payment: PaymentInfo;
   paymentStatus: PaymentStatus;
   payments: PaymentInfo[];
+  advanceRequired?: boolean;
+  advancePercentage?: number;
+  advanceAmount?: number;
+  remainingAmount?: number;
 
   items: TrackedItem[];
   trackingEvents: TrackingEvent[];

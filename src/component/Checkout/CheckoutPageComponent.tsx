@@ -343,7 +343,13 @@ const CheckoutPageComponent = () => {
         user_data: userData,
       });
 
-      if (paymentMethod === "cod") {
+      if (data?.advanceRequired) {
+        toast(
+          `This item requires a ${data.advancePercentage}% deposit. Pay ${data.advanceAmount} now, remaining ${data.remainingAmount} due on delivery.`,
+          { duration: 8000 },
+        );
+        router.push(`/checkout/payment?orderId=${orderId}`);
+      } else if (paymentMethod === "cod") {
         router.replace(`/checkout/success?orderId=${orderId}`);
       } else {
         router.push(`/checkout/payment?orderId=${orderId}`);

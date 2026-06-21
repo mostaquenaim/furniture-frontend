@@ -76,12 +76,17 @@ export interface FullOrder {
   items: OrderItem[];
   payments: any[];
   paymentStatus: PaymentStatus;
+  advanceRequired?: boolean;
+  advancePercentage?: number;
+  advanceAmount?: number;
+  remainingAmount?: number;
 }
 
 export enum PaymentStatus {
   PENDING = "PENDING",
   PROCESSING = "PROCESSING",
   PAID = "PAID",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
   FAILED = "FAILED",
   REFUNDED = "REFUNDED",
   PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED",

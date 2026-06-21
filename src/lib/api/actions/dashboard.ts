@@ -47,11 +47,16 @@ export interface RecentOrder {
   payment: string;
 }
 
-export interface TopKeyword {
+export interface TopSearchKeyword {
   keyword: string;
-  searches: number;
-  conversionRate: number;
-  productsFound: number;
+  count: number;
+}
+
+export interface UserRetentionPoint {
+  month: string; // e.g. "Jan 2026"
+  newCustomers: number;
+  returningCustomers: number;
+  retentionRate: number; // percentage, 1 decimal
 }
 
 export interface TopViewedProduct {
@@ -67,6 +72,8 @@ export interface DashboardData {
   topProducts: TopProduct[];
   recentOrders: RecentOrder[];
   topViewedProducts: TopViewedProduct[];
+  topSearchKeywords: TopSearchKeyword[];
+  userRetention: UserRetentionPoint[];
 }
 
 // ── Server Action ─────────────────────────────────────────────────────────────
