@@ -8,9 +8,8 @@ import {
   ShoppingBag,
   Truck,
   Shield,
-  RefreshCw,
-  Package,
-  MessageSquare,
+  CreditCard,
+  Ruler,
   Filter,
 } from "lucide-react";
 
@@ -23,154 +22,124 @@ interface FAQItem {
 }
 
 const faqData: FAQItem[] = [
-  // Ordering & Products
+  // Delivery & Tracking
   {
     id: 1,
-    question: "How do I place an order on Ondorkotha?",
+    question: "When will I receive my delivery?",
     answer:
-      "You can place an order by browsing our collection, selecting your desired items, and proceeding through our secure checkout. You'll need to provide shipping information, select a payment method, and confirm your order. You'll receive an email confirmation immediately after placing your order.",
-    category: "Ordering & Products",
-    tags: ["ordering", "checkout", "payment"],
+      "Once your order is confirmed, delivery usually takes 3 to 10 working days. The exact time depends on the product and your location — deliveries within the city are typically faster, while remote areas may take a bit longer.",
+    category: "Delivery & Tracking",
+    tags: ["delivery", "timeline"],
   },
   {
     id: 2,
-    question: "What payment methods do you accept?",
+    question: "How can I track my order?",
     answer:
-      "We accept Visa, MasterCard, American Express, PayPal, Apple Pay, and Google Pay. All payments are processed securely through encrypted channels. We also offer installment payment options for orders above ৳500 through our financing partners.",
-    category: "Ordering & Products",
-    tags: ["payment", "credit cards", "financing"],
+      "You can track your order anytime from your account dashboard. You're also welcome to call our support hotline with your order number, and we'll update you on the status.",
+    category: "Delivery & Tracking",
+    tags: ["tracking", "order status"],
   },
   {
     id: 3,
-    question: "How can I check product availability?",
+    question: "How much does delivery cost?",
     answer:
-      "Product availability is shown on each product page. Items marked 'In Stock' typically ship within 1-2 business days. For custom or made-to-order pieces, production time will be indicated on the product page. You can also contact our customer service for specific availability questions.",
-    category: "Ordering & Products",
-    tags: ["availability", "inventory", "stock"],
+      "Delivery charges depend on your location, along with the product's size, weight, and volume. Larger furniture pieces may have an additional charge, including a possible floor delivery fee. We'll always confirm the exact delivery cost with you before your order is finalized.",
+    category: "Delivery & Tracking",
+    tags: ["delivery cost", "shipping charge"],
   },
 
-  // Shipping & Delivery
+  // Payment
   {
     id: 4,
-    question: "What are your shipping options and costs?",
-    answer:
-      "We offer standard shipping (5-7 business days) for ৳9.99, express shipping (2-3 business days) for ৳19.99, and overnight shipping for ৳39.99. Free standard shipping is available on all orders over ৳199. International shipping rates vary by destination.",
-    category: "Shipping & Delivery",
-    tags: ["shipping", "delivery", "costs"],
+    question: "Do you offer Cash on Delivery?",
+    answer: "Yes, Cash on Delivery is available on our store.",
+    category: "Payment",
+    tags: ["cash on delivery", "cod"],
   },
   {
     id: 5,
-    question: "How long does delivery take?",
-    answer:
-      "Standard delivery takes 5-7 business days. Express delivery is 2-3 business days. Custom or large furniture items may take 2-4 weeks for delivery. You'll receive tracking information via email as soon as your order ships.",
-    category: "Shipping & Delivery",
-    tags: ["delivery time", "tracking", "shipping"],
+    question: "Can I pay in installments (EMI)?",
+    answer: "We don't currently offer EMI or installment payment options.",
+    category: "Payment",
+    tags: ["emi", "installments"],
   },
+
+  // Product Info
   {
     id: 6,
-    question: "Do you ship internationally?",
+    question: "How do I know if a product will fit my space?",
     answer:
-      "Yes, we ship to over 50 countries worldwide. International shipping costs and delivery times vary by location. Customs duties and taxes may apply depending on your country's regulations. You can check shipping availability during checkout.",
-    category: "Shipping & Delivery",
-    tags: ["international", "global", "customs"],
+      "Every product page includes detailed measurements — length, width, and height — along with material and color information, so you can be confident about the fit before you order.",
+    category: "Product Info",
+    tags: ["sizing", "measurements", "fit"],
   },
   {
     id: 7,
-    question: "How can I track my order?",
-    answer:
-      "You can track your order using the 'Track Order' feature on our website. Simply enter your order number and email address. You'll also receive email updates with tracking links at each stage of the shipping process.",
-    category: "Shipping & Delivery",
-    tags: ["tracking", "order status", "shipment"],
+    question: "Can I request a custom-made product?",
+    answer: "At the moment, we don't offer custom orders.",
+    category: "Product Info",
+    tags: ["custom order"],
   },
 
-  // Returns & Exchanges
+  // Returns & Warranty
   {
     id: 8,
-    question: "What is your return policy?",
+    question: "Is there a warranty on products?",
     answer:
-      "We offer a 30-day return policy for most items. Items must be in original condition with all packaging. Custom or made-to-order items are not eligible for return. Return shipping is free for defective items; otherwise, a ৳9.99 return shipping fee applies.",
-    category: "Returns & Exchanges",
-    tags: ["returns", "refunds", "policy"],
+      "We don't offer a standard warranty. However, if your product arrives with a manufacturing defect, we'll replace it for you.",
+    category: "Returns & Warranty",
+    tags: ["warranty", "defect"],
   },
   {
     id: 9,
-    question: "How do I initiate a return or exchange?",
+    question: "Can I return or exchange a product?",
     answer:
-      "Log into your account, go to 'Order History', select the item you want to return, and follow the return instructions. You can also contact our customer service team for assistance. Once we receive your return, refunds are processed within 5-7 business days.",
-    category: "Returns & Exchanges",
-    tags: ["return process", "exchange", "refund"],
+      "If you change your mind, you can exchange your product for a different one of the same price or higher within 7 days of delivery. Please note we don't offer cash refunds. If the new product costs more, you'll just need to pay the difference.",
+    category: "Returns & Warranty",
+    tags: ["return", "exchange", "refund"],
   },
   {
     id: 10,
-    question: "Are there any items that cannot be returned?",
+    question: "What if my product arrives damaged?",
     answer:
-      "Yes, custom furniture, made-to-order pieces, clearance items, and personalized products cannot be returned. Additionally, items that show signs of use, damage, or missing packaging may not be eligible for return.",
-    category: "Returns & Exchanges",
-    tags: ["non-returnable", "custom", "clearance"],
+      "Please check your parcel at the time of delivery. If you notice any damage, let us know right away. Having a photo or video of the damage along with your order number will help us resolve it quickly.",
+    category: "Returns & Warranty",
+    tags: ["damaged product", "complaint"],
   },
 
-  // Product Care & Assembly
+  // Shopping & Offers
   {
     id: 11,
-    question: "How do I care for my wooden furniture?",
+    question: "Can I see the product in person before buying?",
     answer:
-      "Clean with a soft, dry cloth. Avoid harsh chemicals and excessive moisture. Use coasters for drinks to prevent water rings. For deep cleaning, use a mild soap solution and dry immediately. Apply furniture wax every 6-12 months to maintain the finish.",
-    category: "Product Care & Assembly",
-    tags: ["care", "maintenance", "wood"],
+      "We currently don't have a physical store, so all our products are available to browse and purchase online. We've made sure our product photos and details are as clear as possible to help you choose confidently.",
+    category: "Shopping & Offers",
+    tags: ["physical store", "showroom"],
   },
   {
     id: 12,
-    question: "Do your products require assembly?",
+    question: "Do you have any ongoing offers or discounts?",
     answer:
-      "Some furniture items require basic assembly. All necessary tools and instructions are included. For larger items, we offer white-glove delivery and assembly service for an additional fee. Assembly requirements are listed on each product page.",
-    category: "Product Care & Assembly",
-    tags: ["assembly", "setup", "installation"],
+      "Yes! We regularly run seasonal offers, bundle discounts, first-order deals, and special festival campaigns. Keep an eye on our website and social page so you don't miss out.",
+    category: "Shopping & Offers",
+    tags: ["offers", "discounts", "promotions"],
   },
-
-  // Account & Security
   {
     id: 13,
-    question: "How do I create an account?",
+    question: "Do you take corporate or bulk orders?",
     answer:
-      "Click 'Sign Up' in the top navigation and provide your email address and a password. You can also create an account during checkout. Having an account allows you to track orders, save favorites, and view order history.",
-    category: "Account & Security",
-    tags: ["account", "registration", "sign up"],
-  },
-  {
-    id: 14,
-    question: "How secure is my personal information?",
-    answer:
-      "We use industry-standard SSL encryption to protect your data. We never store full credit card numbers. Your information is only used to process orders and improve your shopping experience. Read our Privacy Policy for more details.",
-    category: "Account & Security",
-    tags: ["security", "privacy", "data"],
-  },
-
-  // Services & Support
-  {
-    id: 15,
-    question: "Do you offer interior design consultations?",
-    answer:
-      "Yes, we offer complimentary virtual design consultations for orders over ৳2,500. Our design experts can help you select pieces that work for your space. Book a consultation through our website or contact our design team directly.",
-    category: "Services & Support",
-    tags: ["design", "consultation", "styling"],
-  },
-  {
-    id: 16,
-    question: "What are your customer service hours?",
-    answer:
-      "Our customer service team is available Monday-Friday 9AM-8PM EST and Saturday 10AM-6PM EST. You can reach us via phone, email, or live chat. For urgent matters outside these hours, you can submit a ticket through our contact form.",
-    category: "Services & Support",
-    tags: ["support", "contact", "hours"],
+      "At this time, we're not accepting bulk orders for offices, hotels, restaurants, or large projects.",
+    category: "Shopping & Offers",
+    tags: ["bulk order", "corporate order"],
   },
 ];
 
 const categoryIcons: Record<string, React.ReactNode> = {
-  "Ordering & Products": <ShoppingBag className="w-6 h-6" />,
-  "Shipping & Delivery": <Truck className="w-6 h-6" />,
-  "Returns & Exchanges": <RefreshCw className="w-6 h-6" />,
-  "Product Care & Assembly": <Package className="w-6 h-6" />,
-  "Account & Security": <Shield className="w-6 h-6" />,
-  "Services & Support": <MessageSquare className="w-6 h-6" />,
+  "Delivery & Tracking": <Truck className="w-6 h-6" />,
+  Payment: <CreditCard className="w-6 h-6" />,
+  "Product Info": <Ruler className="w-6 h-6" />,
+  "Returns & Warranty": <Shield className="w-6 h-6" />,
+  "Shopping & Offers": <ShoppingBag className="w-6 h-6" />,
 };
 
 const FAQPageComp = () => {
@@ -256,8 +225,7 @@ const FAQPageComp = () => {
               Frequently Asked Questions
             </h1>
             <p className="text-xl text-gray-300 mb-8">
-              Find answers to common questions about ordering, shipping,
-              returns, and more.
+              Ondorkotha — Everything you need to know before you order.
             </p>
 
             {/* Search Bar */}

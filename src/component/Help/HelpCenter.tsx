@@ -10,12 +10,11 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  Package,
   CreditCard,
   Truck,
   RotateCcw,
-  ShieldCheck,
-  HelpCircle,
+  Ruler,
+  ShoppingBag,
   LucideIcon,
 } from "lucide-react";
 
@@ -50,85 +49,108 @@ interface ContactOption {
 
 const categories: Category[] = [
   {
-    id: "orders",
-    title: "Orders & Tracking",
-    icon: Package,
-    description: "Track orders and manage deliveries",
+    id: "delivery",
+    title: "Delivery & Tracking",
+    icon: Truck,
+    description: "Delivery time, cost, and order tracking",
   },
   {
     id: "payment",
-    title: "Payment & Billing",
+    title: "Payment",
     icon: CreditCard,
-    description: "Payment methods and billing questions",
+    description: "Cash on Delivery and payment options",
   },
   {
-    id: "shipping",
-    title: "Shipping & Delivery",
-    icon: Truck,
-    description: "Shipping options and delivery times",
+    id: "product",
+    title: "Product Info",
+    icon: Ruler,
+    description: "Sizing, fit, and custom orders",
   },
   {
     id: "returns",
-    title: "Returns & Refunds",
+    title: "Returns & Warranty",
     icon: RotateCcw,
-    description: "Return policy and refund process",
+    description: "Exchanges, warranty, and damaged items",
   },
   {
-    id: "account",
-    title: "Account & Security",
-    icon: ShieldCheck,
-    description: "Account settings and security",
-  },
-  {
-    id: "general",
-    title: "General Questions",
-    icon: HelpCircle,
-    description: "Product info and other inquiries",
+    id: "shopping",
+    title: "Shopping & Offers",
+    icon: ShoppingBag,
+    description: "Buying online, offers, and bulk orders",
   },
 ];
 
 const faqData: FAQData = {
-  orders: [
+  delivery: [
+    {
+      question: "When will I receive my delivery?",
+      answer:
+        "Once your order is confirmed, delivery usually takes 3 to 10 working days. The exact time depends on the product and your location — deliveries within the city are typically faster, while remote areas may take a bit longer.",
+    },
     {
       question: "How can I track my order?",
       answer:
-        "You can track your order by logging into your account and visiting the Orders page.",
+        "You can track your order anytime from your account dashboard. You're also welcome to call our support hotline with your order number, and we'll update you on the status.",
     },
     {
-      question: "Can I modify or cancel my order?",
-      answer: "Orders can be modified or cancelled within 1 hour of placement.",
+      question: "How much does delivery cost?",
+      answer:
+        "Delivery charges depend on your location, along with the product's size, weight, and volume. Larger furniture pieces may have an additional charge, including a possible floor delivery fee. We'll always confirm the exact delivery cost with you before your order is finalized.",
     },
   ],
   payment: [
     {
-      question: "What payment methods do you accept?",
-      answer:
-        "We accept all major credit cards, PayPal, Apple Pay, and Google Pay.",
+      question: "Do you offer Cash on Delivery?",
+      answer: "Yes, Cash on Delivery is available on our store.",
+    },
+    {
+      question: "Can I pay in installments (EMI)?",
+      answer: "We don't currently offer EMI or installment payment options.",
     },
   ],
-  shipping: [
+  product: [
     {
-      question: "What are the shipping costs?",
-      answer: "Standard shipping is free for orders over ৳100.",
+      question: "How do I know if a product will fit my space?",
+      answer:
+        "Every product page includes detailed measurements — length, width, and height — along with material and color information, so you can be confident about the fit before you order.",
+    },
+    {
+      question: "Can I request a custom-made product?",
+      answer: "At the moment, we don't offer custom orders.",
     },
   ],
   returns: [
     {
-      question: "What is your return policy?",
-      answer: "We offer a 30-day return policy from the date of delivery.",
-    },
-  ],
-  account: [
-    {
-      question: "How do I reset my password?",
+      question: "Is there a warranty on products?",
       answer:
-        "Click 'Forgot Password' on the login page to receive a reset link.",
+        "We don't offer a standard warranty. However, if your product arrives with a manufacturing defect, we'll replace it for you.",
+    },
+    {
+      question: "Can I return or exchange a product?",
+      answer:
+        "If you change your mind, you can exchange your product for a different one of the same price or higher within 7 days of delivery. Please note we don't offer cash refunds. If the new product costs more, you'll just need to pay the difference.",
+    },
+    {
+      question: "What if my product arrives damaged?",
+      answer:
+        "Please check your parcel at the time of delivery. If you notice any damage, let us know right away. Having a photo or video of the damage along with your order number will help us resolve it quickly.",
     },
   ],
-  general: [
+  shopping: [
     {
-      question: "Do you offer gift cards?",
-      answer: "Yes, digital gift cards are available from ৳25 to ৳500.",
+      question: "Can I see the product in person before buying?",
+      answer:
+        "We currently don't have a physical store, so all our products are available to browse and purchase online. We've made sure our product photos and details are as clear as possible to help you choose confidently.",
+    },
+    {
+      question: "Do you have any ongoing offers or discounts?",
+      answer:
+        "Yes! We regularly run seasonal offers, bundle discounts, first-order deals, and special festival campaigns. Keep an eye on our website and social page so you don't miss out.",
+    },
+    {
+      question: "Do you take corporate or bulk orders?",
+      answer:
+        "At this time, we're not accepting bulk orders for offices, hotels, restaurants, or large projects.",
     },
   ],
 };
@@ -139,7 +161,7 @@ const contactOptions: ContactOption[] = [
     icon: MessageCircle,
     title: "Live Chat",
     description: "Chat with our support team",
-    availability: "Mon-Sun, 9 AM - 9 PM EST",
+    availability: "Available during business hours",
     action: "Start Chat",
   },
   {
@@ -155,8 +177,8 @@ const contactOptions: ContactOption[] = [
     icon: Phone,
     title: "Phone Support",
     description: "Speak with a representative",
-    availability: "Mon-Fri, 9 AM - 6 PM EST",
-    action: "1-800-EXAMPLE",
+    availability: "Mon-Sat, 9 AM - 8 PM",
+    action: process.env.NEXT_PUBLIC_PHONE_LABEL || "Call Support",
   },
 ];
 
