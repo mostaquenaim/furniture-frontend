@@ -16,11 +16,16 @@ import { Product } from "@/types/product.types";
 export type OrderStatus =
   | "PENDING"
   | "CONFIRMED"
+  | "PROCESSING"
   | "PACKED"
   | "SHIPPED"
   | "DELIVERED"
   | "CANCELLED"
-  | "RETURNED";
+  | "FAILED"
+  | "RETURNED"
+  | "ON_HOLD"
+  | "PARTIALLY_DELIVERED"
+  | "RETURN_REQUESTED";
 
 export type FraudStatus = "SAFE" | "SUSPICIOUS" | "DOUBTFUL" | "BLOCKED";
 
@@ -66,7 +71,7 @@ export interface FullOrder {
   couponCode?: string | null;
   discount?: number | null;
   total: number;
-  invoiceId?: number | null;
+  invoice?: { id: string } | null;
   itemCount?: number;
   status: OrderStatus;
   awbNumber?: string | null;
@@ -104,13 +109,18 @@ export interface PaginatedOrdersResponse<T = ThumbOrder | FullOrder> {
     totalPages: number;
   };
   statusCounts: {
-    CANCELLED: number;
-    CONFIRMED: number;
-    DELIVERED: number;
-    PACKED: number;
     PENDING: number;
-    RETURNED: number;
+    CONFIRMED: number;
+    PACKED: number;
     SHIPPED: number;
+    DELIVERED: number;
+    CANCELLED: number;
+    RETURNED: number;
+    PROCESSING: number;
+    RETURN_REQUESTED: number;
+    FAILED: number;
+    ON_HOLD: number;
+    PARTIALLY_DELIVERED: number;
   };
 }
 

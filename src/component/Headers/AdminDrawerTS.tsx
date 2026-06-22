@@ -22,6 +22,7 @@ import {
   Grid,
   Newspaper,
   Boxes,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { MdCategory } from "react-icons/md";
@@ -169,6 +170,14 @@ const AdminDrawer = () => {
           ],
         },
         {
+          name: "Returns & Refunds",
+          icon: RotateCcw,
+          sub: [
+            { href: "/admin/returns", label: "Return Requests" },
+            { href: "/admin/refunds", label: "Refunds" },
+          ],
+        },
+        {
           name: "Promotions",
           icon: Percent,
           sub: [{ href: "/admin/promotions/coupons", label: "Coupons" }],
@@ -256,6 +265,7 @@ const AdminDrawer = () => {
           sub: [
             { href: "/admin/settings/company", label: "Company Info" },
             { href: "/admin/settings/shipping/districts", label: "Districts" },
+            { href: "/admin/settings/payment-methods", label: "Payment Methods" },
             { href: "/admin/settings/email", label: "Email Templates" },
           ],
         },

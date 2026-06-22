@@ -2,9 +2,11 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import useTrackOrder from "@/hooks/Track/useTrack";
 import {
   CheckCircle,
   Package,
@@ -14,162 +16,91 @@ import {
   Search,
   ArrowRight,
   AlertCircle,
+  FileText,
+  RotateCcw,
+  XCircle,
+  PauseCircle,
 } from "lucide-react";
-
-interface OrderItem {
-  name: string;
-  qty: number;
-  image?: string;
-  price: number;
-}
-
-interface OrderStatus {
-  status: string;
-  date: string;
-  completed: boolean;
-  description?: string;
-}
-
-interface OrderData {
-  orderId: string;
-  email: string;
-  statusTimeline: OrderStatus[];
-  items: OrderItem[];
-  deliveryAddress: string;
-  orderDate: string;
-  estimatedDelivery: string;
-  shippingMethod: string;
-  trackingNumber?: string;
-  totalAmount: number;
-}
-
-const mockOrder: OrderData = {
-  orderId: "SAK-10234",
-  email: "customer@email.com",
-  deliveryAddress: "123 Main Street, Dhaka 1205, Bangladesh",
-  orderDate: "02 Jan 2026",
-  estimatedDelivery: "08 Jan 2026",
-  shippingMethod: "Standard Shipping",
-  trackingNumber: "TRK-789456123",
-  totalAmount: 249.99,
-  statusTimeline: [
-    {
-      status: "Order Placed",
-      date: "02 Jan 2026, 10:30 AM",
-      completed: true,
-      description: "Your order has been received",
-    },
-    {
-      status: "Processing",
-      date: "03 Jan 2026, 09:15 AM",
-      completed: true,
-      description: "Preparing your items",
-    },
-    {
-      status: "Shipped",
-      date: "05 Jan 2026, 02:45 PM",
-      completed: true,
-      description: "Package has left our warehouse",
-    },
-    {
-      status: "Out for Delivery",
-      date: "07 Jan 2026, 08:30 AM",
-      completed: false,
-      description: "Expected delivery today",
-    },
-    {
-      status: "Delivered",
-      date: "08 Jan 2026 (Estimated)",
-      completed: false,
-      description: "Estimated delivery date",
-    },
-  ],
-  items: [
-    {
-      name: "Teak Wood Lounge Chair",
-      qty: 1,
-      price: 189.99,
-      image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
-    },
-    {
-      name: "Minimal Side Table",
-      qty: 2,
-      price: 30.0,
-      image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6",
-    },
-  ],
-};
 
 const statusIcons: Record<string, React.ReactNode> = {
   "Order Placed": <CheckCircle className="w-5 h-5" />,
+  "Order Confirmed": <CheckCircle className="w-5 h-5" />,
   Processing: <Package className="w-5 h-5" />,
+  Packed: <Package className="w-5 h-5" />,
   Shipped: <Truck className="w-5 h-5" />,
   "Out for Delivery": <Truck className="w-5 h-5" />,
   Delivered: <Home className="w-5 h-5" />,
+  Cancelled: <XCircle className="w-5 h-5" />,
+  Returned: <RotateCcw className="w-5 h-5" />,
+  "Return Requested": <RotateCcw className="w-5 h-5" />,
+  Failed: <XCircle className="w-5 h-5" />,
+  "On Hold": <PauseCircle className="w-5 h-5" />,
+  "Partially Delivered": <Truck className="w-5 h-5" />,
 };
 
-const TrackOrder = () => {
+const taka = (n: number) =>
+  `৳${Number(n).toLocaleString("en-BD", { minimumFractionDigits: 0 })}`;
+
+const TrackOrderContent = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const axiosSecure = useAxiosSecure();
-  const [orderId, setOrderId] = useState("");
-  const [email, setEmail] = useState("");
-  const [order, setOrder] = useState<OrderData | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const handleTrack = async (e?: React.FormEvent) => {
+  const [orderIdInput, setOrderIdInput] = useState(
+    searchParams.get("orderId") ?? "",
+  );
+  const [trackingId, setTrackingId] = useState(
+    searchParams.get("orderId") ?? "",
+  );
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+
+  const { order, isLoading, isError, error } = useTrackOrder({
+    trackingId,
+    details: true,
+  });
+
+  useEffect(() => {
+    const fromQuery = searchParams.get("orderId");
+    if (fromQuery && fromQuery !== trackingId) {
+      setOrderIdInput(fromQuery);
+      setTrackingId(fromQuery);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleTrack = (e?: React.FormEvent) => {
     e?.preventDefault();
-
-    if (!orderId.trim() || !email.trim()) {
-      toast.error("Please enter both order number and email");
+    if (!orderIdInput.trim()) {
+      toast.error("Please enter your order number or tracking ID");
       return;
     }
+    setTrackingId(orderIdInput.trim());
+  };
 
-    if (!email.includes("@") || !email.includes(".")) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    setLoading(true);
-
+  const handleDownloadInvoice = async () => {
+    if (!order?.invoiceId) return;
+    setDownloadingInvoice(true);
     try {
-      const res = await axiosSecure.post("/orders/track", {
-        orderId: orderId.trim().toUpperCase(),
-        email: email.trim().toLowerCase(),
+      const res = await axiosSecure.get(`/invoices/${order.invoiceId}/pdf`, {
+        responseType: "blob",
       });
-      setOrder(res.data);
-      toast.success("Order found!");
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        toast.error("Order not found. Please check your details.");
-        setOrder(mockOrder);
-        toast("Showing demo tracking information", {
-          icon: "ℹ️",
-          duration: 4000,
-        });
-      } else {
-        setOrder(mockOrder);
-        toast("Showing demo tracking information", {
-          icon: "ℹ️",
-          duration: 4000,
-        });
-      }
+      const url = URL.createObjectURL(
+        new Blob([res.data], { type: "application/pdf" }),
+      );
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice-${order.orderNumber}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Failed to download invoice");
     } finally {
-      setLoading(false);
+      setDownloadingInvoice(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleTrack();
-    }
-  };
-
-  const getCurrentStatus = () => {
-    if (!order) return null;
-    const current = order.statusTimeline.find((s) => !s.completed);
-    return current || order.statusTimeline[order.statusTimeline.length - 1];
-  };
-
-  const currentStatus = getCurrentStatus();
+  const canReturn =
+    order && ["DELIVERED", "PARTIALLY_DELIVERED"].includes(order.status);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -180,7 +111,7 @@ const TrackOrder = () => {
             Track Your Order
           </h1>
           <p className="text-gray-600 text-lg">
-            Enter your order details below to check the status of your purchase
+            Enter your order number to check the status of your purchase
           </p>
         </div>
 
@@ -194,48 +125,29 @@ const TrackOrder = () => {
           </div>
 
           <form onSubmit={handleTrack} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Order Number *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. SAK-10234"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
-                  value={orderId}
-                  onChange={(e) => setOrderId(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  Find your order number in your confirmation email
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  Must match the email used for the order
-                </p>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Order Number or Tracking ID *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. ORD-20260101-1234-000001"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
+                value={orderIdInput}
+                onChange={(e) => setOrderIdInput(e.target.value)}
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Find your order number in your confirmation email or order
+                history
+              </p>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className="w-full md:w-auto px-8 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-900 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Tracking Order...
@@ -250,8 +162,20 @@ const TrackOrder = () => {
           </form>
         </div>
 
+        {/* Error state */}
+        {trackingId && isError && (
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
+            <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+            <p className="text-red-700 font-medium">
+              {(error as any)?.response?.status === 404
+                ? "Order not found. Please check your order number."
+                : "Couldn't load this order. Please try again."}
+            </p>
+          </div>
+        )}
+
         {/* Order Result */}
-        {order && (
+        {order && !isError && (
           <div className="space-y-8 animate-fade-in">
             {/* Status Banner */}
             <div className="bg-linear-to-r from-gray-900 to-black text-white rounded-2xl p-8">
@@ -266,14 +190,15 @@ const TrackOrder = () => {
                   <p className="text-gray-300 text-lg">
                     Current Status:{" "}
                     <span className="font-semibold">
-                      {currentStatus?.status}
+                      {order.trackingEvents.find((s) => s.current)?.status ??
+                        order.status}
                     </span>
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-gray-300">Order ID</p>
                   <p className="text-2xl font-mono font-bold">
-                    {order.orderId}
+                    {order.orderNumber}
                   </p>
                 </div>
               </div>
@@ -285,24 +210,22 @@ const TrackOrder = () => {
                 Delivery Progress
               </h3>
               <div className="relative">
-                {/* Progress Line */}
                 <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200">
                   <div
                     className="absolute top-0 left-0 w-full bg-black transition-all duration-500"
                     style={{
                       height: `${
-                        (order.statusTimeline.filter((s) => s.completed)
+                        (order.trackingEvents.filter((s) => s.completed)
                           .length /
-                          (order.statusTimeline.length - 1)) *
+                          Math.max(order.trackingEvents.length - 1, 1)) *
                         100
                       }%`,
                     }}
                   />
                 </div>
 
-                {/* Timeline Steps */}
                 <div className="relative space-y-8">
-                  {order.statusTimeline?.map((step, index) => (
+                  {order.trackingEvents.map((step, index) => (
                     <div key={index} className="flex gap-6">
                       <div
                         className={`relative z-10 flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center ${
@@ -328,21 +251,18 @@ const TrackOrder = () => {
                           >
                             {step.status}
                           </h4>
-                          <span
-                            className={`text-sm px-3 py-1 rounded-full ${
-                              step.completed
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {step.date}
-                          </span>
+                          {step.date && (
+                            <span
+                              className={`text-sm px-3 py-1 rounded-full ${
+                                step.completed
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {step.date}
+                            </span>
+                          )}
                         </div>
-                        {step.description && (
-                          <p className="text-gray-500 mt-1">
-                            {step.description}
-                          </p>
-                        )}
                       </div>
                     </div>
                   ))}
@@ -359,9 +279,9 @@ const TrackOrder = () => {
                 </h3>
 
                 <div className="space-y-6">
-                  {order.items?.map((item, i) => (
+                  {order.items?.map((item) => (
                     <div
-                      key={i}
+                      key={item.id}
                       className="flex gap-4 p-4 bg-gray-50 rounded-lg"
                     >
                       <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden shrink-0">
@@ -381,21 +301,53 @@ const TrackOrder = () => {
                         <h4 className="font-medium text-gray-900">
                           {item.name}
                         </h4>
+                        <p className="text-sm text-gray-500">
+                          {[item.color, item.size].filter(Boolean).join(" · ")}
+                        </p>
                         <div className="flex justify-between items-center mt-2">
-                          <span className="text-gray-600">Qty: {item.qty}</span>
+                          <span className="text-gray-600">
+                            Qty: {item.quantity}
+                          </span>
                           <span className="font-semibold">
-                            ${(item.price * item.qty).toFixed(2)}
+                            {taka(item.price * item.quantity)}
                           </span>
                         </div>
                       </div>
                     </div>
                   ))}
 
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between text-lg font-semibold">
-                      <span>Total</span>
-                      <span>${order.totalAmount}</span>
+                  <div className="border-t pt-4 space-y-1">
+                    {typeof order.discount === "number" &&
+                      order.discount > 0 && (
+                        <div className="flex justify-between text-sm text-green-600">
+                          <span>Discount</span>
+                          <span>− {taka(order.discount)}</span>
+                        </div>
+                      )}
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>Delivery</span>
+                      <span>
+                        {order.deliveryCharge
+                          ? taka(order.deliveryCharge)
+                          : "Free"}
+                      </span>
                     </div>
+                    <div className="flex justify-between text-lg font-semibold pt-2">
+                      <span>Total</span>
+                      <span>{taka(order.total)}</span>
+                    </div>
+                    {order.advanceRequired && (
+                      <>
+                        <div className="flex justify-between text-sm text-gray-500">
+                          <span>Deposit Paid ({order.advancePercentage}%)</span>
+                          <span>{taka(order.advanceAmount ?? 0)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-500">
+                          <span>Balance Due</span>
+                          <span>{taka(order.remainingAmount ?? 0)}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -411,42 +363,56 @@ const TrackOrder = () => {
                     <h4 className="text-sm font-medium text-gray-500 mb-2">
                       Delivery Address
                     </h4>
-                    <p className="text-gray-900">{order.deliveryAddress}</p>
+                    <p className="text-gray-900">
+                      {order.shippingAddress?.address}
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1">
+                      {order.shippingAddress?.district}
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-500 mb-2">
-                        Order Date
-                      </h4>
-                      <p className="text-gray-900">{order.orderDate}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-2">
-                        Estimated Delivery
+                        Payment Status
                       </h4>
                       <p className="text-gray-900 font-medium">
-                        {order.estimatedDelivery}
+                        {order.paymentStatus}
                       </p>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-2">
-                        Shipping Method
-                      </h4>
-                      <p className="text-gray-900">{order.shippingMethod}</p>
-                    </div>
-                    {order.trackingNumber && (
+                    {order.awbNumber && (
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">
-                          Tracking Number
+                          AWB / Tracking
                         </h4>
                         <p className="font-mono text-gray-900">
-                          {order.trackingNumber}
+                          {order.awbNumber}
                         </p>
                       </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    {order.invoiceId && (
+                      <button
+                        onClick={handleDownloadInvoice}
+                        disabled={downloadingInvoice}
+                        className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm flex items-center gap-2 disabled:opacity-50"
+                      >
+                        <FileText className="w-4 h-4" />
+                        {downloadingInvoice ? "Downloading…" : "Download Invoice"}
+                      </button>
+                    )}
+                    {canReturn && (
+                      <button
+                        onClick={() =>
+                          router.push(`/refund?orderId=${order.orderNumber}`)
+                        }
+                        className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm flex items-center gap-2"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        Request Return
+                      </button>
                     )}
                   </div>
                 </div>
@@ -466,13 +432,16 @@ const TrackOrder = () => {
                     changes, our customer service team is here to help.
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                    <button
+                      onClick={() => router.push("/help/contact-us")}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                    >
                       Contact Support
                     </button>
-                    <button className="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition text-sm">
-                      View Return Policy
-                    </button>
-                    <button className="px-4 py-2 bg-white text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm">
+                    <button
+                      onClick={() => router.push("/customer/orders")}
+                      className="px-4 py-2 bg-white text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm"
+                    >
                       Order History
                     </button>
                   </div>
@@ -485,5 +454,17 @@ const TrackOrder = () => {
     </div>
   );
 };
+
+const TrackOrder = () => (
+  <Suspense
+    fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+      </div>
+    }
+  >
+    <TrackOrderContent />
+  </Suspense>
+);
 
 export default TrackOrder;

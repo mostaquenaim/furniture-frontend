@@ -31,6 +31,8 @@ import {
   ShieldQuestion,
   ShieldX,
   RefreshCw,
+  XCircle,
+  PauseCircle,
 } from "lucide-react";
 
 import {
@@ -96,6 +98,36 @@ const ORDER_STATUS: Record<
     label: "Returned",
     color: "bg-rose-50 text-rose-700",
     dot: "bg-rose-500",
+    icon: <RotateCcw className="w-3 h-3" />,
+  },
+  PROCESSING: {
+    label: "Processing",
+    color: "bg-blue-50 text-blue-700",
+    dot: "bg-blue-400 animate-pulse",
+    icon: <RefreshCw className="w-3 h-3" />,
+  },
+  FAILED: {
+    label: "Failed",
+    color: "bg-red-100 text-red-800",
+    dot: "bg-red-600",
+    icon: <XCircle className="w-3 h-3" />,
+  },
+  ON_HOLD: {
+    label: "On Hold",
+    color: "bg-yellow-50 text-yellow-700",
+    dot: "bg-yellow-500",
+    icon: <PauseCircle className="w-3 h-3" />,
+  },
+  PARTIALLY_DELIVERED: {
+    label: "Partially Delivered",
+    color: "bg-teal-50 text-teal-700",
+    dot: "bg-teal-400",
+    icon: <Truck className="w-3 h-3" />,
+  },
+  RETURN_REQUESTED: {
+    label: "Return Requested",
+    color: "bg-orange-50 text-orange-700",
+    dot: "bg-orange-500",
     icon: <RotateCcw className="w-3 h-3" />,
   },
 };
@@ -189,7 +221,13 @@ const STATUS_FLOW: OrderStatus[] = [
 
 // ── OrderStatusTimeline ───────────────────────────────────────────────────────
 function OrderStatusTimeline({ status }: { status: OrderStatus }) {
-  const isSpecial = ["CANCELLED", "RETURNED"].includes(status);
+  const isSpecial = [
+    "CANCELLED",
+    "RETURNED",
+    "RETURN_REQUESTED",
+    "FAILED",
+    "ON_HOLD",
+  ].includes(status);
   const flow = isSpecial ? (["PENDING", status] as OrderStatus[]) : STATUS_FLOW;
   const currentIdx = flow.indexOf(status);
 

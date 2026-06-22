@@ -40,7 +40,9 @@ export interface PaymentInfo {
 }
 
 export interface TrackedOrder {
+  id?: number;
   orderNumber: string;
+  trackingToken?: string;
   orderDate: string;
   estimatedDelivery: string;
   status: OrderStatus;
@@ -48,7 +50,9 @@ export interface TrackedOrder {
   deliveryMethod?: string;
   deliveryCharge?: number;
   discount?: number;
+  subtotal?: number;
   total: number;
+  invoiceId?: string | null;
   paymentStatus: PaymentStatus;
   payments: PaymentInfo[];
   advanceRequired?: boolean;
