@@ -25,8 +25,7 @@ const PRESETS = [
   { label: "90d", days: 90 },
 ] as const;
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
+// ── Component
 export default function DashboardPageComp() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
