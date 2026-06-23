@@ -104,15 +104,6 @@ const AllProductsComp = () => {
     }
   };
 
-  const getDisplayPrice = (product: Product) => {
-    if (!product.discount) return product.basePrice;
-
-    if (product.discountType === "PERCENT") {
-      return product.basePrice - (product.basePrice * product.discount) / 100;
-    }
-    return product.basePrice - product.discount;
-  };
-
   const handleSortChange = (sortValue: string) => {
     setSelectedSort(sortValue);
     setCurrentPage(1);
@@ -194,7 +185,6 @@ const AllProductsComp = () => {
         <EachProductShow
           products={products}
           setSelectedProduct={setSelectedProduct}
-          getDisplayPrice={getDisplayPrice}
           productImage={productImage}
           hoveredProduct={hoveredProduct}
           setProductImage={setProductImage}

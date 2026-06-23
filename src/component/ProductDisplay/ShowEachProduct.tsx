@@ -261,7 +261,7 @@ export default function ShowEachProduct() {
                 .filter(Boolean)
                 .join(" / "),
               is_on_sale: isDiscountActive || false,
-              discount: isDiscountActive ? product.basePrice - product.price : 0,
+              discount: isDiscountActive ? basePrice - discountedPrice : 0,
               availability:
                 (currentVariant?.size?.quantity ?? 0) > 0
                   ? "instock"
@@ -537,17 +537,19 @@ export default function ShowEachProduct() {
     return <div className="p-20 text-center">Product Not Found</div>;
 
   // Price Calculation
-  const basePrice = currentVariant?.size?.basePrice || product.basePrice;
-  const now = new Date();
-  const isDiscountActive =
-    product.discount > 0 &&
-    product.discountStart &&
-    product.discountEnd &&
-    new Date(product.discountStart) <= now &&
-    new Date(product.discountEnd) >= now;
-  const discountedPrice = isDiscountActive
-    ? currentVariant?.size?.price || product.price
-    : basePrice;
+  // ProductSize has no date window of its own — its price is already final,
+  // so it's used as-is rather than gating it behind the *product-level*
+  // discount window (which would hide a real, currently-charged variant
+  // discount whenever the product-level window happens to be inactive).
+  // Falls back to product.price/basePrice — already window-checked
+  // server-side via sanitizeDiscount — only when no variant is selected.
+  const basePrice = currentVariant?.size?.basePrice ?? product.basePrice;
+  const discountedPrice =
+    currentVariant?.size?.price ?? product.price ?? basePrice;
+  const isDiscountActive = basePrice - discountedPrice >= 1;
+  const discountPercent = isDiscountActive
+    ? Math.round(((basePrice - discountedPrice) / basePrice) * 100)
+    : 0;
 
   return (
     <div className="max-w-360 mx-auto px-4 md:px-12 py-8 font-sans text-[#222222]">
@@ -699,7 +701,7 @@ export default function ShowEachProduct() {
 
             {isDiscountActive && (
               <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase">
-                -{product.discount}% OFF
+                -{discountPercent}% OFF
               </div>
             )}
           </div>

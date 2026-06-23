@@ -120,15 +120,6 @@ export default function CategoryWiseProduct() {
     }
   };
 
-  const getDisplayPrice = (product: Product) => {
-    if (!product.discount) return product.basePrice;
-
-    if (product.discountType === "PERCENT") {
-      return product.basePrice - (product.basePrice * product.discount) / 100;
-    }
-    return product.basePrice - product.discount;
-  };
-
   const handleSortChange = (sortValue: string) => {
     // Example: refetch products
     // fetchProducts({
@@ -269,7 +260,6 @@ export default function CategoryWiseProduct() {
         <EachProductShow
           products={products}
           setSelectedProduct={setSelectedProduct}
-          getDisplayPrice={getDisplayPrice}
           productImage={productImage}
           hoveredProduct={hoveredProduct}
           setProductImage={setProductImage}

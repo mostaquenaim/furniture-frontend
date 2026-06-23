@@ -9,7 +9,6 @@ interface EachProductShowProps {
   setProductImage: React.Dispatch<React.SetStateAction<string>>;
   hoveredProduct: number | null;
   setHoveredProduct: React.Dispatch<React.SetStateAction<number | null>>;
-  getDisplayPrice: (product: Product) => number;
   productImage: string;
 }
 
@@ -19,17 +18,14 @@ const EachProductShow = ({
   setProductImage,
   hoveredProduct,
   setHoveredProduct,
-  getDisplayPrice,
   productImage,
 }: EachProductShowProps) => {
-  console.log("Products in EachProductShow:", products);
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-12">
       {products?.map((product: Product) => {
         const mainImage = product.images?.sort(
           (a, b) => a.serialNo - b.serialNo,
         )[0];
-        const displayPrice = getDisplayPrice(product);
 
         return (
           <Link

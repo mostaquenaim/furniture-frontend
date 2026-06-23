@@ -38,14 +38,6 @@ export default function FlashSalesComp({
   const endDate = saleEndDate ? new Date(saleEndDate) : null;
   const showCountdown = !!endDate && endDate > new Date();
 
-  const getDisplayPrice = (product: Product) => {
-    if (!product.discount) return product.basePrice;
-    if (product.discountType === "PERCENT") {
-      return product.basePrice - (product.basePrice * product.discount) / 100;
-    }
-    return product.basePrice - product.discount;
-  };
-
   const handlePrev = () => {
     if (currentPage > 1) {
       setCurrentPage((p) => p - 1);
@@ -96,7 +88,6 @@ export default function FlashSalesComp({
         <EachProductShow
           products={products}
           setSelectedProduct={setSelectedProduct}
-          getDisplayPrice={getDisplayPrice}
           productImage={productImage}
           hoveredProduct={hoveredProduct}
           setProductImage={setProductImage}

@@ -64,18 +64,15 @@ export function QuickShopModal({
 
   if (!product) return null;
 
-  const basePrice = currentVariant?.size?.basePrice || product.basePrice;
-
-  const now = new Date();
-  const isDiscountActive =
-    product.discount > 0 &&
-    product.discountStart &&
-    product.discountEnd &&
-    new Date(product.discountStart) <= now &&
-    new Date(product.discountEnd) >= now;
-  const discountedPrice = isDiscountActive
-    ? currentVariant?.size?.price || product.price
-    : basePrice;
+  // ProductSize has no date window of its own — its price is already final,
+  // so it's used as-is rather than gating it behind the *product-level*
+  // discount window (which would hide a real, currently-charged variant
+  // discount whenever the product-level window happens to be inactive).
+  // Falls back to product.price/basePrice — already window-checked
+  // server-side via sanitizeDiscount — only when no variant is selected.
+  const basePrice = currentVariant?.size?.basePrice ?? product.basePrice;
+  const discountedPrice =
+    currentVariant?.size?.price ?? product.price ?? basePrice;
 
   console.log(discountedPrice, "discountedPrice");
 
