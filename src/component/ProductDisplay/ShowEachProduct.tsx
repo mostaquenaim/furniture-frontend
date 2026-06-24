@@ -790,10 +790,18 @@ export default function ShowEachProduct() {
                     }}
                   >
                     <div
-                      className="w-full h-full rounded-full"
+                      className="w-full h-full rounded-full overflow-hidden"
                       style={{ backgroundColor: c.color.hexCode }}
                       title={c.color.name}
-                    />
+                    >
+                      {c.color.image && (
+                        <img
+                          src={c.color.image}
+                          alt={c.color.name}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
                   </button>
                 ))}
               </div>

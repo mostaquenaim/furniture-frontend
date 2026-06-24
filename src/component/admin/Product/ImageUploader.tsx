@@ -321,16 +321,37 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
               onChange={(e) => onUseDefaultChange(colorId, e.target.checked)}
               className="w-4 h-4 rounded gray-border"
             />
-            <span className="text-muted-foreground">Use default images</span>
+            <span className="text-muted-foreground">
+              {useDefault ? "Using default images" : "Use default images"}
+            </span>
           </label>
         </div>
       </div>
 
       {useDefault ? (
-        <div className="text-sm text-muted-foreground italic p-4 gray-border border-dashed rounded-lg text-center">
-          Using {defaultImages.length} default image(s). Uncheck to upload
-          color-specific images.
-        </div>
+        defaultImages.length === 0 ? (
+          <div className="text-sm text-muted-foreground italic p-4 gray-border border-dashed rounded-lg text-center">
+            No default images uploaded yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {defaultImages.map((image, index) => (
+              <div
+                key={image.id}
+                className="relative aspect-square rounded-lg overflow-hidden gray-border bg-background opacity-75"
+              >
+                <img
+                  src={image.preview}
+                  alt={`Default ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm rounded px-2 py-0.5 text-xs font-medium">
+                  #{image.serialNo}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {images?.map((image, index) => (

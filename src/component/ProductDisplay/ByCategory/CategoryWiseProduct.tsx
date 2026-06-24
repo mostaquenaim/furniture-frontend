@@ -192,7 +192,7 @@ export default function CategoryWiseProduct() {
             { name: "Price", data: priceData.priceRanges },
             // { name: "Rooms", data: [] },
             // { name: "In Stock", data: [] },
-            { name: "Color", data: colorsData },
+            // { name: "Color", data: colorsData },
             { name: "Material", data: materials },
           ]?.map((filter) => (
             <div

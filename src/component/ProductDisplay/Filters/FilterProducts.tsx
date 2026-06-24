@@ -160,7 +160,7 @@ const FilterProducts = ({
         <div className="hidden md:flex items-center gap-8 border-t border-gray-100 pt-4">
           {[
             { name: "Price", data: priceData.priceRanges },
-            { name: "Color", data: colorsData },
+            // { name: "Color", data: colorsData },
             { name: "Material", data: materialData },
           ].map((filter) => (
             <div key={filter.name} className="relative">

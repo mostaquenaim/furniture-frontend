@@ -160,8 +160,15 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   // the backend's cart-conflict guard unnecessarily
   const colorsChanged = React.useRef(!isEditMode);
 
+  // Track unsaved changes to warn before tab close / in-app navigation
+  const isDirty = React.useRef(false);
+
   // ─── Form state ──────────────────────────────────────────────────────────
-  const [formData, setFormData] = useState<ProductFormData>(initialFormData);
+  const [formData, _setFormData] = useState<ProductFormData>(initialFormData);
+  const setFormData = (updater: React.SetStateAction<ProductFormData>) => {
+    if (!isHydrating.current) isDirty.current = true;
+    _setFormData(updater);
+  };
 
   // ─── Tag state ───────────────────────────────────────────────────────────
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
@@ -172,7 +179,11 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   const [sizeSelections, setSizeSelections] = useState<{
     [colorId: number]: SizeDetail[];
   }>({});
-  const [defaultImages, setDefaultImages] = useState<ProductImageItem[]>([]);
+  const [defaultImages, _setDefaultImages] = useState<ProductImageItem[]>([]);
+  const setDefaultImages = (updater: React.SetStateAction<ProductImageItem[]>) => {
+    if (!isHydrating.current) isDirty.current = true;
+    _setDefaultImages(updater);
+  };
   const [colorImages, setColorImages] = useState<
     Record<number, ProductImageItem[]>
   >({});
@@ -213,6 +224,17 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
     fetchProduct();
   }, [productId]);
+
+  // ─── Warn before tab close / browser refresh with unsaved changes ─────────
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty.current) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   // ─── Hydrate form with existing product data ──────────────────────────────
   const hydrateForm = (product: Product) => {
@@ -262,7 +284,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
     setDefaultImages(
       product?.images?.map((img: any) => ({
-        id: img.id,
+        id: String(img.id),
         preview: img.image,
         serialNo: img.serialNo,
         colorId: null,
@@ -281,10 +303,12 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     product.colors.forEach((c: any) => {
       useDefault[c.colorId] = c.useDefaultImages ?? true;
       colorImgs[c.colorId] =
-        c.images?.map((img: any) => ({
-          id: img.id,
+        c.images?.map((img: any, idx: number) => ({
+          id: String(img.id),
           preview: img.image,
           file: null,
+          colorId: c.colorId,
+          serialNo: idx + 1,
         })) || [];
       colorSizes[c.colorId] =
         c.sizes?.map((s: any) => ({
@@ -510,6 +534,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     value: string | number | null,
   ) => {
     colorsChanged.current = true;
+    isDirty.current = true;
     setSizeSelections((prev) => {
       if (!prev[colorId]) return prev;
 
@@ -535,11 +560,13 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     images: ProductImageItem[],
   ) => {
     colorsChanged.current = true;
+    isDirty.current = true;
     setColorImages((prev) => ({ ...prev, [colorId]: images }));
   };
 
   const handleColorUseDefaultChange = (colorId: number, useDefault: boolean) => {
     colorsChanged.current = true;
+    isDirty.current = true;
     setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
   };
 
@@ -635,12 +662,15 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   const addTag = (tag: Tag) => {
     if (selectedTags.length >= 10 || selectedTags.find((t) => t.id === tag.id))
       return;
+    isDirty.current = true;
     setSelectedTags((prev) => [...prev, tag]);
     setShowDropdown(false);
   };
 
-  const removeTag = (id: number) =>
+  const removeTag = (id: number) => {
+    isDirty.current = true;
     setSelectedTags((prev) => prev.filter((t) => t.id !== id));
+  };
 
   const handleCreateTag = async () => {
     if (!searchTerm.trim() || selectedTags.length >= 10) return;
@@ -813,6 +843,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
         };
 
         await axiosSecure.patch(`/product/${productId}`, payload);
+        isDirty.current = false;
         toast.success("Product updated successfully");
       } else {
         // ── CREATE ──
@@ -916,6 +947,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
         };
 
         await axiosSecure.post("/products", submitData);
+        isDirty.current = false;
         toast.success("Product created successfully!");
       }
     } catch (error: any) {
@@ -1123,9 +1155,18 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                     }`}
                   >
                     <div
-                      className="w-5 h-5 rounded-full border border-border shadow-sm"
+                      className="w-5 h-5 rounded-full border border-border shadow-sm overflow-hidden shrink-0"
                       style={{ backgroundColor: color.hexCode }}
-                    />
+                    >
+                      {color.image && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={color.image}
+                          alt={color.name}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
                     <span className="text-sm font-medium">{color.name}</span>
                   </button>
                 ))}
@@ -1344,7 +1385,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                         onClick={handleCreateTag}
                         className="px-3 py-2 text-sm text-blue-600 hover:bg-gray-100 cursor-pointer"
                       >
-                        + Create "{searchTerm}"
+                        + Create &quot;{searchTerm}&quot;
                       </div>
                     )}
                   </div>
@@ -1508,9 +1549,16 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           <div className="flex justify-end gap-3 pt-6">
             <button
               type="button"
-              onClick={() =>
-                router.push(isEditMode ? "/admin/products" : "/admin")
-              }
+              onClick={() => {
+                if (
+                  isDirty.current &&
+                  !window.confirm(
+                    "You have unsaved changes. Leave without saving?",
+                  )
+                )
+                  return;
+                router.push(isEditMode ? "/admin/products" : "/admin");
+              }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
             >
               <X className="w-4 h-4" />
