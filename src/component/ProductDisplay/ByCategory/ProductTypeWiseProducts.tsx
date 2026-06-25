@@ -4,6 +4,7 @@
 "use client";
 import sortData from "@/data/SortData";
 import useFetchSubcategoryWiseProducts from "@/hooks/Products/useFetchSubcategoryWiseProducts";
+import useFetchCategoryFilters from "@/hooks/Attributes/useFetchCategoryFilters";
 import { Product, ProductImage } from "@/types/product.types";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -44,6 +45,8 @@ export default function ProductTypeWiseProducts() {
     sortBy?: string;
     order?: "asc" | "desc";
   }>({});
+
+  const { colors, materials } = useFetchCategoryFilters({ slug, type: "subcategory" });
 
   const { products, meta, isLoading, isFetching, blog, subCategory, refetch } =
     useFetchSubcategoryWiseProducts(slug, {
@@ -185,10 +188,10 @@ export default function ProductTypeWiseProducts() {
         setFilters={setFilters}
         setCurrentPage={setCurrentPage}
         filters={filters}
-        // subcategories={subcategories}
+        colors={colors}
+        materials={materials}
         handleSortChange={handleSortChange}
         selectedSort={selectedSort}
-        // slug={slug}
         totalProducts={totalProducts}
       />
 

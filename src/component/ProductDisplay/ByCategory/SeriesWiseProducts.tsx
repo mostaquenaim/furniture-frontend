@@ -8,6 +8,7 @@ import { Product, ProductImage } from "@/types/product.types";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useFetchSeriesWiseProducts from "@/hooks/Products/useFetchSeriesWiseProducts";
+import useFetchCategoryFilters from "@/hooks/Attributes/useFetchCategoryFilters";
 import DisplayHeading from "../Heading/DisplayHeading";
 import BottomPagination from "../../Pagination/BottomPagination";
 import EachProductShow from "../EachProductShow";
@@ -44,6 +45,8 @@ export default function SeriesWiseProducts() {
     sortBy?: string;
     order?: "asc" | "desc";
   }>({});
+
+  const { colors, materials } = useFetchCategoryFilters({ slug, type: "series" });
 
   const {
     products,
@@ -184,6 +187,8 @@ export default function SeriesWiseProducts() {
         setFilters={setFilters}
         setCurrentPage={setCurrentPage}
         filters={filters}
+        colors={colors}
+        materials={materials}
         subcategories={subcategories}
         handleSortChange={handleSortChange}
         selectedSort={selectedSort}

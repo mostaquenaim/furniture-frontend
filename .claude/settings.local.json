@@ -49,7 +49,26 @@
       "Bash(curl -s -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJDVVNUT01FUiIsImp0aSI6Ijk5NTg1NWM2LWM4NGItNGI5Yi1hZTZjLWY2YTIyMTc2OWZmMSIsImlhdCI6MTc4MjA1Mjc0NCwiZXhwIjoxNzgyNjU3NTQ0fQ.ZJbk6wor4ZwtFzoPfVEcFFfuCsAUIXyKOlmLqoJepoo' -H 'Content-Type: application/json' -d '{ *)",
       "Bash(tee /tmp/order_create_response.json)",
       "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGUiOiJTVVBFUkFETUlOIiwianRpIjoiYjY3MjFlMDgtNWNmMi00MDA5LWJhM2YtNzQ3YThlZDUwY2U2IiwiaWF0IjoxNzgyMDUyNzQ0LCJleHAiOjE3ODI2NTc1NDR9.5iydur24fFCg-MK-ZvRMf90SRqtsF_QmbB-O-QEYrwU' 'http://localhost:3000/api/dashboard?start=2026-05-01&end=2026-06-21')",
-      "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGUiOiJTVVBFUkFETUlOIiwianRpIjoiYjY3MjFlMDgtNWNmMi00MDA5LWJhM2YtNzQ3YThlZDUwY2U2IiwiaWF0IjoxNzgyMDUyNzQ0LCJleHAiOjE3ODI2NTc1NDR9.5iydur24fFCg-MK-ZvRMf90SRqtsF_QmbB-O-QEYrwU' 'http://localhost:3000/api/dashboard?start=2026-05-01&end=2026-06-21' -o /tmp/dash.json)"
+      "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGUiOiJTVVBFUkFETUlOIiwianRpIjoiYjY3MjFlMDgtNWNmMi00MDA5LWJhM2YtNzQ3YThlZDUwY2U2IiwiaWF0IjoxNzgyMDUyNzQ0LCJleHAiOjE3ODI2NTc1NDR9.5iydur24fFCg-MK-ZvRMf90SRqtsF_QmbB-O-QEYrwU' 'http://localhost:3000/api/dashboard?start=2026-05-01&end=2026-06-21' -o /tmp/dash.json)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:7000\" -UseBasicParsing -TimeoutSec 5)",
+      "PowerShell(npx playwright --version 2>&1)",
+      "PowerShell(node -e \"require\\('@playwright/test'\\)\" 2>&1)",
+      "PowerShell(npx playwright install-deps chromium 2>&1 | Select-Object -First 5; Get-ChildItem \"$env:LOCALAPPDATA\\\\ms-playwright\" -ErrorAction SilentlyContinue | Select-Object Name)",
+      "PowerShell(\\(Get-Command npx\\).Source; npx --yes playwright --version 2>&1 | Select-Object -First 3)",
+      "PowerShell(npm root -g)",
+      "PowerShell(node -e \"require\\('C:/Users/USER/AppData/Local/Temp/claude/pw-temp/node_modules/playwright'\\); console.log\\('playwright OK'\\)\")",
+      "PowerShell(node \"C:\\\\Users\\\\USER\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\e--Sammtech-furniture-bideshi-furniture-frontend-sakigai\\\\be674092-84f2-444b-ae80-3035351d93bf\\\\scratchpad\\\\verify-admin-true.js\" 2>&1)",
+      "PowerShell($chromePath = Get-ChildItem \"$env:LOCALAPPDATA\\\\ms-playwright\\\\chromium-1193\\\\chrome-win64\" -Filter \"chrome.exe\" | Select-Object -ExpandProperty FullName; Write-Host \"Chrome: $chromePath\")",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3000/api/products?limit=3\" -UseBasicParsing -TimeoutSec 5 | Select-Object StatusCode, @{N='Body';E={$_.Content.Substring\\(0,300\\)}})",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3000/api/product?limit=3\" -UseBasicParsing -TimeoutSec 5)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3000/api\" -UseBasicParsing -TimeoutSec 5)",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:3000/api\" -UseBasicParsing -TimeoutSec 5; $r.Content.Substring\\(0,500\\))",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:3000/api\" -UseBasicParsing -TimeoutSec 5; Write-Host \"Status: $\\($r.StatusCode\\)\"; Write-Host \"Content: $\\($r.Content\\)\")",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:3000/api/products\" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue; if \\($r\\) { Write-Host \"Status: $\\($r.StatusCode\\)\"; $r.Content.Substring\\(0,300\\) } else { \"Failed\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/api/product/all\" -UseBasicParsing -TimeoutSec 5; \"Status: $\\($r.StatusCode\\)\"; $r.Content.Substring\\(0,[Math]::Min\\(400,$r.Content.Length\\)\\) } catch { \"Error: $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/api/product/today-product-again\" -UseBasicParsing -TimeoutSec 5; $obj = $r.Content | ConvertFrom-Json; \"discount: $\\($obj.discount\\), discountType: $\\($obj.discountType\\), tags count: $\\($obj.tags.Count\\), colors count: $\\($obj.colors.Count\\)\" } catch { \"Error: $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/api/product/today-product-again?admin=true\" -UseBasicParsing -TimeoutSec 5; $obj = $r.Content | ConvertFrom-Json; \"discount: $\\($obj.discount\\), discountType: $\\($obj.discountType\\), tags count: $\\($obj.tags.Count\\), colors count: $\\($obj.colors.Count\\)\" } catch { \"Error: $_\" })",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:3000/api/product/today-product-again\" -UseBasicParsing -TimeoutSec 5; $obj = $r.Content | ConvertFrom-Json; Write-Host \"=== WITHOUT admin=true ===\"; foreach \\($c in $obj.colors\\) { Write-Host \"Color $\\($c.colorId\\) sizes:\"; foreach \\($s in $c.sizes\\) { Write-Host \"  sizeId=$\\($s.sizeId\\) qty=$\\($s.quantity\\) price=$\\($s.price\\)\" } })"
     ]
   }
 }

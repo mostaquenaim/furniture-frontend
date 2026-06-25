@@ -5,9 +5,9 @@
 import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
 import useFetchSeriesWiseSubcategories from "@/hooks/Categories/Subcategories/useFetchSeriesWiseSubcategories";
-import useFetchColors from "@/hooks/Attributes/useFetchColors";
-import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
 import { SubCategory } from "@/types/menu";
+import { Color } from "@/types/product.types";
+import { Material } from "@/hooks/Attributes/useFetchMaterials";
 import {
   ChevronDown,
   ChevronLeft,
@@ -100,6 +100,8 @@ const FilterDropdown = ({
 
 type FilterProps = {
   slug?: string;
+  colors: Color[];
+  materials: Material[];
   setCurrentPage: Dispatch<SetStateAction<number>>;
   filters: {
     colorIds?: number[];
@@ -127,6 +129,8 @@ const FILTERS = ["Color", "Price", "Material"];
 
 const FilterProducts = ({
   slug,
+  colors: colorsData,
+  materials: materialData,
   setCurrentPage,
   filters,
   setFilters,
@@ -135,9 +139,6 @@ const FilterProducts = ({
   selectedSort,
   totalProducts,
 }: FilterProps) => {
-  const { colors: colorsData, isLoading: isColorLoading } = useFetchColors({});
-  const { materials: materialData, isLoading: isMaterialLoading } =
-    useFetchMaterials({});
   const { subCategoryList: seriesWiseSubcategories } =
     useFetchSeriesWiseSubcategories({
       seriesSlug: slug,
@@ -146,6 +147,12 @@ const FilterProducts = ({
   if (subcategories && !FILTERS.includes("Product Type")) {
     FILTERS.push("Product Type");
   }
+
+  const visibleMobileFilters = FILTERS.filter((item) => {
+    if (item === "Color") return colorsData.length > 0;
+    if (item === "Material") return materialData.length > 0;
+    return true;
+  });
 
   const [activeDesktopFilter, setActiveDesktopFilter] = useState<string | null>(
     null,
@@ -160,9 +167,9 @@ const FilterProducts = ({
         <div className="hidden md:flex items-center gap-8 border-t border-gray-100 pt-4">
           {[
             { name: "Price", data: priceData.priceRanges },
-            // { name: "Color", data: colorsData },
+            { name: "Color", data: colorsData },
             { name: "Material", data: materialData },
-          ].map((filter) => (
+          ].filter((f) => f.name === "Price" || f.data.length > 0).map((filter) => (
             <div key={filter.name} className="relative">
               <button
                 onClick={() =>
@@ -432,7 +439,7 @@ const FilterProducts = ({
 
                   {/* Main Category List */}
                   <div className="divide-y divide-gray-100">
-                    {FILTERS?.map((item) => (
+                    {visibleMobileFilters.map((item) => (
                       <button
                         key={item}
                         onClick={() => setActiveFilterTab(item)}
