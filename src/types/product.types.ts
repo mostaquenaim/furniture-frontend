@@ -76,6 +76,8 @@ export interface ProductSize {
   size: ProductSizeRelation;
   colorId?: number;
   color?: ProductColor;
+  discountType?: "PERCENT" | "FIXED" | null;
+  discount?: number;
 }
 
 export interface ProductColor {

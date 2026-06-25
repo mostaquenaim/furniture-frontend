@@ -212,7 +212,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
     const fetchProduct = async () => {
       try {
-        const { data } = await axiosPublic.get(`/product/${productId}`);
+        const { data } = await axiosPublic.get(`/product/${productId}?admin=true`);
         hydrateForm(data);
         isHydrating.current = false;
       } catch {
@@ -575,6 +575,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   ) => {
     const value = e.target.value as "PERCENT" | "FIXED";
 
+    colorsChanged.current = true;
     setFormData((prev) => ({
       ...prev,
       discountType: value,
@@ -607,6 +608,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === "" ? 0 : Number(e.target.value);
 
+    colorsChanged.current = true;
     setFormData((prev) => ({
       ...prev,
       discount: value,
@@ -790,7 +792,6 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                     );
 
                 const sizes = (sizeSelections[colorId] || [])
-                  .filter((s) => s.sku !== "")
                   .map((size) => ({
                     sizeId: size.sizeId,
                     sku: size.sku || "",

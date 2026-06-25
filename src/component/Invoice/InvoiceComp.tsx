@@ -109,7 +109,7 @@ const InvoiceComp = () => {
       <div className="min-h-screen bg-[#f5f3ef] py-12 px-4 print:bg-white print:py-0">
 
         {/* ── Action bar ── */}
-        <div className="max-w-[740px] mx-auto mb-5 flex items-center justify-between no-print">
+        <div className="max-w-185 mx-auto mb-5 flex items-center justify-between no-print">
           <div>
             <p className="inv-font text-xl font-light text-slate-800 tracking-wide">Tax Invoice</p>
             <p className="inv-mono text-xs text-slate-400 mt-0.5">{invoice.invoiceNo}</p>

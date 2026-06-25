@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction, memo } from "react";
 import { FormSection } from "../FormSection";
 import { ProductFormData, SizeDetail } from "../ProductForm";
 import { Color, Variant } from "@/types/product.types";
+import { devLog } from "@/utils/devlog";
 
 interface Props {
   formData: ProductFormData;
@@ -109,7 +110,7 @@ const VariantNSizes = ({
                             <th className="pb-3">Discount</th>
                             <th className="pb-3">Qty</th>
                             <th className="pb-3">Final Price</th>
-                            <th className="pb-3 text-right">Action</th>
+                            {/* <th className="pb-3 text-right">Action</th> */}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -154,6 +155,7 @@ const SizeRow = memo(
     calculateSizeDiscountedPrice,
     onFieldChange,
   }: any) => {
+    devLog(sizeDetail, "sizeDetail");
     const size = availableSizes.find((s: any) => s.id === sizeDetail.sizeId);
     const finalPrice = calculateSizeDiscountedPrice(sizeDetail);
     const hasCustomDiscount =
