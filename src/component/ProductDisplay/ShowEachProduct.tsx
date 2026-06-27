@@ -462,6 +462,82 @@ export default function ShowEachProduct() {
     router.push("/cart");
   };
 
+  const handleBuyNow = async () => {
+    if (!currentVariant?.size) {
+      toast.error("Please select a size");
+      return;
+    }
+    if (quantity < 1) {
+      toast.error("Please select a quantity");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      const productSizeId = selectedSizeId || currentVariant?.color?.sizes?.[0].id;
+      const hasUser = isAuthenticated();
+
+      if (!hasUser) {
+        const visitorId = await getVisitorId();
+        await axiosPublic.post("/guest/cart/items", { visitorId, productSizeId, quantity });
+      } else {
+        await axiosSecure.post("/cart/items", { productSizeId, quantity });
+      }
+
+      refetch();
+
+      if (product) {
+        const salePrice = discountedPrice;
+        const base = currentVariant?.size?.basePrice || product.basePrice;
+
+        pushGTMEvent({
+          event: "add_to_cart",
+          currency: "BDT",
+          value: salePrice * quantity,
+          items: [
+            {
+              item_id: String(product.id),
+              item_name: product.title,
+              price: salePrice,
+              quantity,
+              item_category:
+                product.subCategories?.[0]?.subCategory?.category?.name || "",
+              item_subCategory:
+                product.subCategories?.[0]?.subCategory?.name || "",
+              item_series:
+                product.subCategories?.[0]?.subCategory?.category?.series
+                  ?.name || "",
+              item_color: currentVariant?.color?.color?.name || "",
+              item_size: currentVariant?.size?.size?.name || "",
+              item_material: product.material?.name || "",
+              item_variant: [
+                currentVariant?.color?.color?.name,
+                currentVariant?.size?.size?.name,
+                product.material?.name,
+              ]
+                .filter(Boolean)
+                .join(" / "),
+              is_on_sale: base - salePrice >= 1,
+              discount: Math.max(0, base - salePrice),
+              availability: "instock",
+            },
+          ],
+        });
+      }
+
+      router.push("/cart");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const errorMessage = (err.response?.data as { message?: string })?.message;
+        toast.error(errorMessage || "Failed to process");
+      } else {
+        toast.error("Failed to process");
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   const handleToggleWish = async () => {
     if (isAuthenticated()) {
       try {
@@ -896,13 +972,22 @@ export default function ShowEachProduct() {
             disabled={
               isAdding || isCartLoading || !currentVariant?.size?.quantity
             }
-            className="w-full bg-[#4E5B6D] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#3d4857] transition mb-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-[#4E5B6D] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#3d4857] transition mb-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isAdding
               ? "Adding..."
               : isCartLoading
                 ? "Loading..."
                 : "Add to Basket"}
+          </button>
+          <button
+            onClick={handleBuyNow}
+            disabled={
+              isAdding || isCartLoading || !currentVariant?.size?.quantity
+            }
+            className="w-full border border-[#4E5B6D] text-[#4E5B6D] py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#4E5B6D] hover:text-white transition mb-4 disabled:border-gray-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+          >
+            Buy Now
           </button>
 
           {/* Logistics from Object */}
