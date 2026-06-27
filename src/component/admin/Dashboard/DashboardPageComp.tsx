@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   getDashboardData,
   type DashboardData,
+  type DashboardPeriod,
 } from "@/lib/api/actions/dashboard";
 import StatsGrid from "./Components/StatsGrid";
 import SalesChart from "./Components/SalesChart";
@@ -19,11 +20,18 @@ import UserRetentionChart from "./Components/UserRetentionChart";
 
 const toDateInput = (d: Date) => d.toISOString().split("T")[0];
 
-const PRESETS = [
-  { label: "7d", days: 7 },
-  { label: "30d", days: 30 },
-  { label: "90d", days: 90 },
-] as const;
+const PERIODS: { label: string; value: DashboardPeriod }[] = [
+  { label: "Day", value: "day" },
+  { label: "Week", value: "week" },
+  { label: "Month", value: "month" },
+];
+
+const TREND_SUBTITLE: Record<DashboardPeriod | "custom", string> = {
+  day: "Today by hour",
+  week: "Last 7 days",
+  month: "Last 30 days",
+  custom: "Custom range",
+};
 
 // ── Component
 export default function DashboardPageComp() {
@@ -32,8 +40,11 @@ export default function DashboardPageComp() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [dateRange, setDateRange] = useState({
-    start: toDateInput(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
+  const [activePeriod, setActivePeriod] = useState<DashboardPeriod | "custom">(
+    "month",
+  );
+  const [customRange, setCustomRange] = useState({
+    start: toDateInput(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)),
     end: toDateInput(new Date()),
   });
 
@@ -44,7 +55,12 @@ export default function DashboardPageComp() {
       setError(null);
 
       try {
-        const result = await getDashboardData(dateRange);
+        const options =
+          activePeriod === "custom"
+            ? { start: customRange.start, end: customRange.end }
+            : { period: activePeriod };
+
+        const result = await getDashboardData(options);
         setData(result);
       } catch (err: any) {
         console.error("Dashboard fetch failed:", err);
@@ -54,18 +70,20 @@ export default function DashboardPageComp() {
         setRefreshing(false);
       }
     },
-    [dateRange],
+    [activePeriod, customRange],
   );
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const applyPreset = (days: number) => {
-    setDateRange({
-      start: toDateInput(new Date(Date.now() - days * 24 * 60 * 60 * 1000)),
-      end: toDateInput(new Date()),
-    });
+  const handlePeriodClick = (period: DashboardPeriod) => {
+    setActivePeriod(period);
+  };
+
+  const handleCustomDateChange = (field: "start" | "end", value: string) => {
+    setCustomRange((prev) => ({ ...prev, [field]: value }));
+    setActivePeriod("custom");
   };
 
   // ── Loading ────────────────
@@ -112,50 +130,46 @@ export default function DashboardPageComp() {
 
           {/* Date controls */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            {/* Preset buttons */}
+            {/* Day / Week / Month buttons */}
             <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
-              {PRESETS.map((p) => {
-                const presetStart = toDateInput(
-                  new Date(Date.now() - p.days * 24 * 60 * 60 * 1000),
-                );
-                const isActive = dateRange.start === presetStart;
-                return (
-                  <button
-                    key={p.label}
-                    onClick={() => applyPreset(p.days)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                      isActive
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                );
-              })}
+              {PERIODS.map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => handlePeriodClick(p.value)}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    activePeriod === p.value
+                      ? "bg-gray-900 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
 
-            {/* Date pickers */}
-            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+            {/* Custom date pickers */}
+            <div
+              className={`flex items-center gap-2 bg-white border rounded-lg px-3 py-2 transition-colors ${
+                activePeriod === "custom"
+                  ? "border-gray-900"
+                  : "border-gray-200"
+              }`}
+            >
               <Calendar size={14} className="text-gray-400 shrink-0" />
               <input
                 type="date"
-                value={dateRange.start}
-                max={dateRange.end}
-                onChange={(e) =>
-                  setDateRange((prev) => ({ ...prev, start: e.target.value }))
-                }
+                value={customRange.start}
+                max={customRange.end}
+                onChange={(e) => handleCustomDateChange("start", e.target.value)}
                 className="text-sm text-gray-700 bg-transparent border-none outline-none w-32"
               />
               <span className="text-gray-400 text-xs">→</span>
               <input
                 type="date"
-                value={dateRange.end}
-                min={dateRange.start}
+                value={customRange.end}
+                min={customRange.start}
                 max={toDateInput(new Date())}
-                onChange={(e) =>
-                  setDateRange((prev) => ({ ...prev, end: e.target.value }))
-                }
+                onChange={(e) => handleCustomDateChange("end", e.target.value)}
                 className="text-sm text-gray-700 bg-transparent border-none outline-none w-32"
               />
             </div>
@@ -175,7 +189,7 @@ export default function DashboardPageComp() {
           </div>
         </div>
 
-        {/* Stale data overlay — show spinner overlay while refreshing but keep old data visible */}
+        {/* Stale data overlay */}
         <div
           className={`relative transition-opacity ${refreshing ? "opacity-60 pointer-events-none" : ""}`}
         >
@@ -190,7 +204,9 @@ export default function DashboardPageComp() {
                 <h2 className="text-base font-semibold text-gray-900">
                   Sales Trend
                 </h2>
-                <p className="text-sm text-gray-500">Revenue over time</p>
+                <p className="text-sm text-gray-500">
+                  {TREND_SUBTITLE[activePeriod]}
+                </p>
               </div>
               <SalesChart data={data.salesTrend} />
             </div>

@@ -14,10 +14,11 @@ export interface DashboardStats {
   conversionRate: number;
   activeUsers: number;
   inventoryAlerts: number;
+  newUsers: number;
 }
 
 export interface SalesTrendPoint {
-  date: string; // "MM-DD"
+  date: string; // "HH:00" for day | weekday for week | "MM-DD" for month/custom
   revenue: number;
   orders: number;
 }
@@ -56,7 +57,7 @@ export interface UserRetentionPoint {
   month: string; // e.g. "Jan 2026"
   newCustomers: number;
   returningCustomers: number;
-  retentionRate: number; // percentage, 1 decimal
+  retentionRate: number;
 }
 
 export interface TopViewedProduct {
@@ -76,28 +77,27 @@ export interface DashboardData {
   userRetention: UserRetentionPoint[];
 }
 
+export type DashboardPeriod = "day" | "week" | "month";
+
 // ── Server Action ─────────────────────────────────────────────────────────────
 
-export async function getDashboardData(dateRange: {
-  start: string;
-  end: string;
-}): Promise<DashboardData> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+export async function getDashboardData(
+  options:
+    | { period: DashboardPeriod }
+    | { start: string; end: string },
+): Promise<DashboardData> {
+  const token = (await cookies()).get("token")?.value ?? null;
 
-  const params = new URLSearchParams({
-    start: dateRange.start,
-    end: dateRange.end,
-  });
+  const queryParams: Record<string, string> =
+    "period" in options
+      ? { period: options.period }
+      : { start: options.start, end: options.end };
 
   try {
     const res = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/dashboard`,
       {
-        params: {
-          start: dateRange.start,
-          end: dateRange.end,
-        },
+        params: queryParams,
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
