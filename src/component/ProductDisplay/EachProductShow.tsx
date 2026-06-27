@@ -27,6 +27,12 @@ const EachProductShow = ({
           (a, b) => a.serialNo - b.serialNo,
         )[0];
 
+        const isNew =
+          product.isNew ??
+          (!!product.createdAt &&
+            Date.now() - new Date(product.createdAt).getTime() <=
+              60 * 24 * 60 * 60 * 1000);
+
         return (
           <Link
             href={`/products/${product.slug}`}
@@ -67,6 +73,13 @@ const EachProductShow = ({
                   {product.discountType === "PERCENT"
                     ? `${product.discount}% OFF`
                     : `৳${product.discount} OFF`}
+                </div>
+              )}
+
+              {/* New Badge — auto-hides after 60 days from createdAt */}
+              {isNew && (
+                <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded">
+                  New!
                 </div>
               )}
 

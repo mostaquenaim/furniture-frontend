@@ -149,8 +149,8 @@ const FilterProducts = ({
   }
 
   const visibleMobileFilters = FILTERS.filter((item) => {
-    if (item === "Color") return colorsData.length > 0;
-    if (item === "Material") return materialData.length > 0;
+    if (item === "Color" && colorsData) return colorsData.length > 0;
+    if (item === "Material" && materialData) return materialData.length > 0;
     return true;
   });
 
@@ -169,7 +169,7 @@ const FilterProducts = ({
             { name: "Price", data: priceData.priceRanges },
             { name: "Color", data: colorsData },
             { name: "Material", data: materialData },
-          ].filter((f) => f.name === "Price" || f.data.length > 0).map((filter) => (
+          ].filter((f) => f.name === "Price" || (f.data && f.data.length > 0)).map((filter) => (
             <div key={filter.name} className="relative">
               <button
                 onClick={() =>

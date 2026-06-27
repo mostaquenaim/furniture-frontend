@@ -28,6 +28,7 @@ export interface Product {
   updatedAt: string;
   materialId?: number | null;
   material?: Material;
+  isNew?: boolean;
   isFeatured?: boolean;
   brand?: string | null;
   tags?: Tag[];

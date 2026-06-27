@@ -626,6 +626,11 @@ export default function ShowEachProduct() {
   const discountPercent = isDiscountActive
     ? Math.round(((basePrice - discountedPrice) / basePrice) * 100)
     : 0;
+  const isNew =
+    product.isNew ??
+    (!!product.createdAt &&
+      Date.now() - new Date(product.createdAt).getTime() <=
+        60 * 24 * 60 * 60 * 1000);
 
   return (
     <div className="max-w-360 mx-auto px-4 md:px-12 py-8 font-sans text-[#222222]">
@@ -778,6 +783,13 @@ export default function ShowEachProduct() {
             {isDiscountActive && (
               <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase">
                 -{discountPercent}% OFF
+              </div>
+            )}
+
+            {/* New Badge — auto-hides after 60 days from createdAt */}
+            {isNew && (
+              <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 uppercase">
+                New!
               </div>
             )}
           </div>

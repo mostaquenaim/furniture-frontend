@@ -8,14 +8,19 @@ const useFetchSeries = ({ isActive = true }: { isActive?: boolean | null }) => {
   const [seriesList, setSeries] = useState<Series[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log(isActive, " check if active");
-
   useEffect(() => {
     const fetchSeries = async () => {
       try {
         const res = await axiosPublic.get(`/series?isActive=${isActive}`);
-        console.log(res.data, "serieees");
-        setSeries(res.data);
+        const data: Series[] = res.data;
+
+        // Pin NEW first, SALE last — backend guarantees this but enforce client-side too
+        const newItems = data.filter((s) => s.seriesType === "NEW");
+        const saleItems = data.filter((s) => s.seriesType === "SALE");
+        const normal = data.filter(
+          (s) => s.seriesType !== "NEW" && s.seriesType !== "SALE",
+        );
+        setSeries([...newItems, ...normal, ...saleItems]);
       } catch {
         toast.error("Failed to load series");
       } finally {

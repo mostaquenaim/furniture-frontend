@@ -221,6 +221,10 @@ const AdminDrawer = () => {
               href: "/admin/banners/broad-banners",
               label: "Broad Banner",
             },
+            {
+              href: "/admin/banners/urgency-banners",
+              label: "Urgency Banner",
+            },
           ],
         },
         {
@@ -238,6 +242,10 @@ const AdminDrawer = () => {
             {
               href: "/admin/homepage-gallery",
               label: "Homepage Gallery",
+            },
+            {
+              href: "/admin/featured-categories",
+              label: "Featured Categories",
             },
           ],
         },

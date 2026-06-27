@@ -70,7 +70,15 @@
       "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/api/product/today-product-again?admin=true\" -UseBasicParsing -TimeoutSec 5; $obj = $r.Content | ConvertFrom-Json; \"discount: $\\($obj.discount\\), discountType: $\\($obj.discountType\\), tags count: $\\($obj.tags.Count\\), colors count: $\\($obj.colors.Count\\)\" } catch { \"Error: $_\" })",
       "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:3000/api/product/today-product-again\" -UseBasicParsing -TimeoutSec 5; $obj = $r.Content | ConvertFrom-Json; Write-Host \"=== WITHOUT admin=true ===\"; foreach \\($c in $obj.colors\\) { Write-Host \"Color $\\($c.colorId\\) sizes:\"; foreach \\($s in $c.sizes\\) { Write-Host \"  sizeId=$\\($s.sizeId\\) qty=$\\($s.quantity\\) price=$\\($s.price\\)\" } })",
       "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:3000/api/product/today-product-again?admin=true\" -UseBasicParsing -TimeoutSec 5; $obj = $r.Content | ConvertFrom-Json; Write-Host \"=== WITH admin=true ===\"; Write-Host \"Tags: $\\(\\($obj.tags | ForEach-Object {$_.name}\\) -join ', '\\)\"; foreach \\($c in $obj.colors\\) { Write-Host \"Color $\\($c.colorId\\) sizes:\"; foreach \\($s in $c.sizes\\) { Write-Host \"  sizeId=$\\($s.sizeId\\) qty=$\\($s.quantity\\) price=$\\($s.price\\)\" } })",
-      "WebFetch(domain:www.anthropologie.com)"
+      "WebFetch(domain:www.anthropologie.com)",
+      "Bash(xargs grep -l \"sale\\\\|discount\\\\|category\")",
+      "Bash(xargs grep -l \"discount\\\\|sale\")",
+      "Bash(xargs grep -l \"all.*categor\\\\|categor.*grid\\\\|top.*categor\")",
+      "Bash(xargs grep -l \"analytics\\\\|search.*count\\\\|top.*categor\\\\|most.*search\")",
+      "Bash(xargs grep -i \"countdown\\\\|urgency\\\\|৩ দিন\\\\|দিন বাকি\")",
+      "Bash(xargs grep -l \"top.*categor\\\\|categor.*top\\\\|categor.*analytic\\\\|search.*count\")",
+      "Bash(xargs grep -l \"interface.*Series\\\\|interface.*Category\")",
+      "Bash(xargs grep -l \"categor\")"
     ]
   }
 }

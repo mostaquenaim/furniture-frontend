@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
 import HomepageBanner from "./Headers/HomepageBanner";
 import SeasonalCategory from "./Homepage/SeasonalCategory";
 import CategoryNavigation from "./Homepage/CategoryNavigation";
@@ -14,21 +13,35 @@ import BroadBanner from "./Homepage/BroadBanner";
 import TestimonialsSection from "@/hooks/Homepage/Testimonial/Testimonial";
 import TrendingProducts from "./Trending/TrendingProducts";
 import HomepageFlashSale from "./Sales/HomepageFlashSale";
+import UrgencyBanner from "./Homepage/UrgencyBanner";
+import FeaturedCategories from "./Homepage/FeaturedCategories";
+import AllSeriesGrid from "./Homepage/AllSeriesGrid";
+import useFetchSaleStatus from "@/hooks/Homepage/useFetchSaleStatus";
 
 const SALE_END = process.env.NEXT_PUBLIC_FLASH_SALE_END ?? null;
 
 export default function Homepage() {
+  const { hasActiveSale, isLoading: saleStatusLoading } = useFetchSaleStatus();
+
   return (
     <div>
       <div className="min-h-screen bg-white">
-        {/* Sale Banner */}
+        {/* Section 1 — Urgency Banner */}
+        <UrgencyBanner />
+
+        {/* Homepage Slider */}
         <HomepageBanner />
 
-        {/* Flash Sale strip */}
-        {/* <HomepageFlashSale saleEndDate={SALE_END} productCount={4} /> */}
+        {/* Section 2 — Sale Section (only shown when there are active sale items) */}
+        {!saleStatusLoading && hasActiveSale && (
+          <HomepageFlashSale saleEndDate={SALE_END} productCount={4} />
+        )}
 
         {/* seasonal categories  */}
         <SeasonalCategory />
+
+        {/* Section 3 — Top Categories Grid (6 curated tiles) */}
+        <FeaturedCategories />
 
         {/* larger device gallery */}
         <div className="hidden lg:block pb-8">
@@ -44,6 +57,9 @@ export default function Homepage() {
         <div className="px-4 md:px-12 lg:px-40 pb-8">
           <CategoryNavigation />
         </div>
+
+        {/* Section 4 — All Categories Grid */}
+        <AllSeriesGrid />
 
         {/* More to Explore */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">

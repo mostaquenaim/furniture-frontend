@@ -213,6 +213,7 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
 
             {navItems?.map((item) => {
               const isSale = item.seriesType === "SALE";
+              const isNewSeries = item.seriesType === "NEW";
               return (
                 <Link
                   key={item.id}
@@ -220,7 +221,9 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                   className={`py-3 border-b border-gray-100 text-lg font-medium flex justify-between items-center ${
                     isSale
                       ? "text-red-500 hover:text-red-600"
-                      : "text-gray-700 hover:text-amber-700"
+                      : isNewSeries
+                        ? "text-emerald-600 hover:text-emerald-700"
+                        : "text-gray-700 hover:text-amber-700"
                   }`}
                   onClick={(e) => {
                     if (!isSale && hasDrillDown(item.slug)) {
@@ -550,13 +553,14 @@ const Header = () => {
             {!isLoading &&
               navItems.map((item) => {
                 const isSale = item.seriesType === "SALE";
+                const isNewSeries = item.seriesType === "NEW";
                 const isActive = derivedActiveNavItem === item.slug;
                 return (
                   <Link
                     key={item.id}
                     href={isSale ? "/sales" : `/series/${item.slug}`}
                     onMouseEnter={() => {
-                      setHoveredItem(isSale ? null : item.slug);
+                      setHoveredItem(isSale || isNewSeries ? null : item.slug);
                     }}
                     className={`font-semibold heading text-xs relative border-b-2 pb-4
               ${
@@ -564,9 +568,11 @@ const Header = () => {
                   ? isActive || pathname === "/sales"
                     ? "text-red-600 border-red-600"
                     : "text-red-500 hover:text-red-600 border-transparent"
-                  : isActive
-                    ? "text-amber-700 border-amber-700"
-                    : "text-gray-700 hover:text-amber-700 border-transparent"
+                  : isNewSeries
+                    ? "text-emerald-600 border-emerald-600"
+                    : isActive
+                      ? "text-amber-700 border-amber-700"
+                      : "text-gray-700 hover:text-amber-700 border-transparent"
               }
             `}
                   >
