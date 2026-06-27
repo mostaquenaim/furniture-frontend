@@ -32,6 +32,8 @@ const HomepageBanner = () => {
               alt={banner.title || "Banner"}
               fill
               priority
+              quality={90}
+              sizes="100vw"
               className="object-cover"
             />
           </div>
@@ -45,6 +47,8 @@ const HomepageBanner = () => {
               alt={banner.title || "Banner"}
               fill
               priority
+              quality={90}
+              sizes="100vw"
               className="object-cover"
             />
           </div>

@@ -116,8 +116,8 @@ const AllBannersComp: React.FC = () => {
         toast.error("Please upload an image file");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Image size should be less than 10MB");
         return;
       }
 
@@ -216,7 +216,10 @@ const AllBannersComp: React.FC = () => {
         await refetch();
       } catch (error: any) {
         const apiError = error as ApiError;
-        toast.error(apiError?.response?.data?.message || "Operation failed");
+        toast.error(
+          apiError?.response?.data?.message || error?.message || "Operation failed",
+        );
+        console.error("Error saving banner:", error);
       } finally {
         setIsUploading(false);
       }

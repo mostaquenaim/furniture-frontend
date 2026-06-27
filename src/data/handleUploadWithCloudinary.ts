@@ -2,9 +2,11 @@
 
 import axios from "axios";
 
-export const handleUploadWithCloudinary = async (file: File): Promise<string> => {
-  if (file.size > 2 * 1024 * 1024) {
-    throw new Error("Image must be under 2MB");
+export const handleUploadWithCloudinary = async (file: File) => {
+  if (!file) return null;
+
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error("Image must be under 10MB");
   }
 
   const token = localStorage.getItem("token");
@@ -37,7 +39,7 @@ export const handleUploadWithCloudinary = async (file: File): Promise<string> =>
 
   const optimizedUrl = uploadData.secure_url.replace(
     "/upload/",
-    "/upload/w_1500,q_auto,f_auto/"
+    "/upload/w_1920,q_auto,f_auto/"
   );
 
   return optimizedUrl;
