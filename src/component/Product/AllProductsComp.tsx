@@ -14,6 +14,8 @@ import BottomPagination from "../Pagination/BottomPagination";
 import { QuickShopModal } from "../ProductDisplay/QuickShopModal";
 import { devLog } from "@/utils/devlog";
 import useFetchProducts from "@/hooks/Products/useFetchProducts";
+import useFetchColors from "@/hooks/Attributes/useFetchColors";
+import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
 
 const PRODUCTS_PER_PAGE = Number(process.env.NEXT_PUBLIC_PRODUCTS_PER_PAGE) || 18;
 
@@ -44,6 +46,9 @@ const AllProductsComp = () => {
     sortBy?: string;
     order?: "asc" | "desc";
   }>({});
+
+  const { colors } = useFetchColors({ isActive: true });
+  const { materials } = useFetchMaterials({ isActive: true });
 
   const {
     products,
@@ -176,7 +181,8 @@ const AllProductsComp = () => {
         filters={filters}
         handleSortChange={handleSortChange}
         selectedSort={selectedSort}
-        // slug={slug}
+        colors={colors}
+        materials={materials}
         totalProducts={totalProducts}
       />
 
