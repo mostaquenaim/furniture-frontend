@@ -339,7 +339,7 @@ const Header = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { cartCount, isLoading: isCartLoading } = useCartCount();
-  const { company } = useFetchCompany();
+  const { company, isLoading: isCompanyLoading } = useFetchCompany();
 
   const router = useRouter();
   // Generate dynamic Navigation Items (Series names)
@@ -467,11 +467,15 @@ const Header = () => {
               href={"/"}
               className="text-2xl font-serif font-bold text-gray-900 tracking-wider"
             >
-              <img
-                src={company?.logo || "/logo/ondorkotha-logo-2.png"}
-                alt={company?.name || "Company Logo"}
-                className="h-10 w-auto"
-              />
+              {isCompanyLoading ? (
+                <div className="h-10 w-28 rounded animate-pulse bg-gray-200" />
+              ) : (
+                <img
+                  src={company?.logo || "/logo/ondorkotha-logo-2.png"}
+                  alt={company?.name || "Company Logo"}
+                  className="h-10 w-auto"
+                />
+              )}
             </Link>
 
             {/* Right Side Actions (unchanged for brevity) */}
