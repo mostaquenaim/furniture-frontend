@@ -99,6 +99,7 @@ const AdminDrawer = () => {
             { href: "/admin/products", label: "All Products" },
             { href: "/admin/product/add", label: "Add Product" },
             { href: "/admin/barcode", label: "Barcodes" },
+            { href: "/admin/barcode/print-labels", label: "Print Labels" },
             { href: "/admin/product/reviews", label: "Reviews" },
           ],
         },

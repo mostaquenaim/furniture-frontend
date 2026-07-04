@@ -5,6 +5,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { X, Printer, Plus, MapPin, Package } from "lucide-react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import useFetchCompany from "@/hooks/Company/useFetchCompany";
+import LabelSheet from "../admin/PrintLabels/LabelSheet";
+import { printLabelSheet } from "../admin/PrintLabels/printLabels";
+import { DEFAULT_LABEL_CONFIG, LabelEntry } from "../admin/PrintLabels/types";
 
 interface InventoryItem {
   id: string;
@@ -51,6 +55,7 @@ export default function BarcodeModal({
   onClose,
 }: BarcodeModalProps) {
   const axiosSecure = useAxiosSecure();
+  const { company } = useFetchCompany();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [locations, setLocations] = useState<WarehouseLocation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +64,7 @@ export default function BarcodeModal({
   const [creating, setCreating] = useState(false);
   const [adjMap, setAdjMap] = useState<Record<string, number>>({});
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [printEntries, setPrintEntries] = useState<LabelEntry[] | null>(null);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -126,38 +132,47 @@ export default function BarcodeModal({
     }
   };
 
-  // ── Print PDF ──────────────────────────────────────────────────────────────
+  // ── Print labels (client-rendered) ──────────────────────────────────────────
   const handlePrint = async () => {
     const ids =
       selected.size > 0 ? Array.from(selected) : items.map((i) => i.id);
     if (!ids.length) return;
     setPrinting(true);
     try {
-      const res = await axiosSecure.post(
-        "/barcodes/print",
-        { barcodeIds: ids },
-        { responseType: "blob" },
+      await axiosSecure.post("/barcodes/print", {
+        items: ids.map((id) => ({ barcodeId: id, labelQty: 1 })),
+      });
+
+      setPrintEntries(
+        items
+          .filter((i) => ids.includes(i.id))
+          .map((i) => ({
+            barcodeId: i.id,
+            barcodeValue: i.barcode,
+            productTitle,
+            variation: i.productSize
+              ? [i.productSize.color.color.name, i.productSize.size.name]
+                  .filter(Boolean)
+                  .join(" / ")
+              : undefined,
+          })),
       );
-
-      const blob = new Blob([res.data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-
-      const printWindow = window.open(url, "_blank");
-      if (!printWindow) {
-        // Fallback for Safari / popup-blocked browsers: trigger download
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `labels-${productId}-${Date.now()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
       await load();
     } finally {
       setPrinting(false);
     }
   };
+
+  useEffect(() => {
+    if (!printEntries) return;
+    const t = setTimeout(() => printLabelSheet(50, 100), 150);
+    const clear = () => setPrintEntries(null);
+    window.addEventListener("afterprint", clear);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("afterprint", clear);
+    };
+  }, [printEntries]);
 
   const toggleSelect = (id: string) =>
     setSelected((prev) => {
@@ -434,6 +449,18 @@ export default function BarcodeModal({
                 : "Select items to print specific labels"}
             </p>
           </div>
+        )}
+      </div>
+
+      <div className="print-label-sheet fixed -left-2500 -top-2500">
+        {printEntries && (
+          <LabelSheet
+            entries={printEntries}
+            config={DEFAULT_LABEL_CONFIG}
+            widthMm={50}
+            heightMm={100}
+            businessName={company?.name}
+          />
         )}
       </div>
     </div>

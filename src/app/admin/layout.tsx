@@ -4,9 +4,8 @@ import "../globals.css";
 import { Providers } from "../providers";
 import ProtectedRoute from "@/component/ProtectedRoute";
 import AdminGuard from "@/component/admin/auth/AdminGuard";
-import { AdminDrawerProvider, useAdminDrawer } from "@/context/AdminContext";
-import AdminDrawer from "@/component/Headers/AdminDrawerTS";
-import AdminHeader from "@/component/Headers/AdminHeader";
+import { AdminDrawerProvider } from "@/context/AdminContext";
+import AdminLayoutBody from "@/component/admin/AdminLayoutBody";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,19 +30,7 @@ export default function AdminLayout({
         <ProtectedRoute>
           <AdminGuard>
             <AdminDrawerProvider>
-              <div className="min-h-screen bg-gray-50">
-                <AdminDrawer />
-                <div className="transition-all duration-300">
-                  <AdminHeader />
-                  {/* ${isAdminOpen ? 'md:pl-64' : 'md:pl-20'} */}
-                  <main
-                    className={`p-4 sm:p-6 lg:p-8 bg-slate-100 min-h-screen
-                    `}
-                  >
-                    <div className="max-w-7xl mx-auto">{children}</div>
-                  </main>
-                </div>
-              </div>
+              <AdminLayoutBody>{children}</AdminLayoutBody>
             </AdminDrawerProvider>
           </AdminGuard>
         </ProtectedRoute>

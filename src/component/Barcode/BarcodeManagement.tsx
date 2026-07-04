@@ -1,9 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import useFetchCompany from "@/hooks/Company/useFetchCompany";
 import { Stat } from "../Stats/Stat";
+import LabelSheet from "../admin/PrintLabels/LabelSheet";
+import { printLabelSheet } from "../admin/PrintLabels/printLabels";
+import { DEFAULT_LABEL_CONFIG, LabelEntry } from "../admin/PrintLabels/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Location {
@@ -81,7 +85,9 @@ const BarcodeImg = ({ id, token }: { id: string; token: string }) => {
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function BarcodeManagement() {
   const axiosSecure = useAxiosSecure();
+  const { company } = useFetchCompany();
   const [barcodes, setBarcodes] = useState<BarcodeRecord[]>([]);
+  const [printEntries, setPrintEntries] = useState<LabelEntry[] | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -135,29 +141,42 @@ export default function BarcodeManagement() {
         : new Set(filtered.map((b) => b.id)),
     );
 
-  // ── Print PDF ──────────────────────────────────────────────────────────────
+  // ── Print labels (client-rendered) ──────────────────────────────────────────
   const handlePrint = async () => {
     if (!selected.size) return;
     setPrinting(true);
     try {
-      const res = await axiosSecure.post(
-        "/barcodes/print",
-        { barcodeIds: Array.from(selected) },
-        { responseType: "blob" },
+      const ids = Array.from(selected);
+      await axiosSecure.post("/barcodes/print", {
+        items: ids.map((id) => ({ barcodeId: id, labelQty: 1 })),
+      });
+
+      setPrintEntries(
+        barcodes
+          .filter((b) => selected.has(b.id))
+          .map((b) => ({
+            barcodeId: b.id,
+            barcodeValue: b.barcode,
+            productTitle: b.product.title,
+            price: b.product.price,
+          })),
       );
-      const url = URL.createObjectURL(
-        new Blob([res.data], { type: "application/pdf" }),
-      );
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `ondorkotha-labels-${Date.now()}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
       await load();
     } finally {
       setPrinting(false);
     }
   };
+
+  useEffect(() => {
+    if (!printEntries) return;
+    const t = setTimeout(() => printLabelSheet(50, 100), 150);
+    const clear = () => setPrintEntries(null);
+    window.addEventListener("afterprint", clear);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("afterprint", clear);
+    };
+  }, [printEntries]);
 
   // ── Quantity adjustment ────────────────────────────────────────────────────
   const applyAdj = async (id: string) => {
@@ -603,6 +622,18 @@ export default function BarcodeManagement() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="print-label-sheet fixed -left-2500 -top-2500">
+        {printEntries && (
+          <LabelSheet
+            entries={printEntries}
+            config={DEFAULT_LABEL_CONFIG}
+            widthMm={50}
+            heightMm={100}
+            businessName={company?.name}
+          />
+        )}
       </div>
     </>
   );

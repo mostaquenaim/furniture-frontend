@@ -78,7 +78,29 @@
       "Bash(xargs grep -i \"countdown\\\\|urgency\\\\|৩ দিন\\\\|দিন বাকি\")",
       "Bash(xargs grep -l \"top.*categor\\\\|categor.*top\\\\|categor.*analytic\\\\|search.*count\")",
       "Bash(xargs grep -l \"interface.*Series\\\\|interface.*Category\")",
-      "Bash(xargs grep -l \"categor\")"
+      "Bash(xargs grep -l \"categor\")",
+      "Bash(cd \"/e/Sammtech/furniture-bideshi/furniture-backend\" && grep -rl \"barcodes/print\\\\|barcode.*print\\\\|printLabel\" --include=\"*.js\" --include=\"*.ts\" -i . 2>/dev/null | grep -v node_modules)",
+      "Read(//e/Sammtech/furniture-bideshi/furniture-backend/**)",
+      "Bash(cd \"/e/Sammtech/furniture-bideshi/furniture-backend\" && find . -iname \"*barcode*\" -not -path \"*/node_modules/*\")",
+      "Bash(npx prisma *)",
+      "Bash(npx nest *)",
+      "Bash(npm run *)",
+      "Bash(which chromium-cli *)",
+      "Read(//c/Users/USER/.claude/**)",
+      "Bash(find / -iname \"chromium-cli*\" -not -path \"*/node_modules/.cache/*\" 2>/dev/null | head -20)",
+      "Read(//e//**)",
+      "Bash(netstat -ano)",
+      "Bash(echo \"started with pid $!\")",
+      "Bash(sleep 3; cat /tmp/backend.log 2>&1 | tail -60)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@sakigai.com\",\"password\":\"@Abcd1234\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/signin -H \"Content-Type: application/json\" -d '{\"email\":\"admin@sakigai.com\",\"password\":\"@Abcd1234\"}')",
+      "Bash(grep -i \"^jsonwebtoken$\")",
+      "Bash(npx ts-node *)",
+      "Bash(npx tsx *)",
+      "Bash(curl -s -H 'Authorization: Bearer __CMDSUB_OUTPUT__' http://localhost:3000/api/barcodes/product/39)",
+      "Bash(curl -s -X POST -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"items\":[{\"barcodeId\":\"__TRACKED_VAR__\",\"labelQty\":3,\"lotNumber\":\"LOT-42\",\"packingDate\":\"2026-07-01\"}]}' http://localhost:3000/api/barcodes/print)",
+      "Bash(npx --yes playwright --version)",
+      "Bash(npm init *)"
     ]
   }
 }

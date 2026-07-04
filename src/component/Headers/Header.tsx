@@ -217,7 +217,13 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               return (
                 <Link
                   key={item.id}
-                  href={isSale ? "/sales" : hasDrillDown(item.slug) ? "#" : `/shop/${item.slug}`}
+                  href={
+                    isSale
+                      ? "/sales"
+                      : hasDrillDown(item.slug)
+                        ? "#"
+                        : `/shop/${item.slug}`
+                  }
                   className={`py-3 border-b border-gray-100 text-lg font-medium flex justify-between items-center ${
                     isSale
                       ? "text-red-500 hover:text-red-600"
@@ -244,7 +250,6 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 </Link>
               );
             })}
-
           </div>
         </div>
 
@@ -584,7 +589,6 @@ const Header = () => {
                   </Link>
                 );
               })}
-
           </nav>
 
           {/* Mega Menu Dropdown */}
