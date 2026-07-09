@@ -100,7 +100,14 @@
       "Bash(curl -s -H 'Authorization: Bearer __CMDSUB_OUTPUT__' http://localhost:3000/api/barcodes/product/39)",
       "Bash(curl -s -X POST -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"items\":[{\"barcodeId\":\"__TRACKED_VAR__\",\"labelQty\":3,\"lotNumber\":\"LOT-42\",\"packingDate\":\"2026-07-01\"}]}' http://localhost:3000/api/barcodes/print)",
       "Bash(npx --yes playwright --version)",
-      "Bash(npm init *)"
+      "Bash(npm init *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/api)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://sakigai.up.railway.app/api)",
+      "Bash(tasklist //FI \"PID eq 36008\")",
+      "Bash(cd \"e:\\\\Sammtech\\\\furniture-bideshi\" && ls -la 2>&1)",
+      "Read(//e/Sammtech/furniture-bideshi/**)",
+      "Bash(xargs ls)",
+      "Bash(git checkout *)"
     ]
   }
 }

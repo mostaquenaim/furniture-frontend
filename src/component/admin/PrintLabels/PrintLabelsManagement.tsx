@@ -8,11 +8,24 @@ import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import useFetchCompany from "@/hooks/Company/useFetchCompany";
 import { Product } from "@/types/product.types";
 import LabelSheet from "./LabelSheet";
-import { printLabelSheet } from "./printLabels";
-import { LABEL_TEMPLATES, CUSTOM_TEMPLATE_NAME } from "./LabelTemplates";
+import { printLabelSheet, PrintRotation } from "./printLabels";
+import {
+  LABEL_TEMPLATES,
+  CUSTOM_TEMPLATE_NAME,
+  OG_TEMPLATE_NAME,
+} from "./LabelTemplates";
 import { DEFAULT_LABEL_CONFIG, LabelFieldConfig, LabelRow } from "./types";
 
 const CONFIG_STORAGE_KEY = "printLabelsFieldConfig";
+const ROTATION_STORAGE_KEY = "printLabelsRotation";
+
+const loadStoredRotation = (): PrintRotation => {
+  if (typeof window === "undefined") return 0;
+  const raw = window.localStorage.getItem(ROTATION_STORAGE_KEY);
+  return raw === "90" || raw === "180" || raw === "270"
+    ? (Number(raw) as PrintRotation)
+    : 0;
+};
 
 interface BackendInventoryItem {
   id: string;
@@ -59,11 +72,17 @@ export default function PrintLabelsManagement() {
   const [labelConfig, setLabelConfig] =
     useState<LabelFieldConfig>(loadStoredConfig);
 
-  const [templateName, setTemplateName] = useState(LABEL_TEMPLATES[3].name);
+  const [templateName, setTemplateName] = useState(OG_TEMPLATE_NAME);
   const [customWidth, setCustomWidth] = useState(50);
   const [customHeight, setCustomHeight] = useState(76);
+  const [printRotation, setPrintRotation] =
+    useState<PrintRotation>(loadStoredRotation);
   const [printing, setPrinting] = useState(false);
   const [printEntries, setPrintEntries] = useState<LabelRow[] | null>(null);
+
+  useEffect(() => {
+    window.localStorage.setItem(ROTATION_STORAGE_KEY, String(printRotation));
+  }, [printRotation]);
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -202,7 +221,11 @@ export default function PrintLabelsManagement() {
   useEffect(() => {
     if (!printEntries) return;
     const t = setTimeout(() => {
-      printLabelSheet(activeTemplate.widthMm, activeTemplate.heightMm);
+      printLabelSheet(
+        activeTemplate.widthMm,
+        activeTemplate.heightMm,
+        printRotation,
+      );
     }, 150);
     const clear = () => setPrintEntries(null);
     window.addEventListener("afterprint", clear);
@@ -210,7 +233,7 @@ export default function PrintLabelsManagement() {
       clearTimeout(t);
       window.removeEventListener("afterprint", clear);
     };
-  }, [printEntries, activeTemplate]);
+  }, [printEntries, activeTemplate, printRotation]);
 
   return (
     <div className="space-y-6">
@@ -445,6 +468,28 @@ export default function PrintLabelsManagement() {
                 </div>
               </div>
             )}
+
+            <div className="mt-3">
+              <label className="text-[10px] text-gray-400 uppercase block mb-1">
+                Rotate printed label
+              </label>
+              <select
+                value={printRotation}
+                onChange={(e) =>
+                  setPrintRotation(Number(e.target.value) as PrintRotation)
+                }
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+              >
+                <option value={0}>0° (no rotation)</option>
+                <option value={90}>90°</option>
+                <option value={180}>180°</option>
+                <option value={270}>270°</option>
+              </select>
+              <p className="text-[11px] text-gray-400 mt-1">
+                If labels print sideways or upside down, change this and
+                print a test label until it comes out right side up.
+              </p>
+            </div>
           </div>
         </div>
 
