@@ -107,7 +107,9 @@
       "Bash(cd \"e:\\\\Sammtech\\\\furniture-bideshi\" && ls -la 2>&1)",
       "Read(//e/Sammtech/furniture-bideshi/**)",
       "Bash(xargs ls)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(cd \"e:\\\\Sammtech\\\\furniture-bideshi\\\\furniture-frontend\\\\sakigai\" && ls .. 2>/dev/null; echo \"---\"; ls . | head -30)",
+      "Read(//e/Sammtech/furniture-bideshi/furniture-frontend/**)"
     ]
   }
 }
