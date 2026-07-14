@@ -249,7 +249,27 @@
       "Bash(curl -s -o /tmp/home.html -w \"homepage: %{http_code}\\\\n\" http://localhost:7000/)",
       "Bash(curl -s -o /tmp/sales.html -w \"sales page: %{http_code}\\\\n\" http://localhost:7000/sales)",
       "Bash(grep -o \"Featured Picks\" /tmp/home.html | head -1 *)",
-      "Bash(ls \"/e/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website\" | grep -iE \"backend-dev|tmp\" *)"
+      "Bash(ls \"/e/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website\" | grep -iE \"backend-dev|tmp\" *)",
+      "Bash(cat Dockerfile; echo \"---\"; find .. -maxdepth 2 -iname \"docker-compose*\" 2>/dev/null)",
+      "Bash(cd \"e:/Sammtech/furniture-bideshi/furniture-frontend/sakigai\" && cat package.json | grep -A5 '\"scripts\"' *)",
+      "Bash(cd \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website\" && cat package.json | grep -A10 '\"scripts\"' *)",
+      "Bash(cd \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website\" && grep -E \"^\\(NODE_ENV|SSLCOMMERZ_IS_LIVE|PAYMENT_PROVIDER|ENABLE_NEW_PAYMENT|PORT|DB_PORT|REDIS_PORT|PATHAO_BASE_URL\\)=\" .env)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/api/v1 --max-time 5)",
+      "Bash(curl -s http://localhost:3000/api/v1/health --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"frontend:%{http_code}\\\\n\" http://localhost:7000 --max-time 5)",
+      "Bash(curl -s -i --max-time 8 \"http://localhost:7000/about\")",
+      "Bash(curl -s --max-time 8 \"http://localhost:3000/api/v1/company\")",
+      "Bash(curl -s --max-time 8 \"http://localhost:3000/api/v1/categories\")",
+      "Bash(curl -s --max-time 8 \"http://localhost:3000/api/v1/products?limit=3\")",
+      "Bash(curl -s --max-time 8 \"http://localhost:3000/api/v1/product/all?page=1&limit=3\")",
+      "Bash(curl -s --max-time 8 \"http://localhost:7000/products/some-slug\" -o /tmp/prod500.html -w \"%{http_code}\\\\n\")",
+      "Bash(powershell -Command \"Stop-Process -Id 15000 -Force\")",
+      "Bash(disown)",
+      "Bash(curl -s --max-time 10 \"http://localhost:7000/products/some-slug\")",
+      "Bash(curl -s --max-time 10 \"http://localhost:7000/products/some-slug\" -o /tmp/prod_ok.html)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(grep -rhoE '\\(axiosPublic|axiosSecure|axios\\)\\\\.\\(get|post|patch|put|delete\\)\\\\\\(\\\\s*[`\"][^`\"]*[`\"]' e:/Sammtech/furniture-bideshi/furniture-frontend/sakigai/src/hooks/Auth e:/Sammtech/furniture-bideshi/furniture-frontend/sakigai/src/hooks/Checkout e:/Sammtech/furniture-bideshi/furniture-frontend/sakigai/src/hooks/Cart)",
+      "Bash(cd \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website\" *)"
     ],
     "additionalDirectories": [
       "e:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website\\prisma",
@@ -257,7 +277,9 @@
       "e:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website\\src\\flash-sales",
       "e:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website\\src\\permission",
       "e:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website\\src\\product",
-      "E:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website"
+      "E:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website",
+      "e:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website\\src\\order\\dto",
+      "e:\\Sammtech\\furniture-bideshi\\furniture-backend\\sakigai-furniture-website\\src\\notifications"
     ]
   }
 }

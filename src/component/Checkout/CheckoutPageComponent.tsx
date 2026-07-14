@@ -301,7 +301,6 @@ const CheckoutPageComponent = () => {
 
   const handlePlaceOrder = async () => {
     if (!cart?.id) { toast.error("Cart not found"); return; }
-    if (!address.postCode) { toast.error("Please enter postcode"); return; }
     if (!selectedZone) { toast.error("Please select zone"); return; }
 
     // If OTP step is active, require a 6-digit code before submitting
@@ -534,7 +533,7 @@ const CheckoutPageComponent = () => {
             {/* Postcode */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wide block mb-3">
-                Postcode*
+                Postcode <span className="font-normal normal-case text-gray-400">(optional)</span>
               </label>
               <input
                 type="text"
