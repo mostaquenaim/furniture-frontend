@@ -52,6 +52,8 @@ import {
 } from "@/component/Shared/Admin/AdminUI/AdminUI";
 import useTrackOrder from "@/hooks/Track/useTrack";
 import { useRouter } from "next/navigation";
+import OrderFulfillmentModal from "./Fulfillment/OrderFulfillmentModal";
+import { ClipboardList } from "lucide-react";
 
 // ── Status configs ─────────────────────────────────────────────────────────────
 const ORDER_STATUS: Record<
@@ -296,6 +298,11 @@ function StatusDropdown({
   const axiosSecure = useAxiosSecure();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pickGate, setPickGate] = useState<{
+    isFullyPicked: boolean;
+    pickedCount: number;
+    requiredCount: number;
+  } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -307,11 +314,33 @@ function StatusDropdown({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Lazy — only fetched when the dropdown is actually opened, so a full
+  // order table doesn't fire one shipment-group request per row on mount.
+  useEffect(() => {
+    if (!open) return;
+    axiosSecure
+      .get(`/reservations/orders/${orderId}/shipment-group`)
+      .then(({ data }) => setPickGate(data))
+      .catch(() => setPickGate(null));
+  }, [open, orderId, axiosSecure]);
+
   const statuses = Object.keys(ORDER_STATUS) as OrderStatus[];
+
+  const isShippedBlocked = (status: OrderStatus) =>
+    status === "SHIPPED" &&
+    !!pickGate &&
+    pickGate.requiredCount > 0 &&
+    !pickGate.isFullyPicked;
 
   const handleChange = async (status: OrderStatus) => {
     if (status === currentStatus) {
       setOpen(false);
+      return;
+    }
+    if (isShippedBlocked(status)) {
+      toast.error(
+        `Only ${pickGate!.pickedCount}/${pickGate!.requiredCount} piece(s) picked — can't ship yet`,
+      );
       return;
     }
     setLoading(true);
@@ -345,12 +374,21 @@ function StatusDropdown({
         <div className="absolute top-full left-0 mt-1.5 bg-white border border-slate-100 rounded-2xl shadow-xl z-30 py-1.5 min-w-[160px] overflow-hidden">
           {statuses.map((s) => {
             const c = ORDER_STATUS[s];
+            const blocked = isShippedBlocked(s);
             return (
               <button
                 key={s}
                 onClick={() => handleChange(s)}
+                disabled={blocked}
+                title={
+                  blocked
+                    ? `${pickGate!.pickedCount}/${pickGate!.requiredCount} piece(s) picked — use Fulfillment to finish picking first`
+                    : undefined
+                }
                 className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 transition-colors text-left ${
-                  s === currentStatus ? "opacity-40 cursor-default" : ""
+                  s === currentStatus || blocked
+                    ? "opacity-40 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
@@ -385,6 +423,26 @@ function OrderDetailDrawer({
   const [collectingRemainder, setCollectingRemainder] = useState(false);
   const [collectedBy, setCollectedBy] = useState("");
   const [submittingRemainder, setSubmittingRemainder] = useState(false);
+  const [showFulfillment, setShowFulfillment] = useState(false);
+  const [pickGate, setPickGate] = useState<{
+    isFullyPicked: boolean;
+    pickedCount: number;
+    requiredCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!order?.orderNumber) return;
+    axiosSecure
+      .get(`/reservations/orders/${order.orderNumber}/shipment-group`)
+      .then(({ data }) => setPickGate(data))
+      .catch(() => setPickGate(null));
+  }, [order?.orderNumber, axiosSecure]);
+
+  const isShippedBlocked = (s: OrderStatus) =>
+    s === "SHIPPED" &&
+    !!pickGate &&
+    pickGate.requiredCount > 0 &&
+    !pickGate.isFullyPicked;
 
   const handleCollectRemainder = async () => {
     if (!order || !collectedBy.trim()) {
@@ -444,15 +502,34 @@ function OrderDetailDrawer({
       title={order?.orderNumber ?? "Loading…"}
       subtitle={order ? fmtDateTime(order.orderDate) : undefined}
       headerActions={
-        <button
-          onClick={() => createShipment(order?.orderNumber)}
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-700 text-slate-300 text-xs font-medium rounded-xl hover:bg-white/10 transition-colors"
-        >
-          <Truck className="w-3.5 h-3.5" />
-          Create Shipment
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFulfillment(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-700 text-slate-300 text-xs font-medium rounded-xl hover:bg-white/10 transition-colors"
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+            Fulfillment
+          </button>
+          <button
+            onClick={() => createShipment(order?.orderNumber)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-700 text-slate-300 text-xs font-medium rounded-xl hover:bg-white/10 transition-colors"
+          >
+            <Truck className="w-3.5 h-3.5" />
+            Create Shipment
+          </button>
+        </div>
       }
     >
+      {showFulfillment && order && (
+        <OrderFulfillmentModal
+          orderId={order.orderNumber}
+          items={order.items}
+          onClose={() => {
+            setShowFulfillment(false);
+            refetch();
+          }}
+        />
+      )}
       {isLoading || !order ? (
         <div className="py-16 text-center text-slate-400 text-sm">Loading…</div>
       ) : (
@@ -470,25 +547,46 @@ function OrderDetailDrawer({
               {(Object.keys(ORDER_STATUS) as OrderStatus[]).map((s) => {
                 const cfg = ORDER_STATUS[s];
                 const isCurrent = order.status === s;
+                const blocked = isShippedBlocked(s);
                 return (
                   <button
                     key={s}
-                    disabled={isCurrent}
+                    disabled={isCurrent || blocked}
+                    title={
+                      blocked
+                        ? `${pickGate!.pickedCount}/${pickGate!.requiredCount} piece(s) picked — use Fulfillment to finish picking first`
+                        : undefined
+                    }
                     onClick={async () => {
-                      await axiosSecure.patch(
-                        `/orders/${order.orderNumber}/status`,
-                        {
-                          status: s,
-                        },
-                      );
-                      toast.success(`Status → ${cfg.label}`);
-                      refetch();
-                      onRefresh();
+                      if (blocked) {
+                        toast.error(
+                          `Only ${pickGate!.pickedCount}/${pickGate!.requiredCount} piece(s) picked — can't ship yet`,
+                        );
+                        return;
+                      }
+                      try {
+                        await axiosSecure.patch(
+                          `/orders/${order.orderNumber}/status`,
+                          {
+                            status: s,
+                          },
+                        );
+                        toast.success(`Status → ${cfg.label}`);
+                        refetch();
+                        onRefresh();
+                      } catch (e: any) {
+                        toast.error(
+                          e?.response?.data?.message ??
+                            "Failed to update status",
+                        );
+                      }
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border-2 transition-all ${
                       isCurrent
                         ? `${cfg.color} border-current opacity-100 cursor-default`
-                        : "border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
+                        : blocked
+                          ? "border-slate-100 text-slate-300 cursor-not-allowed"
+                          : "border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
                     }`}
                   >
                     {cfg.icon}

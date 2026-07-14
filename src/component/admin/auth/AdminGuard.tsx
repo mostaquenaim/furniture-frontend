@@ -12,18 +12,25 @@ export default function AdminGuard({
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  const isAllowedRole = (role: string) =>
+    role === 'ORDERMANAGER' ||
+    role === 'SUPERADMIN' ||
+    role === 'PRODUCTMANAGER' ||
+    role === 'INVENTORYMANAGER' ||
+    role === 'SUPPORT';
+
   useEffect(() => {
     if (!user) {
       router.replace('/admin/login');
       return;
     }
 
-    if (user.role !== 'ORDERMANAGER' && user.role !== 'SUPERADMIN' && user.role !== 'PRODUCTMANAGER' && user.role !== 'SUPPORT') {
+    if (!isAllowedRole(user.role)) {
       router.replace('/');
     }
   }, [user, router, loading]);
 
-  if (!user || user.role !== 'ORDERMANAGER' && user.role !== 'SUPERADMIN' && user.role !== 'PRODUCTMANAGER' && user.role !== 'SUPPORT') return null;
+  if (!user || !isAllowedRole(user.role)) return null;
 
   return <>{children}</>;
 }

@@ -8,6 +8,7 @@ import {
   type DashboardPeriod,
 } from "@/lib/api/actions/dashboard";
 import StatsGrid from "./Components/StatsGrid";
+import PieceInventoryStatsTiles from "./Components/PieceInventoryStatsTiles";
 import SalesChart from "./Components/SalesChart";
 import TopProductsTable from "./Components/TopProductsTable";
 import RecentOrders from "./Components/RecentOrders";
@@ -195,6 +196,7 @@ export default function DashboardPageComp() {
         >
           {/* Stats Grid */}
           <StatsGrid stats={data.stats} />
+          <PieceInventoryStatsTiles />
 
           {/* Charts */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">

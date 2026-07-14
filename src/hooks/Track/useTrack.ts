@@ -21,6 +21,7 @@ export interface TrackedItem {
   color?: string;
   size?: string;
   sku?: string;
+  productSizeId?: number | null;
 }
 
 export interface ShippingAddress {

@@ -8,7 +8,12 @@ import toast from "react-hot-toast";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
-type AdminRole = "SUPERADMIN" | "PRODUCTMANAGER" | "ORDERMANAGER" | "SUPPORT";
+type AdminRole =
+  | "SUPERADMIN"
+  | "PRODUCTMANAGER"
+  | "ORDERMANAGER"
+  | "INVENTORYMANAGER"
+  | "SUPPORT";
 
 interface AdminUser {
   id: number;
@@ -61,6 +66,14 @@ const ADMIN_ROLES: {
     bg: "bg-emerald-50 border-emerald-200",
     dot: "bg-emerald-500",
     description: "Manage orders & shipping",
+  },
+  {
+    key: "INVENTORYMANAGER",
+    label: "Inventory Manager",
+    color: "text-teal-700",
+    bg: "bg-teal-50 border-teal-200",
+    dot: "bg-teal-500",
+    description: "Receive stock, assign locations, process returns",
   },
   {
     key: "SUPPORT",

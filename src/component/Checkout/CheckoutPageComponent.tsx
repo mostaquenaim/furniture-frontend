@@ -21,6 +21,10 @@ import useFetchAreaList from "@/hooks/Districts/useFetchAreaList";
 import { pushGTMEvent } from "@/lib/gtm";
 import { buildUserData } from "@/lib/hash";
 
+// Controlled via NEXT_PUBLIC_SSLCOMMERZ_ENABLED — set to "true" in .env to
+// bring back the "Pay Now" option once the gateway is live again.
+const SSLCOMMERZ_ENABLED = process.env.NEXT_PUBLIC_SSLCOMMERZ_ENABLED === "true";
+
 const CheckoutPageComponent = () => {
   const { user, loading } = useAuth();
 
@@ -234,7 +238,7 @@ const CheckoutPageComponent = () => {
   ]);
 
   useEffect(() => {
-    if (!finalCODAvailable && paymentMethod === "cod") {
+    if (SSLCOMMERZ_ENABLED && !finalCODAvailable && paymentMethod === "cod") {
       setPaymentMethod("online");
     }
   }, [finalCODAvailable, paymentMethod]);
@@ -422,7 +426,7 @@ const CheckoutPageComponent = () => {
                   setDeliveryFee(district?.deliveryFee ?? 0);
 
                   // auto-switch to online if COD not allowed
-                  if (district && !finalCODAvailable) {
+                  if (SSLCOMMERZ_ENABLED && district && !finalCODAvailable) {
                     setPaymentMethod("online");
                   }
                 }}
@@ -604,15 +608,17 @@ const CheckoutPageComponent = () => {
               </label>
 
               {/* Pay Now */}
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={paymentMethod === "online"}
-                  onChange={() => setPaymentMethod("online")}
-                />
-                <span className="text-sm">Pay Now</span>
-              </label>
+              {SSLCOMMERZ_ENABLED && (
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={paymentMethod === "online"}
+                    onChange={() => setPaymentMethod("online")}
+                  />
+                  <span className="text-sm">Pay Now</span>
+                </label>
+              )}
             </div>
           </div>
         </div>

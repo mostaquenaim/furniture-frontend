@@ -22,6 +22,7 @@ type User = {
     | "SUPPORT"
     | "ORDERMANAGER"
     | "PRODUCTMANAGER"
+    | "INVENTORYMANAGER"
     | "SUPERADMIN";
 };
 

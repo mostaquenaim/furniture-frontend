@@ -106,7 +106,11 @@ const AdminDrawer = () => {
         {
           name: "Inventory",
           icon: Boxes,
-          sub: [{ href: "/admin/inventory", label: "Stock Levels" }],
+          sub: [
+            { href: "/admin/inventory", label: "Stock Levels" },
+            { href: "/admin/pieces", label: "Piece Barcodes" },
+            { href: "/admin/suppliers", label: "Suppliers" },
+          ],
         },
         // purchases
         // {

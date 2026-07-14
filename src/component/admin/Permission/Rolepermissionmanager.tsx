@@ -7,7 +7,11 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
-type ManagedRole = "PRODUCTMANAGER" | "ORDERMANAGER" | "SUPPORT";
+type ManagedRole =
+  | "PRODUCTMANAGER"
+  | "ORDERMANAGER"
+  | "INVENTORYMANAGER"
+  | "SUPPORT";
 
 interface RolePermissionRow {
   id: number;
@@ -45,6 +49,14 @@ const MANAGED_ROLES: {
     activeBg: "bg-emerald-50 border-emerald-200",
     dot: "bg-emerald-500",
     toggleOn: "bg-emerald-500",
+  },
+  {
+    key: "INVENTORYMANAGER",
+    label: "Inventory Manager",
+    color: "text-teal-700",
+    activeBg: "bg-teal-50 border-teal-200",
+    dot: "bg-teal-500",
+    toggleOn: "bg-teal-500",
   },
   {
     key: "SUPPORT",
@@ -533,7 +545,7 @@ export default function RolePermissionManager() {
 
       <div className="max-w-[1400px] mx-auto space-y-5">
         {/* ── Role stat cards ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {roleStats.map((r) => (
             <button
               key={r.key}

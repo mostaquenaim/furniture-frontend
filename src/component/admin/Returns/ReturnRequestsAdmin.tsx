@@ -156,7 +156,9 @@ function ReturnRequestDetailDrawer({
       await axiosSecure.patch(`/return-requests/${id}/receive`, {
         adminNote: adminNote.trim() || undefined,
       });
-      toast.success("Item(s) marked as received — stock restored");
+      toast.success(
+        "Return request acknowledged — legacy items restocked, piece-tracked items need a scan",
+      );
       setAdminNote("");
       await load();
       onRefresh();
@@ -339,8 +341,19 @@ function ReturnRequestDetailDrawer({
           {data.status === "APPROVED" && (
             <DrawerSection title="Receive Item(s)" tint="slate">
               <p className="text-[11px] text-slate-500 mb-2">
-                Confirm once the returned item(s) physically arrive at the warehouse.
-                This restores stock automatically.
+                Restocks any legacy (quantity-tracked) items automatically.
+                Piece-tracked items are <strong>not</strong> restocked here —
+                an Inventory Manager must scan the physical barcode in{" "}
+                <a
+                  href="/admin/pieces"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-violet-600 underline"
+                >
+                  Piece Barcodes → Process Return
+                </a>{" "}
+                and mark it Good or Damaged before that unit counts as back
+                in stock.
               </p>
               <textarea
                 value={adminNote}
@@ -354,7 +367,7 @@ function ReturnRequestDetailDrawer({
                 disabled={working}
                 className="w-full py-2.5 bg-violet-600 text-white text-xs font-semibold rounded-xl hover:bg-violet-700 disabled:opacity-50 transition-colors"
               >
-                Mark Item(s) Received
+                Acknowledge Return Request
               </button>
             </DrawerSection>
           )}
