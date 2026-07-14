@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Zap } from "lucide-react";
 import { Product } from "@/types/product.types";
 import useFetchSeriesWiseProducts from "@/hooks/Products/useFetchSeriesWiseProducts";
+import useFetchActiveFlashSale from "@/hooks/Homepage/useFetchActiveFlashSale";
 import EachProductShow from "@/component/ProductDisplay/EachProductShow";
 import BottomPagination from "@/component/Pagination/BottomPagination";
 import { QuickShopModal } from "@/component/ProductDisplay/QuickShopModal";
@@ -12,16 +13,7 @@ import FlashSaleCountdown from "./FlashSaleCountdown";
 
 const PRODUCTS_PER_PAGE = 18;
 
-interface FlashSalesCompProps {
-  /** If provided, a countdown banner is shown. ISO date string or Date. */
-  saleEndDate?: string | null;
-  saleLabel?: string;
-}
-
-export default function FlashSalesComp({
-  saleEndDate,
-  saleLabel = "Flash Sale ends in",
-}: FlashSalesCompProps) {
+export default function FlashSalesComp() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [productImage, setProductImage] = useState("");
@@ -31,11 +23,17 @@ export default function FlashSalesComp({
     "sale",
     { page: currentPage, limit: PRODUCTS_PER_PAGE },
   );
+  const { flashSale } = useFetchActiveFlashSale();
 
   const totalPages = meta?.totalPages || 1;
   const totalProducts = meta?.total || 0;
 
-  const endDate = saleEndDate ? new Date(saleEndDate) : null;
+  const heroTitle = flashSale?.title ?? "Flash Sales";
+  const heroText =
+    flashSale?.bannerText ??
+    "Limited-time deals — grab them before they're gone!";
+
+  const endDate = flashSale ? new Date(flashSale.endDate) : null;
   const showCountdown = !!endDate && endDate > new Date();
 
   const handlePrev = () => {
@@ -59,16 +57,14 @@ export default function FlashSalesComp({
         <div className="flex items-center justify-center gap-2 mb-2">
           <Zap size={28} className="fill-white text-white" />
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            Flash Sales
+            {heroTitle}
           </h1>
           <Zap size={28} className="fill-white text-white" />
         </div>
-        <p className="text-red-100 mb-6 text-sm md:text-base">
-          Limited-time deals — grab them before they&apos;re gone!
-        </p>
+        <p className="text-red-100 mb-6 text-sm md:text-base">{heroText}</p>
 
         {showCountdown && endDate && (
-          <FlashSaleCountdown endDate={endDate} label={saleLabel} />
+          <FlashSaleCountdown endDate={endDate} label="Flash Sale ends in" />
         )}
       </div>
 

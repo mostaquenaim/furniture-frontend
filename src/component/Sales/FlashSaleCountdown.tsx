@@ -1,25 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
-
-function calculateTimeLeft(endDate: Date): TimeLeft | null {
-  const diff = endDate.getTime() - Date.now();
-  if (diff <= 0) return null;
-
-  return {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60),
-  };
-}
+import { useCountdown } from "@/hooks/useCountdown";
 
 interface FlashSaleCountdownProps {
   endDate: Date;
@@ -30,16 +11,7 @@ export default function FlashSaleCountdown({
   endDate,
   label = "Sale ends in",
 }: FlashSaleCountdownProps) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(
-    calculateTimeLeft(endDate),
-  );
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(endDate));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [endDate]);
+  const timeLeft = useCountdown(endDate);
 
   if (!timeLeft) return null;
 

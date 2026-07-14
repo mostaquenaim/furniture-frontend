@@ -16,12 +16,11 @@ import HomepageFlashSale from "./Sales/HomepageFlashSale";
 import UrgencyBanner from "./Homepage/UrgencyBanner";
 import FeaturedCategories from "./Homepage/FeaturedCategories";
 import AllSeriesGrid from "./Homepage/AllSeriesGrid";
-import useFetchSaleStatus from "@/hooks/Homepage/useFetchSaleStatus";
-
-const SALE_END = process.env.NEXT_PUBLIC_FLASH_SALE_END ?? null;
+import useFetchActiveFlashSale from "@/hooks/Homepage/useFetchActiveFlashSale";
+import FeaturedProducts from "./Homepage/FeaturedProducts";
 
 export default function Homepage() {
-  const { hasActiveSale, isLoading: saleStatusLoading } = useFetchSaleStatus();
+  const { flashSale, isLoading: flashSaleLoading } = useFetchActiveFlashSale();
 
   return (
     <div>
@@ -32,9 +31,9 @@ export default function Homepage() {
         {/* Homepage Slider */}
         <HomepageBanner />
 
-        {/* Section 2 — Sale Section (only shown when there are active sale items) */}
-        {!saleStatusLoading && hasActiveSale && (
-          <HomepageFlashSale saleEndDate={SALE_END} productCount={4} />
+        {/* Section 2 — Flash Sale campaign (only shown when one is active) */}
+        {!flashSaleLoading && flashSale && (
+          <HomepageFlashSale flashSale={flashSale} />
         )}
 
         {/* seasonal categories  */}
@@ -60,6 +59,11 @@ export default function Homepage() {
 
         {/* Section 4 — All Categories Grid */}
         <AllSeriesGrid />
+
+        {/* Featured Products */}
+        <div className="px-4 md:px-12 lg:px-40 pb-8">
+          <FeaturedProducts />
+        </div>
 
         {/* More to Explore */}
         <div className="px-4 md:px-12 lg:px-40 pb-8">

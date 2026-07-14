@@ -225,3 +225,14 @@ export type Tag = {
   id: number;
   name: string;
 };
+
+export interface FlashSale {
+  id: number;
+  title: string;
+  subtitle: string | null;
+  bannerText: string | null;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  products: Product[];
+}

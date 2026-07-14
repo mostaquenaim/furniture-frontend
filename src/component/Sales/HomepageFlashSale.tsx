@@ -1,32 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import useFetchSeriesWiseProducts from "@/hooks/Products/useFetchSeriesWiseProducts";
-import { Product } from "@/types/product.types";
+import { useCountdown } from "@/hooks/useCountdown";
+import { FlashSale, Product } from "@/types/product.types";
 
-// ── Countdown ─────────────────────────────────────────────────────────────────
-
-function useCountdown(endDate: Date | null) {
-  const calc = () => {
-    if (!endDate) return null;
-    const diff = endDate.getTime() - Date.now();
-    if (diff <= 0) return null;
-    return {
-      h: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      m: Math.floor((diff / (1000 * 60)) % 60),
-      s: Math.floor((diff / 1000) % 60),
-    };
-  };
-  const [t, setT] = useState(calc);
-  useEffect(() => {
-    if (!endDate) return;
-    const id = setInterval(() => setT(calc()), 1000);
-    return () => clearInterval(id);
-  }, [endDate]);
-  return t;
-}
+// ── Countdown digit ─────────────────────────────────────────────────────────
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -100,25 +80,17 @@ function SaleCard({ product }: { product: Product }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 
 interface HomepageFlashSaleProps {
-  /** ISO date string — if provided and in the future, the countdown shows */
-  saleEndDate?: string | null;
-  /** Number of products to show (default 4) */
-  productCount?: number;
+  flashSale: FlashSale;
 }
 
-export default function HomepageFlashSale({
-  saleEndDate,
-  productCount = 4,
-}: HomepageFlashSaleProps) {
-  const endDate = saleEndDate ? new Date(saleEndDate) : null;
+export default function HomepageFlashSale({ flashSale }: HomepageFlashSaleProps) {
+  const endDate = new Date(flashSale.endDate);
   const timeLeft = useCountdown(endDate);
 
-  const { products, isLoading } = useFetchSeriesWiseProducts("sale", {
-    limit: productCount,
-    page: 1,
-  });
+  const products = flashSale.products;
+  if (products.length === 0) return null;
 
-  if (!isLoading && products.length === 0) return null;
+  const productCount = products.length;
 
   return (
     <section className="w-full px-4 md:px-8 lg:px-16 py-10">
@@ -130,13 +102,12 @@ export default function HomepageFlashSale({
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-200 mb-3">
               Limited Time
             </p>
-            <h2 className="text-3xl font-bold text-white leading-tight mb-2">
-              Flash
-              <br />
-              Sale
+            <h2 className="text-3xl font-bold text-white leading-tight mb-2 whitespace-pre-line">
+              {flashSale.title}
             </h2>
             <p className="text-sm text-red-100 leading-relaxed">
-              Exclusive discounts on select furniture &amp; décor — while stocks last.
+              {flashSale.subtitle ??
+                "Exclusive discounts on select furniture & décor — while stocks last."}
             </p>
           </div>
 
@@ -146,11 +117,11 @@ export default function HomepageFlashSale({
                 Ends in
               </p>
               <div className="flex items-end gap-3">
-                <Digit value={timeLeft.h} label="hrs" />
+                <Digit value={timeLeft.hours} label="hrs" />
                 <span className="text-white text-xl font-bold mb-3 leading-none">:</span>
-                <Digit value={timeLeft.m} label="min" />
+                <Digit value={timeLeft.minutes} label="min" />
                 <span className="text-white text-xl font-bold mb-3 leading-none">:</span>
-                <Digit value={timeLeft.s} label="sec" />
+                <Digit value={timeLeft.seconds} label="sec" />
               </div>
             </div>
           )}
@@ -166,17 +137,9 @@ export default function HomepageFlashSale({
 
         {/* ── Right: product grid ── */}
         <div className={`grid grid-cols-2 ${productCount > 2 ? "sm:grid-cols-4" : "sm:grid-cols-2"} gap-4`}>
-          {isLoading
-            ? Array.from({ length: productCount }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="aspect-3/4 bg-gray-100 animate-pulse rounded" />
-                  <div className="h-3 bg-gray-100 animate-pulse rounded w-3/4" />
-                  <div className="h-3 bg-gray-100 animate-pulse rounded w-1/2" />
-                </div>
-              ))
-            : products.slice(0, productCount).map((p) => (
-                <SaleCard key={p.id} product={p} />
-              ))}
+          {products.map((p) => (
+            <SaleCard key={p.id} product={p} />
+          ))}
         </div>
       </div>
     </section>

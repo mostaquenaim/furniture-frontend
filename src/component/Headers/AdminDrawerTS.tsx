@@ -185,7 +185,10 @@ const AdminDrawer = () => {
         {
           name: "Promotions",
           icon: Percent,
-          sub: [{ href: "/admin/promotions/coupons", label: "Coupons" }],
+          sub: [
+            { href: "/admin/promotions/coupons", label: "Coupons" },
+            { href: "/admin/promotions/flash-sales", label: "Flash Sales" },
+          ],
         },
       ],
     },
