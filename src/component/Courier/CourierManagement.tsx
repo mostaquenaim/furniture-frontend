@@ -19,10 +19,14 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  Printer,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { DeleteConfirmationModal } from "../admin/Modal/DeleteConfirmationModal";
+import useFetchCompany from "@/hooks/Company/useFetchCompany";
+import ShipmentLabel from "./ShipmentLabel";
+import { printLabelSheet } from "../admin/PrintLabels/printLabels";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type CourierStatus =
@@ -62,7 +66,13 @@ interface Shipment {
   createdAt: string;
   lastSyncAt?: string;
   deliveredAt?: string;
-  provider: { id: number; name: string; displayName: string };
+  weight?: number;
+  itemDescription?: string;
+  special_instruction?: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  recipientAddress?: string;
+  provider: { id: number; name: string; displayName: string; logo?: string };
   order: {
     id: number;
     orderId: string;
@@ -70,6 +80,11 @@ interface Shipment {
     customerPhone: string;
     total: number;
     status: string;
+    shippingAddress?: string;
+    districtName?: string;
+    zoneName?: string;
+    areaName?: string;
+    postCode?: string;
   };
 }
 
@@ -882,6 +897,7 @@ const ShipmentDrawer: React.FC<{
 export default function CourierManagement() {
   const axiosSecure = useAxiosSecure();
   const searchParams = useSearchParams();
+  const { company } = useFetchCompany();
 
   useEffect(() => {
     const orderId = searchParams.get("orderId");
@@ -907,6 +923,7 @@ export default function CourierManagement() {
     Provider | null | "new"
   >(null);
   const [drawerShipmentId, setDrawerShipmentId] = useState<number | null>(null);
+  const [printingShipment, setPrintingShipment] = useState<Shipment | null>(null);
 
   // ── Load ──
   const loadShipments = useCallback(async () => {
@@ -939,6 +956,14 @@ export default function CourierManagement() {
   useEffect(() => {
     if (tab === "shipments") loadShipments();
   }, [tab, loadShipments, page, statusFilter, search]);
+
+  useEffect(() => {
+    if (!printingShipment) return;
+    const cleanup = () => setPrintingShipment(null);
+    window.addEventListener("afterprint", cleanup, { once: true });
+    printLabelSheet(100, 150);
+    return () => window.removeEventListener("afterprint", cleanup);
+  }, [printingShipment]);
 
   // ── Actions ──
   const handleBook = async (data: any) => {
@@ -1198,13 +1223,24 @@ export default function CourierManagement() {
                           className="px-4 py-3"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button
-                            onClick={() => handleSync(s.id)}
-                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
-                            title="Sync"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleSync(s.id)}
+                              className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                              title="Sync"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                            </button>
+                            {(s.trackingNumber || s.consignmentId) && (
+                              <button
+                                onClick={() => setPrintingShipment(s)}
+                                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                                title="Print Label"
+                              >
+                                <Printer className="w-3.5 h-3.5 text-slate-400" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -1361,6 +1397,12 @@ export default function CourierManagement() {
           onSync={handleSync}
           onCancel={handleCancel}
         />
+      )}
+
+      {printingShipment && (
+        <div className="print-label-sheet fixed -left-2500 -top-2500">
+          <ShipmentLabel shipment={printingShipment} company={company} />
+        </div>
       )}
     </div>
   );

@@ -204,7 +204,21 @@
       "Bash(curl -sf http://localhost:7000)",
       "Bash(npx --no-install playwright install chromium)",
       "Bash(node verify.js)",
-      "Bash(node verify2.js)"
+      "Bash(node verify2.js)",
+      "Bash(ls \"e:/Sammtech/furniture-bideshi/\" 2>/dev/null)",
+      "Bash(ls \"e:/Sammtech/furniture-bideshi/furniture-backend\" 2>/dev/null | head -50)",
+      "Bash(ls \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website\" 2>/dev/null)",
+      "Bash(cd \"e:\\\\Sammtech\\\\furniture-bideshi\\\\furniture-backend\\\\sakigai-furniture-website\" && find src -iname \"*courier*\" -o -iname \"*shipment*\" 2>/dev/null | head -50)",
+      "Bash(grep -n \"model CourierShipment\" -A 30 \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website/prisma/schema.prisma\")",
+      "Bash(grep -n \"model CourierShipment\" -A 60 \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website/prisma/schema.prisma\")",
+      "Bash(ls -la \"e:/Sammtech/furniture-bideshi/furniture-frontend/sakigai/.claude/skills\" 2>&1; ls -la \"e:/Sammtech/furniture-bideshi/.claude/skills\" 2>&1; ls -la \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website/.claude/skills\" 2>&1)",
+      "Read(//e/Sammtech/furniture-bideshi/.claude/**)",
+      "Bash(cat \"e:/Sammtech/furniture-bideshi/furniture-backend/sakigai-furniture-website/.env\" 2>&1 | sed 's/=.*/=<redacted>/' )",
+      "Bash(node -e \"console.log\\(require\\('./package.json'\\).scripts\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/api/v1/company --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:7000 --max-time 8)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:7000 --max-time 30)",
+      "Bash(curl -s -o /tmp/courier_page.html -w \"HTTP %{http_code}\\\\n\" http://localhost:7000/admin/courier --max-time 30)"
     ]
   }
 }
