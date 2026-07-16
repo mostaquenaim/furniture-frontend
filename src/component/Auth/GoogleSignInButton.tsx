@@ -27,7 +27,13 @@ export default function GoogleSignInButton({
 
   const handleGoogleSignIn = () => {
     setLoading(true);
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+    // Google auth routes are version-neutral on the backend (fixed redirect
+    // URI in Google Cloud Console), so the "/v1" segment must be stripped.
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(
+      /\/v\d+$/,
+      "",
+    );
+    window.location.href = `${baseUrl}/auth/google`;
   };
 
   // const handleGoogleSignIn = () => {
