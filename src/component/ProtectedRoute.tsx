@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { hasRequiredRole, isAuthenticated } from "@/utils/auth";
 import LoadingDots from "./Loading/LoadingDS";
-import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -26,28 +25,10 @@ export default function ProtectedRoute({
   // console.log(pathname, "usePathname");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const axiosSecure = useAxiosSecure();
-  const [allAllowedRoles, setAllAllowedRoles] = useState([...allowedRoles]);
-
-  // permission check 
-  useEffect(() => {
-    const getPathName = async () => {
-      try {
-        const res = await axiosSecure.get(
-          `/permission/roles-against-url?path=${encodeURIComponent(pathname)}`
-        );
-        setAllAllowedRoles([...res.data])
-        console.log(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-      // finally{
-      //   setIsLoading(false)
-      // }
-    };
-
-    if (pathname) getPathName();
-  }, [pathname, axiosSecure]);
+  // Snapshotted once from the prop (not read directly in the effect below)
+  // since callers pass allowedRoles as an inline array literal — a fresh
+  // reference every render would re-trigger the effect on every render.
+  const [allAllowedRoles] = useState([...allowedRoles]);
 
   useEffect(() => {
     const checkAuth = () => {
