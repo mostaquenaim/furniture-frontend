@@ -23,7 +23,12 @@ import toast from "react-hot-toast";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import useTrackOrder from "@/hooks/Track/useTrack";
 import useMyReturnRequests from "@/hooks/Returns/useMyReturnRequests";
-import { ReturnRequest, ReturnRequestStatus } from "@/types/refund.types";
+import {
+  formatReturnReason,
+  RETURN_REASON_OPTIONS,
+  ReturnRequest,
+  ReturnRequestStatus,
+} from "@/types/refund.types";
 
 const STATUS_CONFIG: Record<
   ReturnRequestStatus,
@@ -60,15 +65,6 @@ const STATUS_CONFIG: Record<
     colorClass: "bg-gray-50 text-gray-600 border-gray-200",
   },
 };
-
-const RETURN_REASONS = [
-  "Defective / Damaged Item",
-  "Not as Described",
-  "Wrong Item Received",
-  "Changed Mind",
-  "Wrong Size",
-  "Other",
-];
 
 const taka = (n: number) =>
   `৳${Number(n).toLocaleString("en-BD", { minimumFractionDigits: 0 })}`;
@@ -149,7 +145,7 @@ function NewReturnRequestModal({
     setSubmitting(true);
     try {
       await axiosSecure.post(`/orders/${lookupId}/return-request`, {
-        reason: reason.trim(),
+        reason,
         note: note.trim() || undefined,
         items: Object.entries(selected).map(([orderItemId, quantity]) => ({
           orderItemId: Number(orderItemId),
@@ -285,9 +281,9 @@ function NewReturnRequestModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
                 >
                   <option value="">Select a reason</option>
-                  {RETURN_REASONS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
+                  {RETURN_REASON_OPTIONS.map((r) => (
+                    <option key={r.code} value={r.code}>
+                      {r.label}
                     </option>
                   ))}
                 </select>
@@ -657,7 +653,7 @@ const RefundCompContent = () => {
                           </h4>
                           <div className="bg-white p-3 rounded-sm border border-gray-100">
                             <p className="text-xs text-gray-700">
-                              {refund.reason}
+                              {formatReturnReason(refund.reason)}
                             </p>
                           </div>
                         </div>

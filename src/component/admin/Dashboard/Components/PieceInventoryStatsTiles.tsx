@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PackageCheck, PackageX, Truck, ClipboardList } from "lucide-react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import useInventorySocket from "@/hooks/Inventory/useInventorySocket";
 import { InventorySummary } from "@/types/piece-dashboard.types";
 
 // Self-contained: fetches piece-level counts independently of the
@@ -12,12 +13,30 @@ export default function PieceInventoryStatsTiles() {
   const axiosSecure = useAxiosSecure();
   const [summary, setSummary] = useState<InventorySummary | null>(null);
 
-  useEffect(() => {
+  const fetchSummary = useCallback(() => {
     axiosSecure
       .get<InventorySummary>("/pieces/dashboard/inventory-summary")
       .then(({ data }) => setSummary(data))
       .catch(() => {});
   }, [axiosSecure]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
+
+  // Refetch (debounced) whenever a stock event comes in over the realtime
+  // channel — a bulk operation (e.g. a multi-item order) can emit several
+  // events in a tight loop, so we coalesce them into one refetch.
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedFetchSummary = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(fetchSummary, 500);
+  }, [fetchSummary]);
+
+  useInventorySocket({
+    onStockUpdated: debouncedFetchSummary,
+    onStockLow: debouncedFetchSummary,
+  });
 
   if (!summary) return null;
 

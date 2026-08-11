@@ -21,6 +21,7 @@ interface Props {
     field: keyof SizeDetail,
     value: string | number | null,
   ) => void;
+  isEditMode: boolean;
 }
 
 const VariantNSizes = ({
@@ -34,6 +35,7 @@ const VariantNSizes = ({
   availableSizes,
   setSizeSelections,
   handleSizeFieldChange,
+  isEditMode,
 }: Props) => {
   return (
     <FormSection
@@ -108,7 +110,9 @@ const VariantNSizes = ({
                             <th className="pb-3">Price</th>
                             <th className="pb-3">Discount Type</th>
                             <th className="pb-3">Discount</th>
-                            <th className="pb-3">Qty</th>
+                            <th className="pb-3">
+                              {isEditMode ? "Qty" : "Quantity to Generate"}
+                            </th>
                             <th className="pb-3">Final Price</th>
                             {/* <th className="pb-3 text-right">Action</th> */}
                           </tr>
@@ -125,6 +129,7 @@ const VariantNSizes = ({
                                 calculateSizeDiscountedPrice
                               }
                               onFieldChange={handleSizeFieldChange}
+                              isEditMode={isEditMode}
                             />
                           ))}
                         </tbody>
@@ -132,6 +137,12 @@ const VariantNSizes = ({
                     ) : (
                       <p className="text-sm text-slate-400 py-4 text-center">
                         No sizes configured for this variant.
+                      </p>
+                    )}
+                    {!isEditMode && colorSizes.length > 0 && (
+                      <p className="text-xs text-slate-400 mt-2">
+                        Barcodes will be generated for this quantity; stock
+                        starts at 0 until received by an Inventory Manager.
                       </p>
                     )}
                   </div>
@@ -154,6 +165,7 @@ const SizeRow = memo(
     formData,
     calculateSizeDiscountedPrice,
     onFieldChange,
+    isEditMode,
   }: any) => {
     devLog(sizeDetail, "sizeDetail");
     const size = availableSizes.find((s: any) => s.id === sizeDetail.sizeId);
@@ -162,6 +174,13 @@ const SizeRow = memo(
       sizeDetail.discountType !== null &&
       (sizeDetail.discountType !== formData.discountType ||
         sizeDetail.discount !== formData.discount);
+    // Once a size has been generated onto piece-level barcode tracking, its
+    // quantity can only change via a physical receive/return scan or
+    // Generate & Print — never a direct number edit on this form (the
+    // backend rejects it). Only relevant in edit mode; brand-new rows in
+    // create mode have no trackingMode yet.
+    const isPieceTracked =
+      isEditMode && sizeDetail.trackingMode === "PIECE_BARCODE";
 
     return (
       <tr
@@ -228,19 +247,34 @@ const SizeRow = memo(
           />
         </td>
         <td className="py-3">
-          <input
-            type="number"
-            value={sizeDetail.quantity || 0}
-            onChange={(e) =>
-              onFieldChange(
-                colorId,
-                sizeDetail.sizeId,
-                "quantity",
-                e.target.value,
-              )
-            }
-            className="w-16 px-2 py-1 text-xs border border-slate-200 rounded outline-none"
-          />
+          {isPieceTracked ? (
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-slate-700">
+                {sizeDetail.quantity ?? 0}
+              </span>
+              <a
+                href={`/admin/pieces?tab=generate&search=${encodeURIComponent(formData.title || "")}`}
+                className="text-[10px] font-bold text-blue-600 hover:text-blue-800 whitespace-nowrap"
+              >
+                Add stock via Generate & Print →
+              </a>
+            </div>
+          ) : (
+            <input
+              type="number"
+              min={0}
+              value={sizeDetail.quantity ?? 0}
+              onChange={(e) =>
+                onFieldChange(
+                  colorId,
+                  sizeDetail.sizeId,
+                  "quantity",
+                  e.target.value,
+                )
+              }
+              className="w-16 px-2 py-1 text-xs border border-slate-200 rounded outline-none"
+            />
+          )}
         </td>
         <td className="py-3 font-semibold text-sm text-green-700">
           ৳{parseInt(finalPrice).toLocaleString()}

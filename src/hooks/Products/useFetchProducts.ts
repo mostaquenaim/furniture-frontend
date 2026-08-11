@@ -71,6 +71,8 @@ const useFetchProducts = (
     if (params?.sortBy) queryParams.sortBy = params.sortBy;
     if (params?.order) queryParams.order = params.order;
     if (params?.thumb) queryParams.thumb = params.thumb;
+    if (params?.includeOutOfStock)
+      queryParams.includeOutOfStock = params.includeOutOfStock;
 
     // Fix: Use plural parameter names as expected by backend
     if (params?.colorIds?.length)
@@ -99,12 +101,18 @@ const useFetchProducts = (
   const queryKey = [
     "products",
     params.page ?? 1,
-    params.limit ?? 10,
+    params.limit ?? null,
     params.search ?? "",
     params.isActive ?? null,
     params?.order,
     params?.thumb,
     params?.sortBy,
+    params?.colorIds?.join(",") ?? "",
+    params?.materialIds?.join(",") ?? "",
+    params?.subCategoryIds?.join(",") ?? "",
+    params?.minPrice ?? null,
+    params?.maxPrice ?? null,
+    params?.includeOutOfStock ?? false,
   ] as const;
 
   const {

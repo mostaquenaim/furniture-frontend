@@ -62,9 +62,16 @@ export interface ShipmentLabelShipment {
 interface ShipmentLabelProps {
   shipment: ShipmentLabelShipment;
   company?: CompanyInfo;
+  widthMm?: number;
+  heightMm?: number;
 }
 
-const ShipmentLabel = ({ shipment, company }: ShipmentLabelProps) => {
+const ShipmentLabel = ({
+  shipment,
+  company,
+  widthMm = 100,
+  heightMm = 150,
+}: ShipmentLabelProps) => {
   const s = shipment;
   const barcodeValue = s.trackingNumber || s.consignmentId || String(s.id);
 
@@ -84,8 +91,8 @@ const ShipmentLabel = ({ shipment, company }: ShipmentLabelProps) => {
     <div
       className="label flex flex-col bg-white text-black"
       style={{
-        width: "100mm",
-        height: "150mm",
+        width: `${widthMm}mm`,
+        height: `${heightMm}mm`,
         padding: "4mm",
         boxSizing: "border-box",
         fontFamily: "sans-serif",

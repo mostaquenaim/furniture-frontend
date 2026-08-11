@@ -6,12 +6,14 @@ export interface InventoryRow {
   isLowStock: boolean;
   size: string;
   color: string;
+  price: number;
   product: {
     id: number;
     title: string;
     slug: string;
     sku: string | null;
   };
+  trackingMode: "LEGACY_QUANTITY" | "PIECE_BARCODE";
 }
 
 export interface InventoryListResponse {
@@ -52,4 +54,10 @@ export interface StockLowEvent {
   productId: number;
   quantity: number;
   lowStockAt: number;
+}
+
+export interface ReturnStartedEvent {
+  orderId: string;
+  pieceCount: number;
+  reasonCode?: string | null;
 }

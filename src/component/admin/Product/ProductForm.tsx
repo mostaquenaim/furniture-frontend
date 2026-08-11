@@ -75,6 +75,7 @@ export interface SizeDetail {
   quantity: number;
   discountType?: "PERCENT" | "FIXED" | null; // Add discount fields
   discount?: number;
+  trackingMode?: "LEGACY_QUANTITY" | "PIECE_BARCODE";
 }
 
 type UploadedImage =
@@ -318,6 +319,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           quantity: s.quantity || 0,
           discountType: s.discountType || null, // Add this
           discount: s.discount || 0, // Add this
+          trackingMode: s.trackingMode,
         })) || [];
     });
 
@@ -545,9 +547,11 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
             ? {
                 ...size,
                 [field]:
-                  field === "quantity" || field === "discount"
-                    ? Number(value)
-                    : value,
+                  field === "quantity"
+                    ? Math.max(0, Number(value) || 0)
+                    : field === "discount"
+                      ? Number(value)
+                      : value,
               }
             : size,
         ),
@@ -707,12 +711,14 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
     if (formData.hasColorVariants) {
       for (const colorId of formData.selectedColors) {
-        const hasValidSize = (sizeSelections[colorId] || []).some(
-          (s) => s.quantity > 0,
-        );
-        if (!hasValidSize) {
+        const sizes = sizeSelections[colorId] || [];
+        if (sizes.length === 0) {
           const color = colors.find((c) => c.id === colorId);
-          return `Color "${color?.name}" must have at least one size with quantity > 0`;
+          return `Color "${color?.name}" must have at least one size`;
+        }
+        if (sizes.some((s) => s.quantity < 0)) {
+          const color = colors.find((c) => c.id === colorId);
+          return `Color "${color?.name}" has a size with a negative quantity`;
         }
       }
     }
@@ -796,7 +802,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                     sizeId: size.sizeId,
                     sku: size.sku || "",
                     price: Number(size.price) || Number(formData.basePrice),
-                    quantity: size.quantity,
+                    quantity: Math.max(0, Number(size.quantity) || 0),
                     discountType: size.discountType,
                     discount: size.discount,
                   }));
@@ -823,12 +829,14 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           weight: Number(formData.weight),
           discountType: formData.discountType,
           discount: Number(formData.discount),
-          discountStart: formData.discountStart
-            ? new Date(formData.discountStart)
-            : null,
-          discountEnd: formData.discountEnd
-            ? new Date(formData.discountEnd)
-            : null,
+          discountStart:
+            Number(formData.discount) > 0 && formData.discountStart
+              ? new Date(formData.discountStart)
+              : null,
+          discountEnd:
+            Number(formData.discount) > 0 && formData.discountEnd
+              ? new Date(formData.discountEnd)
+              : null,
           note: formData.note || undefined,
           deliveryEstimate: formData.deliveryEstimate || undefined,
           productDetails: formData.productDetails || undefined,
@@ -898,15 +906,13 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
               colorData.useDefaultImages = true;
             }
 
-            const validSizes = (sizeSelections[colorId] || []).filter(
-              (s) => s.quantity > 0,
-            );
-            if (validSizes.length > 0) {
-              colorData.sizes = validSizes.map((size) => ({
+            const sizes = sizeSelections[colorId] || [];
+            if (sizes.length > 0) {
+              colorData.sizes = sizes.map((size) => ({
                 sizeId: size.sizeId,
                 sku: size.sku || "",
                 price: Number(size.price) || Number(formData.basePrice),
-                quantity: size.quantity,
+                quantity: Math.max(0, Number(size.quantity) || 0),
                 discountType: size.discountType,
                 discount: size.discount,
               }));
@@ -927,12 +933,14 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           showColor: formData.showColor,
           discountType: formData.discountType,
           discount: formData.discount,
-          discountStart: formData.discountStart
-            ? new Date(formData.discountStart)
-            : undefined,
-          discountEnd: formData.discountEnd
-            ? new Date(formData.discountEnd)
-            : undefined,
+          discountStart:
+            Number(formData.discount) > 0 && formData.discountStart
+              ? new Date(formData.discountStart)
+              : undefined,
+          discountEnd:
+            Number(formData.discount) > 0 && formData.discountEnd
+              ? new Date(formData.discountEnd)
+              : undefined,
           note: formData.note || undefined,
           deliveryEstimate: formData.deliveryEstimate || undefined,
           productDetails: formData.productDetails || undefined,
@@ -947,9 +955,37 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           images: [...defaultImageUrls],
         };
 
-        await axiosSecure.post("/products", submitData);
+        const { data } = await axiosSecure.post("/products", submitData);
         isDirty.current = false;
-        toast.success("Product created successfully!");
+
+        const generated = data?.pieceGeneration?.generated ?? [];
+        if (generated.length > 0) {
+          const totalPieces = generated.reduce(
+            (sum: number, g: { quantity: number }) => sum + g.quantity,
+            0,
+          );
+          const printUrl = `/admin/pieces?tab=generate&search=${encodeURIComponent(formData.title)}`;
+          toast.success(
+            (t) => (
+              <span>
+                Product created — {totalPieces} barcode
+                {totalPieces === 1 ? "" : "s"} generated across{" "}
+                {generated.length} size{generated.length === 1 ? "" : "s"}.
+                Stock is 0 until an Inventory Manager scans them in.{" "}
+                <a
+                  href={printUrl}
+                  onClick={() => toast.dismiss(t.id)}
+                  className="underline font-semibold"
+                >
+                  Print barcodes →
+                </a>
+              </span>
+            ),
+            { duration: 8000 },
+          );
+        } else {
+          toast.success("Product created successfully!");
+        }
       }
     } catch (error: any) {
       console.error("Error:", error);
@@ -1276,6 +1312,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                   type="date"
                   value={formData.discountStart}
                   onChange={handleDiscountStartChange}
+                  disabled={!formData.discount || formData.discount <= 0}
                 />
               </div>
 
@@ -1287,6 +1324,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                   type="date"
                   value={formData.discountEnd}
                   onChange={handleDiscountEndChange}
+                  disabled={!formData.discount || formData.discount <= 0}
                 />
               </div>
             </div>
@@ -1304,6 +1342,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
             handleSizeFieldChange={handleSizeFieldChange}
             calculateSizeDiscountedPrice={calculateSizeDiscountedPrice}
             setSizeSelections={setSizeSelections}
+            isEditMode={isEditMode}
           />
 
           {/* ── Additional Details ── */}

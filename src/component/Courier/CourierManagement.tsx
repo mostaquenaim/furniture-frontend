@@ -6,25 +6,21 @@ import React, { useCallback, useEffect, useState } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
 import {
-  Package,
   Truck,
-  MapPin,
-  BarChart3,
   RefreshCw,
-  XCircle,
+  X,
   Search,
   Plus,
-  Settings,
-  Zap,
   CheckCircle2,
   AlertCircle,
-  ArrowRight,
   Printer,
+  Settings,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { DeleteConfirmationModal } from "../admin/Modal/DeleteConfirmationModal";
 import useFetchCompany from "@/hooks/Company/useFetchCompany";
+import useFetchPrintingSettings from "@/hooks/Settings/useFetchPrintingSettings";
 import ShipmentLabel from "./ShipmentLabel";
 import { printLabelSheet } from "../admin/PrintLabels/printLabels";
 
@@ -97,9 +93,9 @@ const STATUS_CONFIG: Record<
 > = {
   PENDING: {
     label: "Pending",
-    bg: "bg-slate-100",
-    text: "text-slate-600",
-    dot: "bg-slate-400",
+    bg: "bg-gray-100",
+    text: "text-gray-600",
+    dot: "bg-gray-400",
   },
   BOOKED: {
     label: "Booked",
@@ -184,7 +180,7 @@ const StatusBadge = ({ status }: { status: CourierStatus }) => {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.PENDING;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
@@ -274,27 +270,27 @@ const BookModal: React.FC<{
     setForm((prev) => ({ ...prev, [key]: val }));
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div>
-            <h3 className="font-semibold text-slate-900 text-base">
+            <h3 className="text-base font-semibold text-gray-900">
               Book Shipment
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               Send order to courier partner
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 rounded-full transition-colors"
+            className="p-1 text-gray-400 hover:text-gray-600"
           >
-            <XCircle className="w-5 h-5 text-slate-400" />
+            <X size={18} />
           </button>
         </div>
 
-        <div className="overflow-y-auto flex-1 p-6 space-y-5">
+        <div className="overflow-y-auto flex-1 p-6 space-y-4">
           {/* Order lookup */}
           <div>
             <Field label="Order ID">
@@ -303,7 +299,7 @@ const BookModal: React.FC<{
                   value={orderNumber}
                   onChange={(e) => setOrderNumber(e.target.value)}
                   placeholder="ORD-20260302-..."
-                  className="input-base flex-1"
+                  className="flex-1 px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
                   onKeyDown={(e) =>
                     e.key === "Enter" && fetchOrder(orderNumber)
                   }
@@ -312,7 +308,7 @@ const BookModal: React.FC<{
                   type="button"
                   onClick={() => fetchOrder(orderNumber)}
                   disabled={fetching || !orderNumber}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-medium rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-colors flex items-center gap-1.5 shrink-0"
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors shrink-0"
                 >
                   {fetching ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -326,7 +322,7 @@ const BookModal: React.FC<{
 
             {/* Order info banner */}
             {orderInfo && (
-              <div className="mt-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-2">
+              <div className="mt-3 p-3 bg-emerald-50 border border-emerald-100 rounded-lg flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
                 <div className="text-xs text-emerald-800">
                   <p className="font-semibold">
@@ -350,10 +346,10 @@ const BookModal: React.FC<{
                   key={p.id}
                   type="button"
                   onClick={() => setProviderId(p.id)}
-                  className={`flex items-center gap-2 p-3 rounded-xl border-2 text-left transition-all ${
+                  className={`flex items-center gap-2 p-3 rounded-lg border text-left transition-colors ${
                     providerId === p.id
-                      ? "border-[#0f172a] bg-slate-50"
-                      : "border-slate-200 hover:border-slate-300"
+                      ? "border-indigo-400 bg-indigo-50"
+                      : "border-gray-200 hover:bg-gray-50"
                   }`}
                 >
                   {p.logo ? (
@@ -363,16 +359,13 @@ const BookModal: React.FC<{
                       className="w-7 h-7 object-contain rounded"
                     />
                   ) : (
-                    <div className="w-7 h-7 bg-slate-100 rounded flex items-center justify-center">
-                      <Truck className="w-3.5 h-3.5 text-slate-400" />
+                    <div className="w-7 h-7 bg-gray-100 rounded flex items-center justify-center">
+                      <Truck className="w-3.5 h-3.5 text-gray-400" />
                     </div>
                   )}
-                  <span className="text-xs font-medium text-slate-800 leading-tight">
+                  <span className="text-xs font-medium text-gray-800 leading-tight">
                     {p.displayName}
                   </span>
-                  {providerId === p.id && (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 ml-auto shrink-0" />
-                  )}
                 </button>
               ))}
             </div>
@@ -385,7 +378,7 @@ const BookModal: React.FC<{
                 value={form.recipientName}
                 onChange={(e) => set("recipientName", e.target.value)}
                 placeholder="Full name"
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               />
             </Field>
             <Field label="Recipient Phone">
@@ -393,7 +386,7 @@ const BookModal: React.FC<{
                 value={form.recipientPhone}
                 onChange={(e) => set("recipientPhone", e.target.value)}
                 placeholder="01XXXXXXXXX"
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               />
             </Field>
           </div>
@@ -404,7 +397,7 @@ const BookModal: React.FC<{
               value={form.recipientAddress}
               onChange={(e) => set("recipientAddress", e.target.value)}
               placeholder="Full address with district"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 resize-none"
             />
           </Field>
 
@@ -417,7 +410,7 @@ const BookModal: React.FC<{
                 min={0.1}
                 step={0.1}
                 onChange={(e) => set("weight", Number(e.target.value))}
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               />
             </Field>
             <Field label="COD Amount (৳)">
@@ -426,14 +419,14 @@ const BookModal: React.FC<{
                 value={form.codAmount}
                 min={0}
                 onChange={(e) => set("codAmount", Number(e.target.value))}
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               />
             </Field>
             <Field label="Delivery Type">
               <select
                 value={form.deliveryType}
                 onChange={(e) => set("deliveryType", e.target.value)}
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               >
                 <option value="48">Normal (48h)</option>
                 <option value="12">On Demand</option>
@@ -443,7 +436,7 @@ const BookModal: React.FC<{
               <select
                 value={form.itemType}
                 onChange={(e) => set("itemType", e.target.value)}
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               >
                 <option value="2">Parcel</option>
                 <option value="1">Document</option>
@@ -456,7 +449,7 @@ const BookModal: React.FC<{
               value={form.itemDescription}
               onChange={(e) => set("itemDescription", e.target.value)}
               placeholder="e.g. T-Shirt (M) x2, Hoodie x1"
-              className="input-base"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
             />
           </Field>
 
@@ -465,16 +458,16 @@ const BookModal: React.FC<{
               value={form.special_instruction}
               onChange={(e) => set("special_instruction", e.target.value)}
               placeholder="Fragile, call before delivery, etc."
-              className="input-base"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
             />
           </Field>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-6 py-4 border-t border-slate-100 shrink-0">
+        <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100 shrink-0">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 text-sm rounded-xl hover:bg-slate-50 transition-colors"
+            className="flex-1 px-4 py-2 text-sm text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
@@ -496,13 +489,9 @@ const BookModal: React.FC<{
               setLoading(false);
             }}
             disabled={loading || !orderNumber || !providerId}
-            className="flex-1 px-4 py-2.5 bg-[#0f172a] text-white text-sm rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium"
+            className="flex-1 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Zap className="w-4 h-4" />
-            )}
+            {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
             {loading ? "Booking..." : "Book Shipment"}
           </button>
         </div>
@@ -545,17 +534,17 @@ const ProviderModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-100">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="text-base font-semibold text-gray-900">
             {existing ? "Edit Provider" : "New Provider"}
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 rounded-full"
+            className="p-1 text-gray-400 hover:text-gray-600"
           >
-            <XCircle className="w-5 h-5 text-slate-400" />
+            <X size={18} />
           </button>
         </div>
 
@@ -571,7 +560,7 @@ const ProviderModal: React.FC<{
                   }))
                 }
                 placeholder="PATHAO"
-                className="input-base font-mono"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:border-indigo-400"
                 disabled={!!existing}
               />
             </Field>
@@ -582,7 +571,7 @@ const ProviderModal: React.FC<{
                   setForm((p) => ({ ...p, displayName: e.target.value }))
                 }
                 placeholder="Pathao Courier"
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               />
             </Field>
           </div>
@@ -595,7 +584,7 @@ const ProviderModal: React.FC<{
                   setForm((p) => ({ ...p, logo: e.target.value }))
                 }
                 placeholder="https://..."
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               />
             </Field>
             <Field label="Priority (higher = preferred)">
@@ -605,7 +594,7 @@ const ProviderModal: React.FC<{
                 onChange={(e) =>
                   setForm((p) => ({ ...p, priority: Number(e.target.value) }))
                 }
-                className="input-base"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
               />
             </Field>
           </div>
@@ -614,14 +603,14 @@ const ProviderModal: React.FC<{
             <button
               type="button"
               onClick={() => setForm((p) => ({ ...p, isActive: !p.isActive }))}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 form.isActive
                   ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                  : "border-slate-200 bg-slate-50 text-slate-500"
+                  : "border-gray-200 bg-gray-50 text-gray-500"
               }`}
             >
               <span
-                className={`w-2 h-2 rounded-full ${form.isActive ? "bg-emerald-500" : "bg-slate-300"}`}
+                className={`w-2 h-2 rounded-full ${form.isActive ? "bg-emerald-500" : "bg-gray-300"}`}
               />
               {form.isActive ? "Active" : "Inactive"}
             </button>
@@ -634,10 +623,10 @@ const ProviderModal: React.FC<{
               onChange={(e) =>
                 setForm((p) => ({ ...p, config: e.target.value }))
               }
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 resize-none ${
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none resize-none ${
                 configError
-                  ? "border-red-300 focus:ring-red-300"
-                  : "border-slate-200 focus:ring-amber-300"
+                  ? "border-red-300 focus:border-red-400"
+                  : "border-gray-200 focus:border-indigo-400"
               }`}
               spellCheck={false}
             />
@@ -647,23 +636,19 @@ const ProviderModal: React.FC<{
           </Field>
         </div>
 
-        <div className="flex gap-3 px-6 pb-6">
+        <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 border border-slate-200 text-sm text-slate-600 rounded-xl hover:bg-slate-50"
+            className="flex-1 px-4 py-2 text-sm text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !form.name || !form.displayName}
-            className="flex-1 py-2.5 bg-[#0f172a] text-white text-sm rounded-xl hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
+            className="flex-1 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
           >
-            {saving ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <CheckCircle2 className="w-4 h-4" />
-            )}
+            {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
             {saving ? "Saving..." : existing ? "Update" : "Create"}
           </button>
         </div>
@@ -717,29 +702,27 @@ const ShipmentDrawer: React.FC<{
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="fixed inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-lg bg-white h-full shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-[#0f172a]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Shipment Details
-            </p>
-            <p className="text-white font-semibold text-base mt-0.5">#{id}</p>
+            <p className="text-xs text-gray-400">Shipment Details</p>
+            <p className="text-base font-semibold text-gray-900 mt-0.5">#{id}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+            className="p-1 text-gray-400 hover:text-gray-600"
           >
-            <XCircle className="w-5 h-5 text-slate-400" />
+            <X size={18} />
           </button>
         </div>
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <RefreshCw className="w-6 h-6 animate-spin text-slate-300" />
+            <RefreshCw className="w-6 h-6 animate-spin text-gray-300" />
           </div>
         ) : !shipment ? (
-          <div className="flex-1 flex items-center justify-center text-slate-400">
+          <div className="flex-1 flex items-center justify-center text-gray-400">
             Not found
           </div>
         ) : (
@@ -748,7 +731,7 @@ const ShipmentDrawer: React.FC<{
             <div className="flex items-center justify-between">
               <StatusBadge status={shipment.status} />
               {shipment.providerStatus && (
-                <span className="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded">
+                <span className="text-xs text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded">
                   {shipment.providerStatus}
                 </span>
               )}
@@ -758,7 +741,7 @@ const ShipmentDrawer: React.FC<{
             {shipment.trackingNumber && (
               <InfoCard title="Tracking">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm text-slate-800 font-semibold">
+                  <span className="font-mono text-sm text-gray-800 font-semibold">
                     {shipment.trackingNumber}
                   </span>
                   {shipment.trackingUrl && (
@@ -766,9 +749,9 @@ const ShipmentDrawer: React.FC<{
                       href={shipment.trackingUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                      className="text-xs text-indigo-600 hover:underline"
                     >
-                      Track <ArrowRight className="w-3 h-3" />
+                      Track
                     </a>
                   )}
                 </div>
@@ -840,16 +823,16 @@ const ShipmentDrawer: React.FC<{
                   {shipment.courierWebhookLogs.map((log: any) => (
                     <div
                       key={log.id}
-                      className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0"
+                      className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0"
                     >
-                      <span className="text-xs font-mono text-slate-600">
+                      <span className="text-xs font-mono text-gray-600">
                         {log.eventType}
                       </span>
                       <div className="flex items-center gap-2">
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${log.processed ? "bg-emerald-400" : "bg-amber-400"}`}
                         />
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-gray-400">
                           {fmtDate(log.createdAt)}
                         </span>
                       </div>
@@ -863,11 +846,11 @@ const ShipmentDrawer: React.FC<{
 
         {/* Actions footer */}
         {shipment && (
-          <div className="p-4 border-t border-slate-100 bg-slate-50 flex gap-2">
+          <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-2">
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-slate-200 bg-white text-slate-700 text-sm rounded-xl hover:bg-slate-100 transition-colors font-medium"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-gray-200 bg-white text-gray-700 text-sm rounded-lg hover:bg-gray-100 transition-colors font-medium"
             >
               <RefreshCw
                 className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`}
@@ -880,9 +863,8 @@ const ShipmentDrawer: React.FC<{
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-red-50 text-red-700 border border-red-200 text-sm rounded-xl hover:bg-red-100 transition-colors font-medium"
+                className="flex-1 py-2.5 bg-red-50 text-red-700 border border-red-200 text-sm rounded-lg hover:bg-red-100 transition-colors font-medium"
               >
-                <XCircle className="w-4 h-4" />
                 {cancelling ? "Cancelling..." : "Cancel"}
               </button>
             )}
@@ -898,6 +880,7 @@ export default function CourierManagement() {
   const axiosSecure = useAxiosSecure();
   const searchParams = useSearchParams();
   const { company } = useFetchCompany();
+  const { printingSettings } = useFetchPrintingSettings();
 
   useEffect(() => {
     const orderId = searchParams.get("orderId");
@@ -961,9 +944,16 @@ export default function CourierManagement() {
     if (!printingShipment) return;
     const cleanup = () => setPrintingShipment(null);
     window.addEventListener("afterprint", cleanup, { once: true });
-    printLabelSheet(100, 150);
+    printLabelSheet(
+      printingSettings?.courierLabelWidthMm ?? 100,
+      printingSettings?.courierLabelHeightMm ?? 150,
+    );
     return () => window.removeEventListener("afterprint", cleanup);
-  }, [printingShipment]);
+  }, [
+    printingShipment,
+    printingSettings?.courierLabelWidthMm,
+    printingSettings?.courierLabelHeightMm,
+  ]);
 
   // ── Actions ──
   const handleBook = async (data: any) => {
@@ -1033,71 +1023,58 @@ export default function CourierManagement() {
   };
 
   // ── Render ──
-  const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    {
-      id: "shipments",
-      label: "Shipments",
-      icon: <Package className="w-4 h-4" />,
-    },
-    {
-      id: "providers",
-      label: "Providers",
-      icon: <Truck className="w-4 h-4" />,
-    },
+  const TABS: { id: Tab; label: string }[] = [
+    { id: "shipments", label: "Shipments" },
+    { id: "providers", label: "Providers" },
   ];
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="bg-[#0f172a] px-8 py-6">
-        <div className="max-w-350 mx-auto flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">
-              Logistics
-            </p>
-            <h1 className="text-xl font-semibold text-white">
-              Courier Management
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowBookModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#e2c97e] text-[#0f172a] text-sm font-bold rounded-xl hover:bg-amber-300 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Book Shipment
-            </button>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">
+            Courier Management
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Book, track, and manage courier shipments and provider settings
+          </p>
         </div>
 
-        {/* Tabs */}
-        <div className="max-w-350 mx-auto mt-5 flex gap-1">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                tab === t.id
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              {t.icon}
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setShowBookModal(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Book Shipment
+        </button>
       </div>
 
-      <div className="max-w-350 mx-auto px-8 py-6">
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-gray-200">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+              tab === t.id
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div>
         {/* ─── SHIPMENTS TAB ─── */}
         {tab === "shipments" && (
           <div className="space-y-4">
             {/* Filters */}
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative flex-1 min-w-60">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   value={search}
                   onChange={(e) => {
@@ -1105,7 +1082,7 @@ export default function CourierManagement() {
                     setPage(1);
                   }}
                   placeholder="Search order ID, customer, tracking…"
-                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm"
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
                 />
               </div>
 
@@ -1115,7 +1092,7 @@ export default function CourierManagement() {
                   setStatusFilter(e.target.value as CourierStatus | "");
                   setPage(1);
                 }}
-                className="py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm text-slate-700"
+                className="py-2.5 px-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 text-gray-700"
               >
                 <option value="">All Statuses</option>
                 {Object.entries(STATUS_CONFIG).map(([k, v]) => (
@@ -1127,17 +1104,17 @@ export default function CourierManagement() {
 
               <button
                 onClick={loadShipments}
-                className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm transition-colors"
+                className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <RefreshCw className="w-4 h-4 text-slate-500" />
+                <RefreshCw className="w-4 h-4 text-gray-500" />
               </button>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
                     {[
                       "Shipment",
                       "Order",
@@ -1150,25 +1127,25 @@ export default function CourierManagement() {
                     ].map((h) => (
                       <th
                         key={h}
-                        className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-slate-400"
+                        className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500"
                       >
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-gray-100">
                   {loading ? (
                     <tr>
                       <td colSpan={8} className="py-16 text-center">
-                        <RefreshCw className="w-5 h-5 animate-spin text-slate-300 mx-auto" />
+                        <RefreshCw className="w-5 h-5 animate-spin text-gray-300 mx-auto" />
                       </td>
                     </tr>
                   ) : shipments.length === 0 ? (
                     <tr>
                       <td
                         colSpan={8}
-                        className="py-16 text-center text-slate-400 text-sm"
+                        className="py-16 text-center text-gray-400 text-sm"
                       >
                         No shipments found
                       </td>
@@ -1177,34 +1154,34 @@ export default function CourierManagement() {
                     shipments.map((s) => (
                       <tr
                         key={s.id}
-                        className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
                         onClick={() => setDrawerShipmentId(s.id)}
                       >
                         <td className="px-4 py-3">
-                          <p className="font-mono text-xs font-semibold text-slate-800">
+                          <p className="font-mono text-xs font-medium text-gray-900">
                             #{s.id}
                           </p>
                           {s.trackingNumber && (
-                            <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                            <p className="text-xs text-gray-400 font-mono mt-0.5">
                               {s.trackingNumber}
                             </p>
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <p className="text-xs font-semibold text-slate-800 font-mono">
+                          <p className="text-xs font-medium text-gray-900 font-mono">
                             {s.order?.orderId}
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <p className="text-xs text-slate-700 font-medium">
+                          <p className="text-xs text-gray-700 font-medium">
                             {s.order?.customerName}
                           </p>
-                          <p className="text-[10px] text-slate-400 font-mono">
+                          <p className="text-xs text-gray-400 font-mono">
                             {s.order?.customerPhone}
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-lg">
+                          <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
                             {s.provider?.displayName}
                           </span>
                         </td>
@@ -1212,11 +1189,11 @@ export default function CourierManagement() {
                           <StatusBadge status={s.status} />
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-xs font-mono font-semibold text-slate-700">
+                          <span className="text-xs font-mono font-medium text-gray-700">
                             {s.codAmount ? taka(s.codAmount) : "—"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-400">
+                        <td className="px-4 py-3 text-xs text-gray-400">
                           {fmtDate(s.createdAt)}
                         </td>
                         <td
@@ -1226,18 +1203,18 @@ export default function CourierManagement() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleSync(s.id)}
-                              className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                               title="Sync"
                             >
-                              <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                              <RefreshCw className="w-3.5 h-3.5 text-gray-400" />
                             </button>
                             {(s.trackingNumber || s.consignmentId) && (
                               <button
                                 onClick={() => setPrintingShipment(s)}
-                                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                                 title="Print Label"
                               >
-                                <Printer className="w-3.5 h-3.5 text-slate-400" />
+                                <Printer className="w-3.5 h-3.5 text-gray-400" />
                               </button>
                             )}
                           </div>
@@ -1250,22 +1227,22 @@ export default function CourierManagement() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
-                  <p className="text-xs text-slate-400">
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-400">
                     Page {page} of {totalPages}
                   </p>
                   <div className="flex gap-2">
                     <button
                       disabled={page <= 1}
                       onClick={() => setPage((p) => p - 1)}
-                      className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40"
+                      className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
                     >
                       ← Prev
                     </button>
                     <button
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => p + 1)}
-                      className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40"
+                      className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
                     >
                       Next →
                     </button>
@@ -1280,13 +1257,13 @@ export default function CourierManagement() {
         {tab === "providers" && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <p className="text-sm text-slate-600 font-medium">
+              <p className="text-sm text-gray-600 font-medium">
                 {providers.length} provider{providers.length !== 1 ? "s" : ""}{" "}
                 configured
               </p>
               <button
                 onClick={() => setShowProviderModal("new")}
-                className="flex items-center gap-2 px-4 py-2 bg-[#0f172a] text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 <Plus className="w-4 h-4" /> Add Provider
               </button>
@@ -1296,7 +1273,7 @@ export default function CourierManagement() {
               {providers.map((p) => (
                 <div
                   key={p.id}
-                  className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5"
+                  className="bg-white rounded-xl border border-gray-200 p-5"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -1304,34 +1281,34 @@ export default function CourierManagement() {
                         <img
                           src={p.logo}
                           alt={p.displayName}
-                          className="w-10 h-10 object-contain rounded-xl border border-slate-100"
+                          className="w-10 h-10 object-contain rounded-lg border border-gray-100"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-                          <Truck className="w-5 h-5 text-slate-400" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Truck className="w-5 h-5 text-gray-400" />
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-slate-900 text-sm">
+                        <p className="font-semibold text-gray-900 text-sm">
                           {p.displayName}
                         </p>
-                        <p className="text-[10px] font-mono text-slate-400 uppercase">
+                        <p className="text-xs font-mono text-gray-400 uppercase">
                           {p.name}
                         </p>
                       </div>
                     </div>
                     <span
-                      className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         p.isActive
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-slate-100 text-slate-500"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-gray-100 text-gray-500"
                       }`}
                     >
                       {p.isActive ? "Active" : "Off"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
+                  <div className="flex items-center justify-between text-xs text-gray-400 mb-4">
                     <span>Priority: {p.priority}</span>
                     <span>ID: {p.id}</span>
                   </div>
@@ -1339,13 +1316,13 @@ export default function CourierManagement() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowProviderModal(p)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-slate-600 text-xs font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <Settings className="w-3.5 h-3.5" /> Configure
                     </button>
                     <button
                       onClick={() => setDeleteId(p.id)}
-                      className="px-3 py-2 text-red-500 hover:bg-red-50 border border-red-100 rounded-xl transition-colors text-xs"
+                      className="px-3 py-2 text-red-500 hover:bg-red-50 border border-red-100 rounded-lg transition-colors text-xs"
                     >
                       Delete
                     </button>
@@ -1354,7 +1331,7 @@ export default function CourierManagement() {
               ))}
 
               {providers.length === 0 && (
-                <div className="col-span-3 py-16 text-center text-slate-400 text-sm">
+                <div className="col-span-3 py-16 text-center text-gray-400 text-sm">
                   No providers yet. Add your first courier partner.
                 </div>
               )}
@@ -1401,7 +1378,12 @@ export default function CourierManagement() {
 
       {printingShipment && (
         <div className="print-label-sheet fixed -left-2500 -top-2500">
-          <ShipmentLabel shipment={printingShipment} company={company} />
+          <ShipmentLabel
+            shipment={printingShipment}
+            company={company}
+            widthMm={printingSettings?.courierLabelWidthMm}
+            heightMm={printingSettings?.courierLabelHeightMm}
+          />
         </div>
       )}
     </div>
@@ -1420,11 +1402,11 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">
+      <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
         {label}
       </label>
       {children}
-      {hint && <p className="text-[10px] text-slate-400 mt-1">{hint}</p>}
+      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>
   );
 }
@@ -1437,8 +1419,8 @@ function InfoCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
         {title}
       </p>
       {children}
@@ -1459,9 +1441,9 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-xs text-gray-500">{label}</span>
       <span
-        className={`text-xs font-medium ${mono ? "font-mono" : ""} ${highlight ? "text-emerald-700 font-semibold" : "text-slate-800"}`}
+        className={`text-xs font-medium ${mono ? "font-mono" : ""} ${highlight ? "text-emerald-700 font-semibold" : "text-gray-800"}`}
       >
         {value ?? "—"}
       </span>

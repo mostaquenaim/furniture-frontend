@@ -26,11 +26,19 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { MdCategory } from "react-icons/md";
+import { useAuth } from "@/context/AuthContext";
+import { usePermissions } from "@/context/PermissionsContext";
 
 interface NavSubItem {
   href: string;
   label: string;
   badge?: number;
+  // OR semantics — item is visible if the user has ANY of these actions.
+  requiredAction?: string | string[];
+  // Hard role allowlist (e.g. superadmin-only pages). Takes priority over
+  // requiredAction and does NOT fail open — role is known synchronously
+  // from AuthContext, so there's no loading window to fail open during.
+  requiredRole?: string[];
 }
 
 interface NavItem {
@@ -39,6 +47,8 @@ interface NavItem {
   href?: string;
   sub?: NavSubItem[];
   badge?: number;
+  requiredAction?: string | string[];
+  requiredRole?: string[];
 }
 
 interface NavSection {
@@ -49,6 +59,41 @@ interface NavSection {
 const AdminDrawer = () => {
   const { isAdminOpen, toggleAdminDrawer, isMobile } = useAdminDrawer();
   const pathname = usePathname();
+  const { user } = useAuth();
+  const {
+    role: permRole,
+    actions: grantedActions,
+    loading: permLoading,
+    error: permError,
+  } = usePermissions();
+
+  // Fails open: unmapped items (no requiredAction/requiredRole) are always
+  // visible; while permissions are loading or failed to fetch, requiredAction
+  // checks also pass — worst case is identical to today's "show everything"
+  // behavior, never a broken/blank sidebar. requiredRole is the one hard
+  // exception (superadmin-only pages), since role is already known
+  // synchronously and there's no loading window to fail open during.
+  const canSeeAction = (action?: string | string[]) => {
+    if (!action) return true;
+    if (permLoading || permError) return true;
+    if (permRole === "SUPERADMIN") return true;
+    const required = Array.isArray(action) ? action : [action];
+    return required.some((a) => grantedActions.includes(a));
+  };
+
+  const canSeeRole = (roles?: string[]) => {
+    if (!roles) return true;
+    return !!user && roles.includes(user.role);
+  };
+
+  const isNavItemVisible = (item: {
+    requiredAction?: string | string[];
+    requiredRole?: string[];
+  }) => {
+    if (item.requiredRole) return canSeeRole(item.requiredRole);
+    if (item.requiredAction) return canSeeAction(item.requiredAction);
+    return true;
+  };
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({
     Dashboard: true,
     Products: false,
@@ -85,6 +130,7 @@ const AdminDrawer = () => {
           name: "Dashboard",
           icon: LayoutDashboard,
           href: "/admin/dashboard",
+          requiredAction: "DASHBOARD_VIEW",
           sub: [{ href: "/admin/dashboard", label: "Overview" }],
         },
       ],
@@ -96,20 +142,22 @@ const AdminDrawer = () => {
           name: "Products",
           icon: Package,
           sub: [
-            { href: "/admin/products", label: "All Products" },
-            { href: "/admin/product/add", label: "Add Product" },
-            { href: "/admin/barcode", label: "Barcodes" },
-            { href: "/admin/barcode/print-labels", label: "Print Labels" },
-            { href: "/admin/product/reviews", label: "Reviews" },
+            { href: "/admin/products", label: "All Products", requiredAction: "PRODUCT_VIEW" },
+            { href: "/admin/product/add", label: "Add Product", requiredAction: "PRODUCT_CREATE" },
+            { href: "/admin/product/reviews", label: "Reviews", requiredAction: "REVIEW_MANAGE" },
           ],
         },
         {
           name: "Inventory",
           icon: Boxes,
           sub: [
-            { href: "/admin/inventory", label: "Stock Levels" },
-            { href: "/admin/pieces", label: "Piece Barcodes" },
-            { href: "/admin/suppliers", label: "Suppliers" },
+            { href: "/admin/inventory", label: "Stock Levels", requiredAction: "INVENTORY_VIEW" },
+            {
+              href: "/admin/pieces",
+              label: "Piece Barcodes",
+              requiredAction: ["PIECE_VIEW", "PIECE_GENERATE", "PIECE_RECEIVE"],
+            },
+            { href: "/admin/suppliers", label: "Suppliers", requiredAction: "SUPPLIER_VIEW" },
           ],
         },
         // purchases
@@ -126,8 +174,8 @@ const AdminDrawer = () => {
           name: "Product Type",
           icon: MdCategory,
           sub: [
-            { href: "/admin/subcategory/all", label: "All Subcategories" },
-            { href: "/admin/subcategory/add", label: "Add Subcategory" },
+            { href: "/admin/subcategory/all", label: "All Subcategories", requiredAction: "CATEGORY_VIEW" },
+            { href: "/admin/subcategory/add", label: "Add Subcategory", requiredAction: "CATEGORY_CREATE" },
           ],
         },
         // categories
@@ -135,8 +183,8 @@ const AdminDrawer = () => {
           name: "Categories",
           icon: Grid,
           sub: [
-            { href: "/admin/category/all", label: "All Categories" },
-            { href: "/admin/category/add", label: "Add Category" },
+            { href: "/admin/category/all", label: "All Categories", requiredAction: "CATEGORY_VIEW" },
+            { href: "/admin/category/add", label: "Add Category", requiredAction: "CATEGORY_CREATE" },
           ],
         },
         // series
@@ -144,8 +192,8 @@ const AdminDrawer = () => {
           name: "Series",
           icon: Layers,
           sub: [
-            { href: "/admin/series/all", label: "All Series" },
-            { href: "/admin/series/add", label: "Add Series" },
+            { href: "/admin/series/all", label: "All Series", requiredAction: "CATEGORY_VIEW" },
+            { href: "/admin/series/add", label: "Add Series", requiredAction: "CATEGORY_CREATE" },
             // { href: "/admin/series/arrange", label: "Arrange" },
           ],
         },
@@ -154,10 +202,10 @@ const AdminDrawer = () => {
           name: "Attributes",
           icon: Sliders,
           sub: [
-            { href: "/admin/attribute/colors", label: "Colors" },
-            { href: "/admin/attribute/sizes", label: "Sizes" },
-            { href: "/admin/attribute/variants", label: "Variants" },
-            { href: "/admin/attribute/materials", label: "Materials" },
+            { href: "/admin/attribute/colors", label: "Colors", requiredAction: "CMS_COLOR_MANAGE" },
+            { href: "/admin/attribute/sizes", label: "Sizes", requiredAction: "CMS_SIZE_MANAGE" },
+            { href: "/admin/attribute/variants", label: "Variants", requiredAction: "CMS_VARIANT_MANAGE" },
+            { href: "/admin/attribute/materials", label: "Materials", requiredAction: "CMS_MATERIAL_MANAGE" },
             // { href: "/admin/attribute/manage", label: "Manage" },
           ],
         },
@@ -170,24 +218,24 @@ const AdminDrawer = () => {
           name: "Orders",
           icon: ShoppingCart,
           sub: [
-            { href: "/admin/orders", label: "All Orders" },
-            { href: "/admin/courier", label: "Couriers" },
+            { href: "/admin/orders", label: "All Orders", requiredAction: "ORDER_VIEW" },
+            { href: "/admin/courier", label: "Couriers", requiredAction: "COURIER_VIEW" },
           ],
         },
         {
           name: "Returns & Refunds",
           icon: RotateCcw,
           sub: [
-            { href: "/admin/returns", label: "Return Requests" },
-            { href: "/admin/refunds", label: "Refunds" },
+            { href: "/admin/returns", label: "Return Requests", requiredAction: "RETURN_VIEW" },
+            { href: "/admin/refunds", label: "Refunds", requiredAction: "REFUND_VIEW" },
           ],
         },
         {
           name: "Promotions",
           icon: Percent,
           sub: [
-            { href: "/admin/promotions/coupons", label: "Coupons" },
-            { href: "/admin/promotions/flash-sales", label: "Flash Sales" },
+            { href: "/admin/promotions/coupons", label: "Coupons", requiredAction: "COUPON_READ" },
+            { href: "/admin/promotions/flash-sales", label: "Flash Sales", requiredAction: "FLASH_SALE_MANAGE" },
           ],
         },
       ],
@@ -199,7 +247,7 @@ const AdminDrawer = () => {
           name: "Blog",
           icon: Newspaper,
           sub: [
-            { href: "/admin/blog/add", label: "Create Blog" },
+            { href: "/admin/blog/add", label: "Create Blog", requiredAction: "BLOG_CREATE" },
             { href: "/admin/blog/all-blogs", label: "All Blogs" },
           ],
         },
@@ -207,14 +255,14 @@ const AdminDrawer = () => {
           name: "Static Pages",
           icon: FileText,
           sub: [
-            // { href: "/admin/cms/static-pages", label: "All Pages" },
+            { href: "/admin/cms/static-pages", label: "All Pages", requiredAction: "CMS_STATIC_PAGE_MANAGE" },
           ],
         },
         {
           name: "Terms & Conditions",
           icon: FileText,
           sub: [
-            { href: "/admin/cms/terms-and-conditions", label: "All Sections" },
+            { href: "/admin/cms/terms-and-conditions", label: "All Sections", requiredAction: "CMS_TNC_MANAGE" },
           ],
         },
         {
@@ -224,14 +272,17 @@ const AdminDrawer = () => {
             {
               href: "/admin/banners/promo-banners",
               label: "Promo Banner",
+              requiredAction: "BANNER_MANAGE",
             },
             {
               href: "/admin/banners/broad-banners",
               label: "Broad Banner",
+              requiredAction: "BANNER_MANAGE",
             },
             {
               href: "/admin/banners/urgency-banners",
               label: "Urgency Banner",
+              requiredAction: "BANNER_MANAGE",
             },
           ],
         },
@@ -242,18 +293,32 @@ const AdminDrawer = () => {
             {
               href: "/admin/banners/homepage-banners",
               label: "Homepage Banner",
+              requiredAction: "BANNER_MANAGE",
             },
             {
               href: "/admin/seasonal-categories",
               label: "Seasonal Categories",
+              requiredAction: [
+                "SEASONAL_CATEGORY_CREATE",
+                "SEASONAL_CATEGORY_UPDATE",
+                "SEASONAL_CATEGORY_DELETE",
+                "SEASONAL_CATEGORY_REORDER",
+              ],
             },
             {
               href: "/admin/homepage-gallery",
               label: "Homepage Gallery",
+              requiredAction: [
+                "HOMEPAGE_GALLERY_CREATE",
+                "HOMEPAGE_GALLERY_UPDATE",
+                "HOMEPAGE_GALLERY_DELETE",
+                "HOMEPAGE_GALLERY_REORDER",
+              ],
             },
             {
               href: "/admin/featured-categories",
               label: "Featured Categories",
+              requiredAction: ["FEATURED_CATEGORY_VIEW", "FEATURED_CATEGORY_MANAGE"],
             },
           ],
         },
@@ -265,29 +330,53 @@ const AdminDrawer = () => {
         {
           name: "Activity Log",
           icon: FileText,
-          sub: [{ href: "/admin/activity-log", label: "All Logs" }],
+          sub: [{ href: "/admin/activity-log", label: "All Logs", requiredAction: "CMS_VIEW" }],
         },
         {
           name: "Admin Management",
           icon: FileText,
+          requiredRole: ["SUPERADMIN"],
           sub: [
-            { href: "/admin/admin-users", label: "Admin Users" },
-            { href: "/admin/permissions", label: "Permissions" },
+            { href: "/admin/admin-users", label: "Admin Users", requiredRole: ["SUPERADMIN"] },
+            { href: "/admin/permissions", label: "Permissions", requiredRole: ["SUPERADMIN"] },
           ],
         },
         {
           name: "Settings",
           icon: Settings,
           sub: [
-            { href: "/admin/settings/company", label: "Company Info" },
-            { href: "/admin/settings/shipping/districts", label: "Districts" },
-            { href: "/admin/settings/payment-methods", label: "Payment Methods" },
-            { href: "/admin/settings/email", label: "Email Templates" },
+            { href: "/admin/settings/company", label: "Company Info", requiredAction: "COMPANY_MANAGE" },
+            {
+              href: "/admin/settings/barcode-labels",
+              label: "Barcode & Label Settings",
+              requiredAction: "SETTINGS_MANAGE",
+            },
+            { href: "/admin/settings/invoice", label: "Invoice Settings", requiredAction: "SETTINGS_MANAGE" },
+            { href: "/admin/settings/shipping/districts", label: "Districts", requiredAction: "DISTRICT_MANAGE" },
+            {
+              href: "/admin/settings/payment-methods",
+              label: "Payment Methods",
+              requiredAction: "PAYMENT_METHOD_VIEW",
+            },
+            { href: "/admin/settings/email", label: "Email Templates", requiredAction: "SETTINGS_MANAGE" },
           ],
         },
       ],
     },
   ];
+
+  const visibleSections = navSections
+    .map((section) => ({
+      ...section,
+      items: section.items
+        .filter(isNavItemVisible)
+        .map((item) => ({
+          ...item,
+          sub: item.sub?.filter(isNavItemVisible),
+        }))
+        .filter((item) => !item.sub || item.sub.length > 0),
+    }))
+    .filter((section) => section.items.length > 0);
 
   if (!mounted) return null;
 
@@ -322,7 +411,7 @@ const AdminDrawer = () => {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent hover:scrollbar-thumb-gray-300">
-          {navSections.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.label} className="mb-6 last:mb-0">
               {isAdminOpen && (
                 <div className="px-3 mb-2">
@@ -554,7 +643,7 @@ const AdminDrawer = () => {
 
             {/* Mobile Navigation - Same content as desktop but always expanded */}
             <nav className="flex-1 overflow-y-auto py-6 px-3">
-              {navSections.map((section) => (
+              {visibleSections.map((section) => (
                 <div key={section.label} className="mb-6">
                   <div className="px-3 mb-2">
                     <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">

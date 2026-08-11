@@ -295,7 +295,6 @@ const CheckoutPageComponent = () => {
     cartId: cart!.id,
     address,
     paymentMethod: paymentMethod === "cod" ? "COD" : "ONLINE",
-    deliveryFee,
     ...(withOtp ? { otp: withOtp } : {}),
   });
 

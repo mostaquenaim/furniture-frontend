@@ -19,12 +19,12 @@ export interface Meta {
 
 // ── Badge ─────────────────────────────────────────────────────────────────────
 /**
- * A tiny pill badge. Pass `colorClass` like "bg-blue-100 text-blue-700".
+ * A tiny pill badge. Pass `colorClass` like "bg-blue-50 text-blue-700".
  */
 export function Badge({
   label,
   onRemove,
-  colorClass = "bg-slate-100 text-slate-600",
+  colorClass = "bg-gray-100 text-gray-600",
   dot,
   icon,
   removable = false,
@@ -38,7 +38,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide ${
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
         removable ? "pr-1" : ""
       } ${colorClass}`}
     >
@@ -82,27 +82,27 @@ export function StatCard({
 }) {
   return (
     <div
-      className={`rounded-2xl p-4 border shadow-sm ${
-        accent ? "bg-[#0f172a] border-slate-800" : "bg-white border-slate-100"
+      className={`rounded-xl p-4 border ${
+        accent ? "bg-indigo-600 border-indigo-600" : "bg-white border-gray-200"
       }`}
     >
       <p
-        className={`text-[9px] font-bold uppercase tracking-widest mb-1.5 ${
-          accent ? "text-slate-500" : "text-slate-400"
+        className={`text-xs font-semibold uppercase tracking-wider mb-1.5 ${
+          accent ? "text-indigo-100" : "text-gray-500"
         }`}
       >
         {label}
       </p>
       <p
-        className={`text-2xl font-bold font-mono leading-none ${
-          accent ? "text-[#e2c97e]" : "text-slate-900"
+        className={`text-2xl font-semibold leading-none ${
+          accent ? "text-white" : "text-gray-900"
         }`}
       >
         {value}
       </p>
       {sub && (
         <p
-          className={`text-[10px] mt-1.5 ${accent ? "text-slate-600" : "text-slate-400"}`}
+          className={`text-xs mt-1.5 ${accent ? "text-indigo-100" : "text-gray-400"}`}
         >
           {sub}
         </p>
@@ -125,17 +125,17 @@ export function SearchBar({
 }) {
   return (
     <div className={`relative ${className}`}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm text-slate-700 placeholder:text-slate-300"
+        className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 text-gray-700 placeholder:text-gray-400"
       />
       {value && (
         <button
           onClick={() => onChange("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -162,7 +162,7 @@ export function FilterSelect<T extends string>({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value as T | "")}
-      className={`py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm text-slate-700 ${className}`}
+      className={`py-2.5 px-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 text-gray-700 ${className}`}
     >
       <option value="">{placeholder}</option>
       {options.map((o) => (
@@ -192,13 +192,13 @@ export function DateRangePicker({
         type="date"
         value={from}
         onChange={(e) => onFromChange(e.target.value)}
-        className="py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm text-slate-600"
+        className="py-2.5 px-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 text-gray-600"
       />
       <input
         type="date"
         value={to}
         onChange={(e) => onToChange(e.target.value)}
-        className="py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm text-slate-600"
+        className="py-2.5 px-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 text-gray-600"
       />
     </>
   );
@@ -216,11 +216,11 @@ export function RefreshButton({
     <button
       onClick={onClick}
       disabled={loading}
-      className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm transition-colors disabled:opacity-50"
+      className="p-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
       title="Refresh"
     >
       <RefreshCw
-        className={`w-4 h-4 text-slate-500 ${loading ? "animate-spin" : ""}`}
+        className={`w-4 h-4 text-gray-500 ${loading ? "animate-spin" : ""}`}
       />
     </button>
   );
@@ -231,9 +231,8 @@ export function ClearFiltersButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-xl transition-colors border border-red-100"
+      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-100"
     >
-      <X className="w-3.5 h-3.5" />
       Clear
     </button>
   );
@@ -254,32 +253,32 @@ export function AdminTable({
   emptyAction?: React.ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto bg-white shadow-sm rounded-2xl border border-slate-100">
+    <div className="overflow-x-auto bg-white rounded-xl border border-gray-200">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/80">
+          <tr className="border-b border-gray-200 bg-gray-50">
             {headers.map((h) => (
               <th
                 key={h}
-                className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-slate-400 first:pl-5 last:pr-5"
+                className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 first:pl-6 last:pr-6"
               >
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-50">
+        <tbody className="divide-y divide-gray-100">
           {loading ? (
             <tr>
-              <td colSpan={headers.length} className="py-16 text-center">
-                <RefreshCw className="w-5 h-5 animate-spin text-slate-300 mx-auto" />
+              <td colSpan={headers.length} className="py-20 text-center text-sm text-gray-400">
+                Loading…
               </td>
             </tr>
           ) : empty ? (
             <tr>
               <td
                 colSpan={headers.length}
-                className="py-16 text-center text-slate-400 text-sm"
+                className="py-20 text-center text-sm text-gray-500"
               >
                 <div className="flex flex-col items-center gap-3">
                   <p>No records found</p>
@@ -313,14 +312,14 @@ export function MetaPagination({
   const pages = buildPageNumbers(page, meta.totalPages);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-sm">
-      <p className="text-xs text-slate-400">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-3 rounded-xl border border-gray-200">
+      <p className="text-xs text-gray-500">
         Showing{" "}
-        <span className="font-semibold text-slate-700">
+        <span className="font-medium text-gray-700">
           {(meta.page - 1) * limit + 1}–
           {Math.min(meta.page * limit, meta.total)}
         </span>{" "}
-        of <span className="font-semibold text-slate-700">{meta.total}</span>
+        of <span className="font-medium text-gray-700">{meta.total}</span>
       </p>
 
       <div className="flex items-center gap-1.5">
@@ -331,7 +330,7 @@ export function MetaPagination({
         />
         {pages.map((p, i) =>
           p === "…" ? (
-            <span key={`ellipsis-${i}`} className="px-1 text-slate-300 text-sm">
+            <span key={`ellipsis-${i}`} className="px-1 text-gray-300 text-sm">
               …
             </span>
           ) : (
@@ -350,8 +349,8 @@ export function MetaPagination({
         />
       </div>
 
-      <p className="text-xs text-slate-400">
-        Page <span className="font-semibold text-slate-700">{meta.page}</span> /{" "}
+      <p className="text-xs text-gray-500">
+        Page <span className="font-medium text-gray-700">{meta.page}</span> /{" "}
         {meta.totalPages}
       </p>
     </div>
@@ -373,12 +372,12 @@ function PageBtn({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`min-w-[32px] h-8 px-2 text-xs rounded-lg transition-all font-medium ${
+      className={`min-w-8 h-8 px-2 text-xs rounded-lg transition-colors font-medium ${
         active
-          ? "bg-[#0f172a] text-white shadow-sm"
+          ? "bg-indigo-600 text-white"
           : disabled
-            ? "text-slate-300 cursor-not-allowed"
-            : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+            ? "text-gray-300 cursor-not-allowed"
+            : "border border-gray-200 text-gray-600 hover:bg-gray-50"
       }`}
     >
       {label}
@@ -414,22 +413,19 @@ export function DetailDrawer({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-[2px]"
+        className="fixed inset-0 bg-black/40"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg bg-white h-full flex flex-col shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg bg-white h-full flex flex-col shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="bg-[#0f172a] px-6 py-5 flex items-start justify-between flex-shrink-0">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-start justify-between shrink-0">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">
-              Details
-            </p>
-            <p className="text-white font-semibold text-base leading-tight">
+            {subtitle && (
+              <p className="text-xs text-gray-400 mb-0.5">{subtitle}</p>
+            )}
+            <p className="text-base font-semibold text-gray-900 leading-tight">
               {title}
             </p>
-            {subtitle && (
-              <p className="text-slate-400 text-xs mt-0.5">{subtitle}</p>
-            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -437,9 +433,9 @@ export function DetailDrawer({
 
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+              className="p-1 text-gray-400 hover:text-gray-600"
             >
-              <X className="w-5 h-5 text-slate-400" />
+              <X className="w-4.5 h-4.5" />
             </button>
           </div>
         </div>
@@ -461,7 +457,7 @@ export function DrawerSection({
   tint?: "slate" | "blue" | "green" | "red" | "amber";
 }) {
   const tints: Record<string, string> = {
-    slate: "bg-slate-50 border-slate-100",
+    slate: "bg-gray-50 border-gray-100",
     blue: "bg-blue-50 border-blue-100",
     green: "bg-emerald-50 border-emerald-100",
     red: "bg-red-50 border-red-100",
@@ -469,7 +465,7 @@ export function DrawerSection({
   };
   return (
     <div className={`rounded-xl border p-4 ${tints[tint]}`}>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
         {title}
       </p>
       {children}
@@ -490,12 +486,12 @@ export function DrawerRow({
   highlight?: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between py-1.5 border-b border-slate-100/60 last:border-0 gap-4">
-      <span className="text-xs text-slate-400 shrink-0">{label}</span>
+    <div className="flex items-start justify-between py-1.5 border-b border-gray-100 last:border-0 gap-4">
+      <span className="text-xs text-gray-400 shrink-0">{label}</span>
       <span
         className={`text-xs text-right break-all ${
           mono ? "font-mono" : "font-medium"
-        } ${highlight ? "text-emerald-700 font-semibold" : "text-slate-800"}`}
+        } ${highlight ? "text-emerald-700 font-semibold" : "text-gray-800"}`}
       >
         {value ?? "—"}
       </span>
@@ -514,19 +510,19 @@ export function JsonBlock({
   tint?: "slate" | "green" | "red";
 }) {
   const tints: Record<string, string> = {
-    slate: "bg-slate-50 border-slate-200 text-slate-700",
-    green: "bg-emerald-50 border-emerald-100 text-slate-700",
-    red: "bg-red-50 border-red-100 text-slate-700",
+    slate: "bg-gray-50 border-gray-200 text-gray-700",
+    green: "bg-emerald-50 border-emerald-100 text-gray-700",
+    red: "bg-red-50 border-red-100 text-gray-700",
   };
   return (
     <div>
       {label && (
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
           {label}
         </p>
       )}
       <pre
-        className={`rounded-xl border px-4 py-3 text-[11px] overflow-x-auto whitespace-pre-wrap leading-relaxed ${tints[tint]}`}
+        className={`rounded-lg border px-4 py-3 text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed ${tints[tint]}`}
       >
         {JSON.stringify(data, null, 2)}
       </pre>
@@ -545,18 +541,14 @@ export function PageHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#0f172a] px-8 py-6">
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-        <div>
-          {eyebrow && (
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">
-              {eyebrow}
-            </p>
-          )}
-          <h1 className="text-xl font-semibold text-white">{title}</h1>
-        </div>
-        {children && <div className="flex items-center gap-3">{children}</div>}
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        {eyebrow && (
+          <p className="text-xs text-gray-400 mb-0.5">{eyebrow}</p>
+        )}
+        <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
       </div>
+      {children && <div className="flex items-center gap-3">{children}</div>}
     </div>
   );
 }
@@ -578,7 +570,7 @@ export const SearchInput = ({
     placeholder={placeholder}
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className={`px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+    className={`px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 ${className}`}
   />
 );
 
@@ -595,7 +587,7 @@ export const FilterDropdown = ({
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
   >
     {options.map((option) => (
       <option key={option.value} value={option.value}>
@@ -612,7 +604,7 @@ export const StarRating = ({ rating }: { rating: number }) => (
       <Star
         key={star}
         className={`w-3 h-3 ${
-          star <= rating ? "text-amber-400 fill-amber-400" : "text-slate-300"
+          star <= rating ? "text-amber-400 fill-amber-400" : "text-gray-300"
         }`}
       />
     ))}
@@ -633,17 +625,17 @@ export const Pagination = ({
     <button
       onClick={() => onPageChange(currentPage - 1)}
       disabled={currentPage === 1}
-      className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-slate-50"
+      className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50"
     >
       Prev
     </button>
-    <span className="px-3 py-1 border rounded bg-slate-50">
+    <span className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-gray-50">
       {currentPage} / {totalPages}
     </span>
     <button
       onClick={() => onPageChange(currentPage + 1)}
       disabled={currentPage === totalPages}
-      className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-slate-50"
+      className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50"
     >
       Next
     </button>

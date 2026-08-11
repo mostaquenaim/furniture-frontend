@@ -3,7 +3,6 @@
 "use server";
 
 import axios from "axios";
-import { cookies } from "next/headers";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -82,12 +81,11 @@ export type DashboardPeriod = "day" | "week" | "month";
 // ── Server Action ─────────────────────────────────────────────────────────────
 
 export async function getDashboardData(
+  token: string | null,
   options:
     | { period: DashboardPeriod }
     | { start: string; end: string },
 ): Promise<DashboardData> {
-  const token = (await cookies()).get("token")?.value ?? null;
-
   const queryParams: Record<string, string> =
     "period" in options
       ? { period: options.period }

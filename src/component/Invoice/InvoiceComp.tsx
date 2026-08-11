@@ -3,11 +3,12 @@
 import useFetchInvoice from '@/hooks/Invoice/useFetchInvoice';
 import { OrderItem } from '@/hooks/Order/useOrders';
 import { formatDate } from '@/utils/formatters';
-import { useParams } from 'next/navigation';
-import React, { useRef, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 import { FullScreenCenter } from '../Screen/FullScreenCenter';
 import LoadingDots from '../Loading/LoadingDS';
 import useAxiosSecure from '@/hooks/Axios/useAxiosSecure';
+import useFetchInvoiceSettings from '@/hooks/Settings/useFetchInvoiceSettings';
 
 // ── tiny helpers ────────────────────────────────────────────────────────────
 const taka = (n: number | string) =>
@@ -32,7 +33,28 @@ const StatusPill = ({ status }: { status: string }) => {
 // ── main component ───────────────────────────────────────────────────────────
 const InvoiceComp = () => {
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const { invoice, isLoading } = useFetchInvoice(id);
+  const { invoiceSettings } = useFetchInvoiceSettings();
+
+  const autoprint = searchParams.get('autoprint') === '1';
+  const hasAutoprinted = useRef(false);
+
+  useEffect(() => {
+    if (!autoprint || hasAutoprinted.current || !invoice) return;
+    hasAutoprinted.current = true;
+    const timer = setTimeout(() => window.print(), 300);
+    return () => clearTimeout(timer);
+  }, [autoprint, invoice]);
+
+  const pageSize =
+    invoiceSettings?.invoicePaperSize === 'CUSTOM' &&
+    invoiceSettings.invoicePaperWidthMm &&
+    invoiceSettings.invoicePaperHeightMm
+      ? `${invoiceSettings.invoicePaperWidthMm}mm ${invoiceSettings.invoicePaperHeightMm}mm`
+      : invoiceSettings?.invoicePaperSize === 'LETTER'
+        ? 'letter'
+        : 'A4';
 
   const [downloading, setDownloading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -102,6 +124,7 @@ const InvoiceComp = () => {
             animation: none !important;
             border-radius: 0 !important;
           }
+          @page { size: ${pageSize}; }
         }
       `}</style>
 
@@ -115,6 +138,13 @@ const InvoiceComp = () => {
             <p className="inv-mono text-xs text-slate-400 mt-0.5">{invoice.invoiceNo}</p>
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={() => window.print()}
+              className="cursor-pointer flex items-center gap-2 px-5 py-2 text-xs font-bold tracking-widest uppercase border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-all"
+            >
+              <PrintIcon />
+              Print
+            </button>
             <button
               onClick={handleDownload}
               disabled={downloading}

@@ -395,6 +395,7 @@ const FlashSaleFormModal: FC<FlashSaleFormModalProps> = ({
     limit: 8,
     thumb: true,
     enabled: debouncedSearch.length > 1,
+    includeOutOfStock: true,
   });
 
   const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected]);

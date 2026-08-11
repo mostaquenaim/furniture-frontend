@@ -79,6 +79,7 @@ export interface ProductSize {
   color?: ProductColor;
   discountType?: "PERCENT" | "FIXED" | null;
   discount?: number;
+  trackingMode?: "LEGACY_QUANTITY" | "PIECE_BARCODE";
 }
 
 export interface ProductColor {
@@ -190,6 +191,7 @@ export interface FetchProductsParams {
 
   thumb?: boolean;
   enabled?: boolean;
+  includeOutOfStock?: boolean;
 }
 
 export interface CartItem {

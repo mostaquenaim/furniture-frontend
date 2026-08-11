@@ -14,7 +14,6 @@ import {
   SubCategoryRelation,
 } from "@/types/product.types";
 import { Search } from "lucide-react";
-import BarcodeModal from "@/component/Barcode/Barcodemodal";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -25,11 +24,6 @@ const AllProducts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const [barcodeModal, setBarcodeModal] = useState<{
-    productId: number;
-    productTitle: string;
-  } | null>(null);
-
   const axiosSecure = useAxiosSecure();
 
   const { products, meta, isLoading, isFetching, refetch } = useFetchProducts({
@@ -37,6 +31,7 @@ const AllProducts = () => {
     limit: PRODUCTS_PER_PAGE,
     search: search || undefined,
     isActive,
+    includeOutOfStock: true,
   });
 
   // Calculate stock safely
@@ -79,6 +74,11 @@ const AllProducts = () => {
   // Handle Edit Product
   const handleEdit = (productId: string) => {
     router.push(`/admin/products/update/${productId}`);
+  };
+
+  const handleBarcode = (product: Product) => {
+    const params = new URLSearchParams({ search: product.title });
+    router.push(`/admin/pieces?${params.toString()}`);
   };
 
   // Handle Toggle Product Status (Enable/Disable)
@@ -220,9 +220,9 @@ const AllProducts = () => {
               <tr>
                 <td colSpan={7} className="text-center py-12 text-gray-500">
                   <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    {/* <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                       <span className="text-2xl">📦</span>
-                    </div>
+                    </div> */}
                     <p className="text-lg font-medium mb-1">
                       No products found
                     </p>
@@ -338,12 +338,7 @@ const AllProducts = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() =>
-                            setBarcodeModal({
-                              productId: product.id,
-                              productTitle: product.title,
-                            })
-                          }
+                          onClick={() => handleBarcode(product)}
                           className="text-violet-600 hover:text-violet-800 text-sm font-medium"
                         >
                           Barcode
@@ -462,12 +457,7 @@ const AllProducts = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() =>
-                      setBarcodeModal({
-                        productId: product.id,
-                        productTitle: product.title,
-                      })
-                    }
+                    onClick={() => handleBarcode(product)}
                     className="text-violet-600 font-medium"
                   >
                     Barcode
@@ -557,14 +547,6 @@ const AllProducts = () => {
             Page {meta.page} of {meta.totalPages}
           </div>
         </div>
-      )}
-
-      {barcodeModal && (
-        <BarcodeModal
-          productId={barcodeModal.productId}
-          productTitle={barcodeModal.productTitle}
-          onClose={() => setBarcodeModal(null)}
-        />
       )}
     </div>
   );

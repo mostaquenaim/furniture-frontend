@@ -50,15 +50,26 @@ const AllProductsComp = () => {
   const { colors } = useFetchColors({ isActive: true });
   const { materials } = useFetchMaterials({ isActive: true });
 
+  // Only paginate/limit once the customer actually narrows the catalog down
+  // (search or a filter). Otherwise send back the full product list.
+  const hasActiveFilters = Boolean(
+    searchQuery ||
+      filters.colorIds?.length ||
+      filters.materialIds?.length ||
+      filters.subCategoryIds?.length ||
+      filters.minPrice !== undefined ||
+      filters.maxPrice !== undefined,
+  );
+
   const {
     products,
     meta,
     isLoading,
     isFetching,
   } = useFetchProducts( {
-    page: currentPage,
+    page: hasActiveFilters ? currentPage : undefined,
     search: searchQuery,
-    limit: PRODUCTS_PER_PAGE,
+    limit: hasActiveFilters ? PRODUCTS_PER_PAGE : undefined,
 
     colorIds: filters.colorIds,
     materialIds: filters.materialIds,

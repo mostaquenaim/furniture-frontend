@@ -5,14 +5,6 @@ import React, { useEffect, useRef, useState } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
 import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  PackageCheck,
-  Banknote,
-  Ban,
-} from "lucide-react";
-import {
   Badge,
   StatCard,
   SearchBar,
@@ -27,48 +19,46 @@ import {
   PageHeader,
 } from "@/component/Shared/Admin/AdminUI/AdminUI";
 import useReturnRequests from "@/hooks/Returns/useReturnRequests";
-import { ReturnRequest, ReturnRequestStatus } from "@/types/refund.types";
+import {
+  formatReturnReason,
+  ReturnRequest,
+  ReturnRequestStatus,
+} from "@/types/refund.types";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const RETURN_STATUS: Record<
   ReturnRequestStatus,
-  { label: string; color: string; dot: string; icon: React.ReactNode }
+  { label: string; color: string; dot: string }
 > = {
   PENDING: {
     label: "Pending Review",
-    color: "bg-slate-100 text-slate-600",
-    dot: "bg-slate-400",
-    icon: <Clock className="w-3 h-3" />,
+    color: "bg-gray-100 text-gray-600",
+    dot: "bg-gray-400",
   },
   APPROVED: {
     label: "Approved",
     color: "bg-blue-50 text-blue-700",
     dot: "bg-blue-500",
-    icon: <CheckCircle2 className="w-3 h-3" />,
   },
   REJECTED: {
     label: "Rejected",
     color: "bg-red-50 text-red-700",
     dot: "bg-red-500",
-    icon: <XCircle className="w-3 h-3" />,
   },
   ITEM_RECEIVED: {
     label: "Item Received",
     color: "bg-violet-50 text-violet-700",
     dot: "bg-violet-500",
-    icon: <PackageCheck className="w-3 h-3" />,
   },
   REFUNDED: {
     label: "Refunded",
     color: "bg-emerald-50 text-emerald-700",
     dot: "bg-emerald-500",
-    icon: <Banknote className="w-3 h-3" />,
   },
   CANCELLED: {
     label: "Cancelled",
-    color: "bg-slate-100 text-slate-500",
-    dot: "bg-slate-400",
-    icon: <Ban className="w-3 h-3" />,
+    color: "bg-gray-100 text-gray-500",
+    dot: "bg-gray-400",
   },
 };
 
@@ -198,18 +188,18 @@ function ReturnRequestDetailDrawer({
       subtitle={data ? `Order ${data.order?.orderId ?? data.orderId}` : undefined}
     >
       {loading || !data ? (
-        <div className="py-16 text-center text-slate-400 text-sm">Loading…</div>
+        <div className="py-16 text-center text-gray-400 text-sm">Loading…</div>
       ) : (
         <>
           <DrawerSection title="Status">
             <div className="flex items-center justify-between">
               <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide ${cfg!.color}`}
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${cfg!.color}`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${cfg!.dot}`} />
                 {cfg!.label}
               </span>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-gray-400">
                 Filed {fmtDateTime(data.createdAt)}
               </span>
             </div>
@@ -225,9 +215,11 @@ function ReturnRequestDetailDrawer({
           </DrawerSection>
 
           <DrawerSection title="Reason">
-            <p className="text-xs text-slate-700 font-medium">{data.reason}</p>
+            <p className="text-xs text-gray-700 font-medium">
+              {formatReturnReason(data.reason)}
+            </p>
             {data.note && (
-              <p className="text-xs text-slate-500 mt-2 italic">“{data.note}”</p>
+              <p className="text-xs text-gray-500 mt-2 italic">“{data.note}”</p>
             )}
           </DrawerSection>
 
@@ -236,25 +228,25 @@ function ReturnRequestDetailDrawer({
               {data.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-start justify-between gap-3 py-2 border-b border-slate-100 last:border-0"
+                  className="flex items-start justify-between gap-3 py-2 border-b border-gray-100 last:border-0"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-slate-800 leading-tight">
+                    <p className="text-xs font-semibold text-gray-800 leading-tight">
                       {item.orderItem?.productTitle ?? `Item #${item.orderItemId}`}
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
+                    <p className="text-[10px] text-gray-400 mt-0.5">
                       {[item.orderItem?.color, item.orderItem?.size, item.orderItem?.sku]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-mono font-semibold text-slate-800">
+                    <p className="text-xs font-mono font-semibold text-gray-800">
                       Returning {item.quantity}
                       {item.orderItem ? ` / ${item.orderItem.quantity}` : ""}
                     </p>
                     {item.orderItem && (
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-[10px] text-gray-400">
                         {taka(item.orderItem.priceAtPurchase)} / unit
                       </p>
                     )}
@@ -266,7 +258,7 @@ function ReturnRequestDetailDrawer({
 
           {data.adminNote && (
             <DrawerSection title="Admin Note" tint="amber">
-              <p className="text-xs text-slate-700">{data.adminNote}</p>
+              <p className="text-xs text-gray-700">{data.adminNote}</p>
             </DrawerSection>
           )}
 
@@ -275,20 +267,20 @@ function ReturnRequestDetailDrawer({
               {data.refunds.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center justify-between py-1.5 border-b border-slate-100/60 last:border-0"
+                  className="flex items-center justify-between py-1.5 border-b border-gray-100/60 last:border-0"
                 >
                   <div>
-                    <p className="text-xs font-medium text-slate-700">
+                    <p className="text-xs font-medium text-gray-700">
                       {r.refundMethod === "GATEWAY" ? "Gateway Refund" : "Manual Refund"}
                     </p>
                     {r.processedAt && (
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-[10px] text-gray-400">
                         {fmtDateTime(r.processedAt)}
                       </p>
                     )}
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-mono font-semibold text-slate-800">
+                    <p className="text-xs font-mono font-semibold text-gray-800">
                       {taka(r.amount)}
                     </p>
                     <Badge
@@ -316,7 +308,7 @@ function ReturnRequestDetailDrawer({
                   onChange={(e) => setAdminNote(e.target.value)}
                   placeholder="Optional note for the customer / internal record…"
                   rows={2}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-slate-400 resize-none"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 resize-none"
                 />
                 <div className="flex gap-2">
                   <button
@@ -340,7 +332,7 @@ function ReturnRequestDetailDrawer({
 
           {data.status === "APPROVED" && (
             <DrawerSection title="Receive Item(s)" tint="slate">
-              <p className="text-[11px] text-slate-500 mb-2">
+              <p className="text-[11px] text-gray-500 mb-2">
                 Restocks any legacy (quantity-tracked) items automatically.
                 Piece-tracked items are <strong>not</strong> restocked here —
                 an Inventory Manager must scan the physical barcode in{" "}
@@ -348,7 +340,7 @@ function ReturnRequestDetailDrawer({
                   href="/admin/pieces"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-violet-600 underline"
+                  className="text-indigo-600 underline"
                 >
                   Piece Barcodes → Process Return
                 </a>{" "}
@@ -360,12 +352,12 @@ function ReturnRequestDetailDrawer({
                 onChange={(e) => setAdminNote(e.target.value)}
                 placeholder="Optional note…"
                 rows={2}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-slate-400 resize-none mb-2"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 resize-none mb-2"
               />
               <button
                 onClick={handleReceive}
                 disabled={working}
-                className="w-full py-2.5 bg-violet-600 text-white text-xs font-semibold rounded-xl hover:bg-violet-700 disabled:opacity-50 transition-colors"
+                className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
               >
                 Acknowledge Return Request
               </button>
@@ -374,7 +366,7 @@ function ReturnRequestDetailDrawer({
 
           {data.status === "ITEM_RECEIVED" && (
             <DrawerSection title="Process Refund" tint="amber">
-              <p className="text-[11px] text-slate-500 mb-2">
+              <p className="text-[11px] text-gray-500 mb-2">
                 Leave the amount blank to refund the full value of the returned
                 item(s). Online (SSL) payments are refunded via the gateway
                 automatically; other methods are marked for manual transfer.
@@ -387,19 +379,19 @@ function ReturnRequestDetailDrawer({
                   value={refundAmount}
                   onChange={(e) => setRefundAmount(e.target.value)}
                   placeholder="Amount (optional override)"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-slate-400"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
                 />
                 <textarea
                   value={refundNotes}
                   onChange={(e) => setRefundNotes(e.target.value)}
                   placeholder="Notes (optional)…"
                   rows={2}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-slate-400 resize-none"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 resize-none"
                 />
                 <button
                   onClick={handleProcessRefund}
                   disabled={working}
-                  className="w-full py-2.5 bg-[#0f172a] text-white text-xs font-semibold rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                  className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
                   {working ? "Processing…" : "Process Refund"}
                 </button>
@@ -501,7 +493,7 @@ export default function ReturnRequestsAdmin() {
             hasFilters ? (
               <button
                 onClick={clearFilters}
-                className="text-xs text-blue-600 hover:underline"
+                className="text-xs text-indigo-600 hover:underline"
               >
                 Clear filters
               </button>
@@ -515,33 +507,35 @@ export default function ReturnRequestsAdmin() {
               <tr
                 key={r.id}
                 onClick={() => setDetailId(r.id)}
-                className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                className="hover:bg-gray-50 transition-colors cursor-pointer group"
               >
                 <td className="px-5 py-3.5">
-                  <p className="font-mono text-xs font-semibold text-slate-800 group-hover:text-[#0f172a]">
+                  <p className="font-mono text-xs font-semibold text-gray-800 group-hover:text-indigo-600">
                     {r.order?.orderId ?? r.orderId}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">#{r.id}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">#{r.id}</p>
                 </td>
                 <td className="px-4 py-3.5">
-                  <p className="text-xs font-semibold text-slate-800 leading-tight">
+                  <p className="text-xs font-semibold text-gray-800 leading-tight">
                     {r.order?.customerName ?? "—"}
                   </p>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                  <p className="text-[10px] text-gray-400 font-mono mt-0.5">
                     {r.order?.customerPhone}
                   </p>
                 </td>
                 <td className="px-4 py-3.5 max-w-50">
-                  <p className="text-xs text-slate-700 truncate">{r.reason}</p>
+                  <p className="text-xs text-gray-700 truncate">
+                    {formatReturnReason(r.reason)}
+                  </p>
                 </td>
                 <td className="px-4 py-3.5">
-                  <span className="text-xs font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-lg">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-mono font-semibold text-gray-700 bg-gray-100">
                     {r.items.reduce((s, i) => s + i.quantity, 0)} pcs
                   </span>
                 </td>
                 <td className="px-4 py-3.5">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${cfg.color}`}
+                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.color}`}
                   >
                     <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                     {cfg.label}
@@ -549,18 +543,18 @@ export default function ReturnRequestsAdmin() {
                 </td>
                 <td className="px-4 py-3.5">
                   {refund ? (
-                    <p className="text-xs font-mono font-semibold text-slate-800">
+                    <p className="text-xs font-mono font-semibold text-gray-800">
                       {taka(refund.amount)}{" "}
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-gray-400">
                         ({refund.status})
                       </span>
                     </p>
                   ) : (
-                    <span className="text-[10px] text-slate-300">—</span>
+                    <span className="text-[10px] text-gray-300">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3.5 pr-5">
-                  <p className="text-xs text-slate-500">{fmtDate(r.createdAt)}</p>
+                  <p className="text-xs text-gray-500">{fmtDate(r.createdAt)}</p>
                 </td>
               </tr>
             );

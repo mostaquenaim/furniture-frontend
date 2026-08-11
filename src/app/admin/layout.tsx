@@ -5,6 +5,7 @@ import { Providers } from "../providers";
 import ProtectedRoute from "@/component/ProtectedRoute";
 import AdminGuard from "@/component/admin/auth/AdminGuard";
 import { AdminDrawerProvider } from "@/context/AdminContext";
+import { PermissionsProvider } from "@/context/PermissionsContext";
 import AdminLayoutBody from "@/component/admin/AdminLayoutBody";
 
 const inter = Inter({
@@ -29,9 +30,11 @@ export default function AdminLayout({
       <Providers>
         <ProtectedRoute>
           <AdminGuard>
-            <AdminDrawerProvider>
-              <AdminLayoutBody>{children}</AdminLayoutBody>
-            </AdminDrawerProvider>
+            <PermissionsProvider>
+              <AdminDrawerProvider>
+                <AdminLayoutBody>{children}</AdminLayoutBody>
+              </AdminDrawerProvider>
+            </PermissionsProvider>
           </AdminGuard>
         </ProtectedRoute>
       </Providers>

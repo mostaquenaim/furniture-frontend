@@ -9,6 +9,8 @@ import {
 } from "@/lib/api/actions/dashboard";
 import StatsGrid from "./Components/StatsGrid";
 import PieceInventoryStatsTiles from "./Components/PieceInventoryStatsTiles";
+import StalePieceAlertCard from "./Components/StalePieceAlertCard";
+import ReturningAlertCard from "./Components/ReturningAlertCard";
 import SalesChart from "./Components/SalesChart";
 import TopProductsTable from "./Components/TopProductsTable";
 import RecentOrders from "./Components/RecentOrders";
@@ -18,6 +20,7 @@ import { Calendar, RefreshCw } from "lucide-react";
 import TopViewedProducts from "./Components/TopViewedProducts";
 import SearchAnalytics from "./Components/SearchAnalytics";
 import UserRetentionChart from "./Components/UserRetentionChart";
+import { useAuth } from "@/context/AuthContext";
 
 const toDateInput = (d: Date) => d.toISOString().split("T")[0];
 
@@ -36,6 +39,7 @@ const TREND_SUBTITLE: Record<DashboardPeriod | "custom", string> = {
 
 // ── Component
 export default function DashboardPageComp() {
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<DashboardData | null>(null);
@@ -61,7 +65,8 @@ export default function DashboardPageComp() {
             ? { start: customRange.start, end: customRange.end }
             : { period: activePeriod };
 
-        const result = await getDashboardData(options);
+        const currentToken = token || localStorage.getItem("token");
+        const result = await getDashboardData(currentToken, options);
         setData(result);
       } catch (err: any) {
         console.error("Dashboard fetch failed:", err);
@@ -71,7 +76,7 @@ export default function DashboardPageComp() {
         setRefreshing(false);
       }
     },
-    [activePeriod, customRange],
+    [activePeriod, customRange, token],
   );
 
   useEffect(() => {
@@ -197,6 +202,8 @@ export default function DashboardPageComp() {
           {/* Stats Grid */}
           <StatsGrid stats={data.stats} />
           <PieceInventoryStatsTiles />
+          <StalePieceAlertCard />
+          <ReturningAlertCard />
 
           {/* Charts */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -14,6 +14,27 @@ export type RefundStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
 export type RefundMethod = "GATEWAY" | "MANUAL";
 
+// Fixed set of categories a customer can file a return under — mirrors the
+// backend's RETURN_REASON_CODES allow-list (src/refund/constants/return-reason.constant.ts).
+// Requests filed before this list existed may still carry old free-text
+// values, so anything rendering `reason` should fall back to showing it as-is
+// rather than assuming it matches one of these codes.
+export const RETURN_REASON_OPTIONS = [
+  { code: "DEFECTIVE_DAMAGED", label: "Defective / Damaged Item" },
+  { code: "NOT_AS_DESCRIBED", label: "Not as Described" },
+  { code: "WRONG_ITEM_RECEIVED", label: "Wrong Item Received" },
+  { code: "CHANGED_MIND", label: "Changed Mind" },
+  { code: "WRONG_SIZE", label: "Wrong Size" },
+  { code: "OTHER", label: "Other" },
+] as const;
+
+export type ReturnReasonCode = (typeof RETURN_REASON_OPTIONS)[number]["code"];
+
+export const formatReturnReason = (reason: string): string => {
+  const known = RETURN_REASON_OPTIONS.find((r) => r.code === reason);
+  return known ? known.label : reason;
+};
+
 export interface OrderItemSnapshot {
   id: number;
   productId: number;

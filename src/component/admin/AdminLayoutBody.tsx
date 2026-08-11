@@ -20,7 +20,7 @@ export default function AdminLayoutBody({
         }`}
       >
         <AdminHeader />
-        <main className="p-4 sm:p-6 lg:p-8 bg-slate-100 min-h-screen">
+        <main className="p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-screen">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

@@ -2,7 +2,11 @@
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/context/AuthContext";
-import { StockUpdatedEvent, StockLowEvent } from "@/types/inventory";
+import {
+  StockUpdatedEvent,
+  StockLowEvent,
+  ReturnStartedEvent,
+} from "@/types/inventory";
 
 const SOCKET_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(
   /\/api\/?$/,
@@ -12,19 +16,23 @@ const SOCKET_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(
 interface Options {
   onStockUpdated?: (payload: StockUpdatedEvent) => void;
   onStockLow?: (payload: StockLowEvent) => void;
+  onReturnStarted?: (payload: ReturnStartedEvent) => void;
 }
 
 export default function useInventorySocket({
   onStockUpdated,
   onStockLow,
+  onReturnStarted,
 }: Options) {
   const { token } = useAuth();
   const socketRef = useRef<Socket | null>(null);
   const onStockUpdatedRef = useRef(onStockUpdated);
   const onStockLowRef = useRef(onStockLow);
+  const onReturnStartedRef = useRef(onReturnStarted);
 
   onStockUpdatedRef.current = onStockUpdated;
   onStockLowRef.current = onStockLow;
+  onReturnStartedRef.current = onReturnStarted;
 
   useEffect(() => {
     if (!token) return;
@@ -41,6 +49,10 @@ export default function useInventorySocket({
 
     socket.on("stock:low", (payload: StockLowEvent) => {
       onStockLowRef.current?.(payload);
+    });
+
+    socket.on("return:started", (payload: ReturnStartedEvent) => {
+      onReturnStartedRef.current?.(payload);
     });
 
     return () => {

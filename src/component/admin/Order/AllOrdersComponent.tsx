@@ -469,26 +469,14 @@ function OrderDetailDrawer({
     }
   };
 
-  const handlePrintInvoice = async () => {
+  const handlePrintInvoice = () => {
     if (!order) return;
-    try {
-      const r = await axiosSecure.get(
-        `/orders/admin/${order.orderNumber}/invoice/pdf`,
-        {
-          responseType: "blob",
-        },
-      );
-      const url = URL.createObjectURL(
-        new Blob([r.data], { type: "application/pdf" }),
-      );
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `invoice-${order.orderNumber}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      toast.error("Failed to generate invoice");
+    const invoiceId = order.invoiceId;
+    if (!invoiceId) {
+      toast.error("No invoice found for this order");
+      return;
     }
+    window.open(`/dashboard/invoice/${invoiceId}?autoprint=1`, "_blank");
   };
 
   const createShipment = (orderId?: string) => {
@@ -1086,8 +1074,6 @@ export default function AllOrdersComponent() {
     from: from || undefined,
     to: to || undefined,
   });
-
-  console.log(orders, "allorders");
 
   // Debounce search
   const searchTimer = useRef<NodeJS.Timeout | null>(null);

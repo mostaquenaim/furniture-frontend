@@ -293,12 +293,22 @@ export default function InventoryManagement() {
                         >
                           <History size={14} />
                         </button>
-                        <button
-                          onClick={() => openAdjust(row)}
-                          className="px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                        >
-                          Adjust
-                        </button>
+                        {row.trackingMode === "PIECE_BARCODE" ? (
+                          <button
+                            disabled
+                            title="Piece-tracked — adjust via Receive/Return scans, not a manual quantity edit"
+                            className="px-3 py-1.5 text-xs font-medium text-gray-300 cursor-not-allowed rounded-lg"
+                          >
+                            Adjust
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => openAdjust(row)}
+                            className="px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          >
+                            Adjust
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
