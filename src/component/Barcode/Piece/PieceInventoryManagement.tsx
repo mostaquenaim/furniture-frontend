@@ -138,7 +138,9 @@ export default function PieceInventoryManagement() {
   // ── Pending (CREATED) barcodes for the selected variant — void/cancel ──────
   const [pendingPieces, setPendingPieces] = useState<Piece[]>([]);
   const [loadingPending, setLoadingPending] = useState(false);
-  const [selectedToVoid, setSelectedToVoid] = useState<Set<string>>(new Set());
+  const [selectedPending, setSelectedPending] = useState<Set<string>>(
+    new Set(),
+  );
   const [confirmingVoid, setConfirmingVoid] = useState(false);
   const [voidReason, setVoidReason] = useState("");
   const [voiding, setVoiding] = useState(false);
@@ -258,7 +260,7 @@ export default function PieceInventoryManagement() {
           params: { productSizeId, status: "CREATED" },
         });
         setPendingPieces(data);
-        setSelectedToVoid(new Set());
+        setSelectedPending(new Set());
       } catch {
         // non-critical
       } finally {
@@ -271,14 +273,14 @@ export default function PieceInventoryManagement() {
   useEffect(() => {
     if (!selectedVariant) {
       setPendingPieces([]);
-      setSelectedToVoid(new Set());
+      setSelectedPending(new Set());
       return;
     }
     fetchPendingPieces(selectedVariant.productSizeId);
   }, [selectedVariant, fetchPendingPieces]);
 
-  const toggleVoidSelection = (barcodeValue: string) => {
-    setSelectedToVoid((prev) => {
+  const togglePendingSelection = (barcodeValue: string) => {
+    setSelectedPending((prev) => {
       const next = new Set(prev);
       if (next.has(barcodeValue)) next.delete(barcodeValue);
       else next.add(barcodeValue);
@@ -286,14 +288,29 @@ export default function PieceInventoryManagement() {
     });
   };
 
+  const handlePrintPending = () => {
+    const toPrint = pendingPieces.filter((p) =>
+      selectedPending.has(p.barcodeValue),
+    );
+    if (!toPrint.length) return;
+    setPrintEntries(toPrint.map(pieceToLabelRow));
+    setTimeout(() => {
+      printLabelSheet(
+        activeTemplate.widthMm,
+        activeTemplate.heightMm,
+        printRotation,
+      );
+    }, 150);
+  };
+
   const handleVoidSelected = async () => {
-    if (selectedToVoid.size === 0) return;
+    if (selectedPending.size === 0) return;
     setVoiding(true);
     try {
       const { data } = await axiosSecure.post<VoidPiecesResult>(
         "/pieces/void",
         {
-          barcodeValues: Array.from(selectedToVoid),
+          barcodeValues: Array.from(selectedPending),
           reasonNote: voidReason.trim() || undefined,
         },
       );
@@ -830,7 +847,7 @@ export default function PieceInventoryManagement() {
                       <label
                         key={p.id}
                         className={`flex items-center gap-1.5 text-[11px] font-mono border rounded px-2 py-1 cursor-pointer ${
-                          selectedToVoid.has(p.barcodeValue)
+                          selectedPending.has(p.barcodeValue)
                             ? "bg-red-50 border-red-200 text-red-700"
                             : "bg-gray-50 border-gray-100"
                         }`}
@@ -838,8 +855,10 @@ export default function PieceInventoryManagement() {
                         <input
                           type="checkbox"
                           className="accent-red-500 w-3.5 h-3.5"
-                          checked={selectedToVoid.has(p.barcodeValue)}
-                          onChange={() => toggleVoidSelection(p.barcodeValue)}
+                          checked={selectedPending.has(p.barcodeValue)}
+                          onChange={() =>
+                            togglePendingSelection(p.barcodeValue)
+                          }
                         />
                         {p.barcodeValue}
                       </label>
@@ -847,17 +866,26 @@ export default function PieceInventoryManagement() {
                   </div>
 
                   {!confirmingVoid ? (
-                    <button
-                      onClick={() => setConfirmingVoid(true)}
-                      disabled={selectedToVoid.size === 0}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      Void selected ({selectedToVoid.size})
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handlePrintPending}
+                        disabled={selectedPending.size === 0}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Print selected ({selectedPending.size})
+                      </button>
+                      <button
+                        onClick={() => setConfirmingVoid(true)}
+                        disabled={selectedPending.size === 0}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Void selected ({selectedPending.size})
+                      </button>
+                    </div>
                   ) : (
                     <div className="border border-red-200 bg-red-50/60 rounded-lg p-3 space-y-2">
                       <p className="text-xs text-red-800 font-medium">
-                        Void {selectedToVoid.size} barcode(s)? They will never
+                        Void {selectedPending.size} barcode(s)? They will never
                         be receivable again — this doesn&apos;t affect stock
                         since these were never counted as in-stock.
                       </p>
