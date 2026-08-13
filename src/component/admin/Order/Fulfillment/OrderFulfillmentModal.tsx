@@ -184,7 +184,11 @@ export default function OrderFulfillmentModal({
     onScan: (value) => confirmPick(value),
   });
 
+  const printBlocked =
+    !!groupStatus && groupStatus.requiredCount > 0 && !groupStatus.isFullyPicked;
+
   const printPickSlip = () => {
+    if (printBlocked) return;
     setTimeout(() => printLabelSheet(80, 120, 0), 100);
   };
 
@@ -400,7 +404,13 @@ export default function OrderFulfillmentModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={printPickSlip}
-                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-gray-700 border border-gray-200 hover:bg-gray-50"
+                      disabled={printBlocked}
+                      title={
+                        printBlocked
+                          ? `${groupStatus!.pickedCount}/${groupStatus!.requiredCount} piece(s) picked — scan all barcodes before printing the label`
+                          : undefined
+                      }
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-gray-700 border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
                       <Printer className="w-3.5 h-3.5" /> Print
                     </button>
@@ -418,6 +428,19 @@ export default function OrderFulfillmentModal({
                     </button>
                   </div>
                 </div>
+
+                {printBlocked && (
+                  <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50 p-2.5">
+                    <AlertTriangle className="mt-0.5 w-3.5 h-3.5 shrink-0 text-amber-500" />
+                    <p className="text-xs text-amber-800">
+                      <span className="font-semibold">
+                        {groupStatus!.pickedCount}/{groupStatus!.requiredCount} piece(s)
+                        picked.
+                      </span>{" "}
+                      Scan all barcodes in this shipment group before printing the label.
+                    </p>
+                  </div>
+                )}
 
                 {sendMode && (
                   <div className="flex items-center gap-2 mb-3 bg-gray-50 border border-gray-100 rounded-lg p-2">
