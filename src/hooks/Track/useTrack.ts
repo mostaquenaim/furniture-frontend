@@ -22,6 +22,7 @@ export interface TrackedItem {
   size?: string;
   sku?: string;
   productSizeId?: number | null;
+  isOutOfStock?: boolean;
 }
 
 export interface ShippingAddress {
@@ -47,6 +48,7 @@ export interface TrackedOrder {
   orderDate: string;
   estimatedDelivery: string;
   status: OrderStatus;
+  hasOutOfStockItem?: boolean;
   awbNumber?: string;
   deliveryMethod?: string;
   deliveryCharge?: number;

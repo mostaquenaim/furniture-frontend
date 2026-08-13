@@ -43,6 +43,7 @@ export interface OrderItem {
   quantity: number;
   priceAtPurchase: number;
   totalPriceAtPurchase: number;
+  productSizeId?: number | null;
   product?: Product;
   order?: FullOrder;
 }
@@ -78,6 +79,7 @@ export interface FullOrder {
   createdAt: string;
   updatedAt: string;
   user?: OrderUser | null;
+  hasOutOfStockItem?: boolean;
   items: OrderItem[];
   payments: any[];
   paymentStatus: PaymentStatus;

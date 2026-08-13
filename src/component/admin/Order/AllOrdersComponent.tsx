@@ -33,6 +33,8 @@ import {
   RefreshCw,
   XCircle,
   PauseCircle,
+  AlertTriangle,
+  Phone,
 } from "lucide-react";
 
 import {
@@ -81,7 +83,7 @@ const ORDER_STATUS: Record<
   SHIPPED: {
     label: "Shipped",
     color: "bg-amber-50 text-amber-700",
-    dot: "bg-amber-400 animate-pulse",
+    dot: "bg-amber-400",
     icon: <Truck className="w-3 h-3" />,
   },
   DELIVERED: {
@@ -105,7 +107,7 @@ const ORDER_STATUS: Record<
   PROCESSING: {
     label: "Processing",
     color: "bg-blue-50 text-blue-700",
-    dot: "bg-blue-400 animate-pulse",
+    dot: "bg-blue-400",
     icon: <RefreshCw className="w-3 h-3" />,
   },
   FAILED: {
@@ -493,14 +495,14 @@ function OrderDetailDrawer({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFulfillment(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-700 text-slate-300 text-xs font-medium rounded-xl hover:bg-white/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 text-slate-600 text-xs font-medium rounded-xl hover:bg-slate-50 transition-colors"
           >
             <ClipboardList className="w-3.5 h-3.5" />
             Fulfillment
           </button>
           <button
             onClick={() => createShipment(order?.orderNumber)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-700 text-slate-300 text-xs font-medium rounded-xl hover:bg-white/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 text-slate-600 text-xs font-medium rounded-xl hover:bg-slate-50 transition-colors"
           >
             <Truck className="w-3.5 h-3.5" />
             Create Shipment
@@ -522,6 +524,39 @@ function OrderDetailDrawer({
         <div className="py-16 text-center text-slate-400 text-sm">Loading…</div>
       ) : (
         <>
+          {/* Out-of-stock alert */}
+          {order.hasOutOfStockItem && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+              <AlertTriangle className="mt-0.5 w-5 h-5 shrink-0 text-red-500" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-red-700">
+                  Out of stock —{" "}
+                  {order.items.filter((i) => i.isOutOfStock).length} item(s)
+                  in this order can&apos;t be fulfilled
+                </p>
+                <ul className="mt-1 space-y-0.5 text-xs text-red-600">
+                  {order.items
+                    .filter((i) => i.isOutOfStock)
+                    .map((item) => (
+                      <li key={item.id}>
+                        {item.name}
+                        {[item.color, item.size].filter(Boolean).length >
+                          0 &&
+                          ` (${[item.color, item.size].filter(Boolean).join(" / ")})`}
+                      </li>
+                    ))}
+                </ul>
+                <a
+                  href={`tel:${order.shippingAddress.phone}`}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  Call {order.shippingAddress.name}
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Status timeline */}
           <DrawerSection title="Order Progress">
             <div className="py-2">
@@ -589,15 +624,10 @@ function OrderDetailDrawer({
           <DrawerSection title="Customer">
             <DrawerRow label="Name" value={order.shippingAddress.name} />
             <DrawerRow label="Phone" value={order.shippingAddress.phone} mono />
-            {order.shippingAddress.phone && (
-              <DrawerRow label="Phone" value={order.shippingAddress.phone} />
-            )}
-            {order.shippingAddress && (
-              <DrawerRow
-                label="Address"
-                value={order.shippingAddress.address}
-              />
-            )}
+            <DrawerRow
+              label="Address"
+              value={order.shippingAddress.address}
+            />
             <DrawerRow
               label="District"
               value={order.shippingAddress.district}
@@ -627,9 +657,6 @@ function OrderDetailDrawer({
                       <p className="text-xs font-mono font-semibold text-slate-800">
                         {taka(item.price)}
                       </p>
-                      {/* <p className="text-[10px] text-slate-400">
-                        {item.quantity} × {taka(item.priceAtPurchase)}
-                      </p> */}
                     </div>
                   </div>
                 ))}
@@ -1116,10 +1143,10 @@ export default function AllOrdersComponent() {
         <div className="hidden md:flex items-center gap-4">
           {orders?.statusCounts?.PENDING && orders.statusCounts.PENDING > 0 && (
             <div className="text-right">
-              <p className="text-lg font-bold font-mono text-amber-400">
+              <p className="text-lg font-bold font-mono text-amber-600">
                 {orders.statusCounts.PENDING}
               </p>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">
                 Pending
               </p>
             </div>
@@ -1127,10 +1154,10 @@ export default function AllOrdersComponent() {
           {orders?.statusCounts?.DELIVERED &&
             orders.statusCounts.DELIVERED > 0 && (
               <div className="text-right">
-                <p className="text-lg font-bold font-mono text-emerald-400">
+                <p className="text-lg font-bold font-mono text-emerald-600">
                   {orders.statusCounts.DELIVERED}
                 </p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider">
                   Delivered
                 </p>
               </div>
@@ -1242,11 +1269,10 @@ export default function AllOrdersComponent() {
             ) : undefined
           }
         >
-          {typedOrders.map((order, i) => (
+          {typedOrders.map((order) => (
             <tr
               key={order.id}
               className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-              style={{ animationDelay: `${i * 20}ms` }}
               onClick={() => setDetailId(order.orderId)}
             >
               {/* Order ID */}
@@ -1258,6 +1284,24 @@ export default function AllOrdersComponent() {
                   <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                     AWB: {order.awbNumber}
                   </p>
+                )}
+                {order.hasOutOfStockItem && (
+                  <div
+                    className="flex items-center gap-1 mt-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-red-50 text-red-600">
+                      <AlertTriangle className="w-3 h-3" />
+                      Stock issue
+                    </span>
+                    <a
+                      href={`tel:${order.customerPhone}`}
+                      title={`Call ${order.customerPhone}`}
+                      className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                    >
+                      <Phone className="w-3 h-3" />
+                    </a>
+                  </div>
                 )}
               </td>
 

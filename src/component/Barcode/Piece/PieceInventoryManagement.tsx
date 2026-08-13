@@ -199,6 +199,17 @@ export default function PieceInventoryManagement() {
     [generatedPieces],
   );
 
+  // Falls back to pending barcodes so the label config/preview is still
+  // available when the variant already had pending pieces from an earlier
+  // session (nothing generated just now).
+  const previewLabelRows = useMemo(
+    () =>
+      generatedPieces.length > 0
+        ? generatedLabelRows
+        : pendingPieces.map(pieceToLabelRow),
+    [generatedPieces, generatedLabelRows, pendingPieces],
+  );
+
   useEffect(() => {
     const id = setTimeout(async () => {
       if (variantSearch.trim().length < 2) {
@@ -919,7 +930,7 @@ export default function PieceInventoryManagement() {
           )}
 
           {/* ── Label field config + size + preview ── */}
-          {generatedPieces.length > 0 && (
+          {(generatedPieces.length > 0 || pendingPieces.length > 0) && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl border border-gray-200 p-5">
                 <p className="text-sm font-semibold text-gray-900 mb-3">
@@ -1041,7 +1052,7 @@ export default function PieceInventoryManagement() {
                 </p>
                 <div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-105">
                   <LabelSheet
-                    entries={generatedLabelRows}
+                    entries={previewLabelRows}
                     config={labelConfig}
                     widthMm={activeTemplate.widthMm}
                     heightMm={activeTemplate.heightMm}

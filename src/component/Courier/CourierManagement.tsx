@@ -203,6 +203,13 @@ const BookModal: React.FC<{
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [orderInfo, setOrderInfo] = useState<any>(null);
+  const [pickGate, setPickGate] = useState<{
+    isFullyPicked: boolean;
+    pickedCount: number;
+    requiredCount: number;
+  } | null>(null);
+  const [pickGateLoading, setPickGateLoading] = useState(false);
+  const [bookError, setBookError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     recipientName: "",
@@ -227,6 +234,8 @@ const BookModal: React.FC<{
   const fetchOrder = async (id: string) => {
     if (!id) return;
     setFetching(true);
+    setPickGate(null);
+    setBookError(null);
     try {
       const r = await axiosSecure.get(`/orders/track/${id}`);
       const o = r.data;
@@ -234,6 +243,12 @@ const BookModal: React.FC<{
       console.log(o, "data");
       setOrderId(o.id);
       setOrderInfo(o);
+      setPickGateLoading(true);
+      axiosSecure
+        .get(`/reservations/orders/${o.id}/shipment-group`)
+        .then(({ data }) => setPickGate(data))
+        .catch(() => setPickGate(null))
+        .finally(() => setPickGateLoading(false));
       setForm((prev) => ({
         ...prev,
         recipientName: o.shippingAddress?.name ?? o.customerName ?? "",
@@ -268,6 +283,9 @@ const BookModal: React.FC<{
 
   const set = (key: string, val: any) =>
     setForm((prev) => ({ ...prev, [key]: val }));
+
+  const pickBlocked =
+    !!pickGate && pickGate.requiredCount > 0 && !pickGate.isFullyPicked;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -334,6 +352,26 @@ const BookModal: React.FC<{
                       ` · ${orderInfo.shippingAddress.district}`}
                   </p>
                 </div>
+              </div>
+            )}
+
+            {pickBlocked && (
+              <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800">
+                  <span className="font-semibold">
+                    {pickGate!.pickedCount}/{pickGate!.requiredCount} piece(s) picked.
+                  </span>{" "}
+                  Finish scanning all barcodes in Order Fulfillment before booking a
+                  shipment.
+                </p>
+              </div>
+            )}
+
+            {bookError && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-red-700">{bookError}</p>
               </div>
             )}
           </div>
@@ -473,25 +511,54 @@ const BookModal: React.FC<{
           </button>
           <button
             onClick={async () => {
+              setBookError(null);
               if (!orderNumber || !providerId) {
-                toast.error("Order ID and provider are required");
+                setBookError("Order ID and provider are required");
+                return;
+              }
+              if (pickBlocked) {
+                setBookError(
+                  `${pickGate!.pickedCount}/${pickGate!.requiredCount} piece(s) picked — finish scanning all barcodes in Order Fulfillment before booking.`,
+                );
                 return;
               }
               setLoading(true);
-              await onBook({
-                orderId,
-                orderNumber,
-                providerId: Number(providerId),
-                ...form,
-                deliveryType: Number(form.deliveryType),
-                itemType: Number(form.itemType),
-              });
-              setLoading(false);
+              try {
+                await onBook({
+                  orderId,
+                  orderNumber,
+                  providerId: Number(providerId),
+                  ...form,
+                  deliveryType: Number(form.deliveryType),
+                  itemType: Number(form.itemType),
+                });
+              } catch (e: any) {
+                setBookError(
+                  e?.response?.data?.message ?? "Failed to book shipment",
+                );
+              } finally {
+                setLoading(false);
+              }
             }}
-            disabled={loading || !orderNumber || !providerId}
+            disabled={
+              loading ||
+              !orderNumber ||
+              !providerId ||
+              pickGateLoading ||
+              pickBlocked
+            }
+            title={
+              pickBlocked
+                ? `${pickGate!.pickedCount}/${pickGate!.requiredCount} piece(s) picked — scan all barcodes before booking`
+                : pickGateLoading
+                  ? "Checking pick status…"
+                  : undefined
+            }
             className="flex-1 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
           >
-            {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
+            {(loading || pickGateLoading) && (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            )}
             {loading ? "Booking..." : "Book Shipment"}
           </button>
         </div>
@@ -957,15 +1024,12 @@ export default function CourierManagement() {
 
   // ── Actions ──
   const handleBook = async (data: any) => {
-    // console.log(data, "sjhipment data");
-    try {
-      await axiosSecure.post("/courier/shipments", data);
-      toast.success("Shipment booked!");
-      setShowBookModal(false);
-      loadShipments();
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "Booking failed");
-    }
+    // Errors are intentionally left to propagate — BookModal shows them
+    // inline instead of via a toast.
+    await axiosSecure.post("/courier/shipments", data);
+    toast.success("Shipment booked!");
+    setShowBookModal(false);
+    loadShipments();
   };
 
   const handleSync = async (id: number) => {
