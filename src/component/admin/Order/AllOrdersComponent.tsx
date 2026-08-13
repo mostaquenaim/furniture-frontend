@@ -292,10 +292,12 @@ function StatusDropdown({
   orderId,
   currentStatus,
   onChanged,
+  manualStatusEnabled,
 }: {
   orderId: string;
   currentStatus: OrderStatus;
   onChanged: () => void;
+  manualStatusEnabled: boolean;
 }) {
   const axiosSecure = useAxiosSecure();
   const [open, setOpen] = useState(false);
@@ -360,6 +362,18 @@ function StatusDropdown({
 
   const cfg = ORDER_STATUS[currentStatus];
 
+  if (!manualStatusEnabled) {
+    return (
+      <span
+        title="Status is driven by the courier webhook — manual changes are disabled"
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide cursor-not-allowed ${cfg.color}`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+        {cfg.label}
+      </span>
+    );
+  }
+
   return (
     <div ref={ref} className="relative inline-block">
       <button
@@ -409,10 +423,12 @@ function OrderDetailDrawer({
   orderId,
   onClose,
   onRefresh,
+  manualStatusEnabled,
 }: {
   orderId: string;
   onClose: () => void;
   onRefresh: () => void;
+  manualStatusEnabled: boolean;
 }) {
   const axiosSecure = useAxiosSecure();
   const router = useRouter();
@@ -566,6 +582,12 @@ function OrderDetailDrawer({
 
           {/* Status controls */}
           <DrawerSection title="Change Status">
+            {!manualStatusEnabled ? (
+              <p className="pt-1 text-xs text-slate-400">
+                Manual status changes are disabled — status updates come
+                automatically from the courier webhook.
+              </p>
+            ) : (
             <div className="flex flex-wrap gap-2 pt-1">
               {(Object.keys(ORDER_STATUS) as OrderStatus[]).map((s) => {
                 const cfg = ORDER_STATUS[s];
@@ -618,6 +640,7 @@ function OrderDetailDrawer({
                 );
               })}
             </div>
+            )}
           </DrawerSection>
 
           {/* Customer */}
@@ -1078,6 +1101,7 @@ const ORDER_STATUS_OPTIONS = (Object.keys(ORDER_STATUS) as OrderStatus[]).map(
 );
 
 export default function AllOrdersComponent() {
+  const axiosSecure = useAxiosSecure();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<OrderStatus | "">("");
@@ -1087,6 +1111,17 @@ export default function AllOrdersComponent() {
   const [fraudHistoryPhone, setFraudHistoryPhone] = useState<string | null>(
     null,
   );
+  // Off by default (MANUAL_ORDER_STATUS_UPDATE env flag) — status is meant
+  // to come from the courier webhook, so keep the controls disabled until
+  // we know the backend has manual updates turned on.
+  const [manualStatusEnabled, setManualStatusEnabled] = useState(false);
+
+  useEffect(() => {
+    axiosSecure
+      .get("/orders/manual-status-enabled")
+      .then(({ data }) => setManualStatusEnabled(!!data?.enabled))
+      .catch(() => setManualStatusEnabled(false));
+  }, [axiosSecure]);
 
   const {
     orders,
@@ -1348,6 +1383,7 @@ export default function AllOrdersComponent() {
                   orderId={order.orderId}
                   currentStatus={order.status}
                   onChanged={refetch}
+                  manualStatusEnabled={manualStatusEnabled}
                 />
               </td>
 
@@ -1408,6 +1444,7 @@ export default function AllOrdersComponent() {
           orderId={detailId}
           onClose={() => setDetailId(null)}
           onRefresh={refetch}
+          manualStatusEnabled={manualStatusEnabled}
         />
       )}
 
