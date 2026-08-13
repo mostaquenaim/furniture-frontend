@@ -8,7 +8,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Search,
-  Bell,
   HelpCircle,
   Settings,
   ChevronDown,
@@ -19,6 +18,7 @@ import {
   Sun,
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
+import NotificationBell from "./NotificationBell";
 
 const iconButtonClass = cn(
   "p-2 rounded-lg text-gray-600 transition-colors duration-200",
@@ -108,10 +108,7 @@ const AdminHeader = () => {
             </button>
 
             {/* Notifications */}
-            <button className={cn(iconButtonClass, "relative")} aria-label="Notifications">
-              <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-            </button>
+            <NotificationBell />
 
             {/* Help */}
             <button className={cn(iconButtonClass, "hidden sm:block")} aria-label="Help">

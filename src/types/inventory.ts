@@ -61,3 +61,23 @@ export interface ReturnStartedEvent {
   pieceCount: number;
   reasonCode?: string | null;
 }
+
+export interface AdminNotification {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminNotificationEvent {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  link?: string | null;
+  createdAt: string;
+  unreadCount: number;
+}
