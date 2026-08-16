@@ -1,11 +1,11 @@
-import React from 'react';
+import Tickets from "@/component/Dashboard/Sections/Tickets";
 
 const SupportTickets = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+  return (
+    <div>
+      <Tickets />
+    </div>
+  );
 };
 
 export default SupportTickets;

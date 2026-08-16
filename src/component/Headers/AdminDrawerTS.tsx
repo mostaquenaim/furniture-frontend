@@ -23,6 +23,7 @@ import {
   Newspaper,
   Boxes,
   RotateCcw,
+  Ticket,
 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { MdCategory } from "react-icons/md";
@@ -132,6 +133,18 @@ const AdminDrawer = () => {
           href: "/admin/dashboard",
           requiredAction: "DASHBOARD_VIEW",
           sub: [{ href: "/admin/dashboard", label: "Overview" }],
+        },
+      ],
+    },
+    {
+      label: "Support",
+      items: [
+        {
+          name: "Tickets",
+          icon: Ticket,
+          href: "/admin/tickets",
+          requiredAction: "TICKET_VIEW",
+          sub: [{ href: "/admin/tickets", label: "All Tickets" }],
         },
       ],
     },

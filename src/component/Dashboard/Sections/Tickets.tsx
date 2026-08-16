@@ -1,52 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useState } from "react";
-import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import React from "react";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
+import useMyTickets from "@/hooks/Tickets/useMyTickets";
+import { TicketPriority, TicketStatus } from "@/types/ticket.types";
 
-type Ticket = {
-  id: number;
-  subject: string;
-  message: string;
-  status: "OPEN" | "IN_PROGRESS" | "RESOLVED";
-  createdAt: string;
-};
-
-const statusStyles: Record<Ticket["status"], string> = {
+const statusStyles: Record<TicketStatus, string> = {
   OPEN: "bg-yellow-100 text-yellow-800",
   IN_PROGRESS: "bg-blue-100 text-blue-800",
   RESOLVED: "bg-green-100 text-green-800",
+  CLOSED: "bg-gray-200 text-gray-700",
+};
+
+const priorityStyles: Record<TicketPriority, string> = {
+  LOW: "bg-gray-100 text-gray-500",
+  NORMAL: "bg-blue-50 text-blue-600",
+  HIGH: "bg-red-50 text-red-600",
 };
 
 const Tickets = () => {
-  const axiosSecure = useAxiosSecure();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { tickets, isLoading } = useMyTickets();
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const res = await axiosSecure.get("/support/my-tickets");
-
-        // Only show active tickets
-        const activeTickets = res.data.filter(
-          (t: Ticket) => t.status !== "RESOLVED",
-        );
-
-        setTickets(activeTickets);
-      } catch (error: any) {
-        toast.error(error?.response?.data?.message || "Failed to load tickets");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTickets();
-  }, [axiosSecure]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
@@ -61,21 +37,22 @@ const Tickets = () => {
         <header className="mb-10">
           <h1 className="text-3xl font-semibold mb-2">My Support Tickets</h1>
           <p className="text-sm text-gray-500">
-            Track your open support requests
+            Track and reply to your support requests
           </p>
         </header>
 
         {/* Tickets */}
         {tickets.length === 0 ? (
           <div className="text-center text-sm text-gray-500 border border-dashed border-gray-300 rounded-lg py-16">
-            You have no open support tickets.
+            You have no support tickets yet.
           </div>
         ) : (
           <div className="space-y-4">
             {tickets.map((ticket) => (
-              <div
+              <Link
                 key={ticket.id}
-                className="bg-white border border-gray-200 rounded-lg p-5"
+                href={`/support-tickets/${ticket.id}`}
+                className="block bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 hover:shadow-sm transition"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -87,17 +64,29 @@ const Tickets = () => {
                     </p>
                   </div>
 
-                  <span
-                    className={`text-xs font-medium px-2 py-1 rounded ${statusStyles[ticket.status]}`}
-                  >
-                    {ticket.status.replace("_", " ")}
-                  </span>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded ${statusStyles[ticket.status]}`}
+                    >
+                      {ticket.status.replace("_", " ")}
+                    </span>
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded ${priorityStyles[ticket.priority]}`}
+                    >
+                      {ticket.priority}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="mt-3 text-xs text-gray-400">
-                  Created on {new Date(ticket.createdAt).toLocaleDateString()}
+                <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
+                  <span>
+                    Created on {new Date(ticket.createdAt).toLocaleDateString()}
+                  </span>
+                  {ticket.assignedTo?.name && (
+                    <span>Assigned to {ticket.assignedTo.name}</span>
+                  )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

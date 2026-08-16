@@ -3,14 +3,24 @@
 
 import React, { useState } from "react";
 import { HelpCircle, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import toast from "react-hot-toast";
+import { TicketPriority } from "@/types/ticket.types";
+
+const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
+  { value: "LOW", label: "Low — general question" },
+  { value: "NORMAL", label: "Normal — needs a response soon" },
+  { value: "HIGH", label: "High — urgent / blocking issue" },
+];
 
 const Support = () => {
   const axiosSecure = useAxiosSecure();
+  const router = useRouter();
 
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [priority, setPriority] = useState<TicketPriority>("NORMAL");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,15 +34,21 @@ const Support = () => {
     try {
       setLoading(true);
 
-      await axiosSecure.post("/support/ticket", {
+      const { data } = await axiosSecure.post("/support/ticket", {
         subject,
         message,
+        priority,
       });
 
       toast.success("Support request submitted successfully");
 
       setSubject("");
       setMessage("");
+      setPriority("NORMAL");
+
+      if (data?.id) {
+        router.push(`/support-tickets/${data.id}`);
+      }
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || "Failed to send support request",
@@ -84,6 +100,23 @@ const Support = () => {
                 className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900"
                 placeholder="Describe your issue clearly so we can help faster..."
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Priority
+              </label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as TicketPriority)}
+                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 bg-white"
+              >
+                {PRIORITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <button
