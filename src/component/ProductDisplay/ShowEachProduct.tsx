@@ -187,6 +187,7 @@ export default function ShowEachProduct() {
   const [isAdding, setIsAdding] = useState(false);
   const [showCartPreview, setShowCartPreview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingBuyNow, setPendingBuyNow] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [isZoomed, setIsZoomed] = useState(false);
@@ -472,17 +473,19 @@ export default function ShowEachProduct() {
       return;
     }
 
+    // Buy Now goes straight to checkout, which requires an account —
+    // gate here instead of letting the user hit that wall after they've
+    // already committed. Resumes automatically once signed in.
+    if (!isAuthenticated()) {
+      setPendingBuyNow(true);
+      setIsModalOpen(true);
+      return;
+    }
+
     setIsAdding(true);
     try {
       const productSizeId = selectedSizeId || currentVariant?.color?.sizes?.[0].id;
-      const hasUser = isAuthenticated();
-
-      if (!hasUser) {
-        const visitorId = await getVisitorId();
-        await axiosPublic.post("/guest/cart/items", { visitorId, productSizeId, quantity });
-      } else {
-        await axiosSecure.post("/cart/items", { productSizeId, quantity });
-      }
+      await axiosSecure.post("/cart/items", { productSizeId, quantity });
 
       refetch();
 
@@ -1086,7 +1089,20 @@ export default function ShowEachProduct() {
       )}
 
       <LikeItShareIt />
-      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AuthModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          if (pendingBuyNow) {
+            setPendingBuyNow(false);
+            // AuthModal closes itself on cancel too, so only resume if the
+            // close actually reflects a completed sign-in.
+            if (isAuthenticated()) {
+              handleBuyNow();
+            }
+          }
+        }}
+      />
 
       {/* Lightbox */}
       {isLightboxOpen && (

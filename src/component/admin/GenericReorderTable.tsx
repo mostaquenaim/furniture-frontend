@@ -9,7 +9,7 @@ import {
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { GripVertical, Edit3, Save } from "lucide-react";
+import { GripVertical, Edit3, Save, Trash2 } from "lucide-react";
 import { cn } from "@/utils/mergeTailwind";
 import { ShortSeries } from "@/types/menu";
 
@@ -33,6 +33,7 @@ interface GenericReorderTableProps<T extends BaseItem> {
   initialData: T[];
   onSave: (items: { id: T["id"]; sortOrder: number }[]) => Promise<void>;
   onEdit: (slug: string) => void;
+  onDelete?: (item: T) => void;
   title: string;
   description: string;
   isSaving: boolean;
@@ -44,6 +45,7 @@ export function GenericReorderTable<T extends BaseItem>({
   initialData,
   onSave,
   onEdit,
+  onDelete,
   title,
   description,
   isSaving,
@@ -208,12 +210,22 @@ export function GenericReorderTable<T extends BaseItem>({
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => onEdit(item.slug)}
-                              className="p-2 text-slate-400 hover:text-indigo-600"
-                            >
-                              <Edit3 size={18} />
-                            </button>
+                            <div className="flex justify-end gap-1">
+                              <button
+                                onClick={() => onEdit(item.slug)}
+                                className="p-2 text-slate-400 hover:text-indigo-600"
+                              >
+                                <Edit3 size={18} />
+                              </button>
+                              {onDelete && (
+                                <button
+                                  onClick={() => onDelete(item)}
+                                  className="p-2 text-slate-400 hover:text-red-600"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )}

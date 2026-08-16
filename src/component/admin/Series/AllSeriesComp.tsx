@@ -9,6 +9,11 @@ import { GenericReorderTable } from "../GenericReorderTable";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { Series } from "@/types/menu";
+import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
+
+interface ApiError {
+  response?: { data?: { message?: string } };
+}
 
 const PinnedRow = ({
   series,
@@ -29,8 +34,10 @@ const PinnedRow = ({
 const AllSeriesComp = () => {
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
-  const { seriesList, isLoading } = useFetchSeries({ isActive: null });
+  const { seriesList, isLoading, refetch } = useFetchSeries({ isActive: null });
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Series | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Separate pinned series from normal ones
   const pinnedFirst = (seriesList || []).filter((s) => s.seriesType === "NEW");
@@ -46,6 +53,23 @@ const AllSeriesComp = () => {
       toast.success("Series order updated");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await axiosSecure.delete(`/series/${deleteTarget.slug}`);
+      toast.success("Series deleted successfully");
+      setDeleteTarget(null);
+      await refetch();
+    } catch (error: unknown) {
+      toast.error(
+        (error as ApiError)?.response?.data?.message || "Delete failed",
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -69,11 +93,21 @@ const AllSeriesComp = () => {
         isSaving={isSaving}
         onSave={handleSave}
         onEdit={(slug) => router.push(`/admin/series/update/${slug}`)}
+        onDelete={(series) => setDeleteTarget(series)}
       />
 
       {pinnedLast.map((s) => (
         <PinnedRow key={s.id} series={s} position="last" />
       ))}
+
+      <DeleteConfirmationModal
+        open={!!deleteTarget}
+        isLoading={isDeleting}
+        title="Delete series?"
+        message={`This will permanently delete "${deleteTarget?.name}". This cannot be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 };

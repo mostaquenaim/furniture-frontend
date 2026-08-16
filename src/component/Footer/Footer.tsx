@@ -22,34 +22,45 @@ import useFetchCompany from "@/hooks/Company/useFetchCompany";
 import { CompanyInfo } from "@/types/company";
 
 // --- FOOTER DATA ---
-const footerData = [
+type FooterLink = { label: string; href?: string };
+
+const footerData: { title: string; links: FooterLink[] }[] = [
   {
     title: "Help",
     links: [
-      "Track Your Order",
-      "Start a Return Or Exchange",
-      "Returns & Exchanges",
-      "Customer Service",
-      "Check Gift Card Balance",
-      "Current Promotions",
+      { label: "Track Your Order" },
+      { label: "Start a Return Or Exchange" },
+      { label: "Returns & Exchanges" },
+      { label: "Customer Service" },
+      { label: "Check Gift Card Balance" },
+      { label: "Current Promotions" },
     ],
   },
   {
     title: "About Us",
-    links: ["Our Story", "Diversity & Inclusion", "Careers", "Anthro Impact"],
+    links: [
+      { label: "Our Story" },
+      { label: "Diversity & Inclusion" },
+      { label: "Careers" },
+      { label: "Anthro Impact" },
+    ],
   },
   {
     title: "Services",
     links: [
-      "Styling Services",
-      "Gift Cards",
-      "Registry",
-      "Furniture & Decor: Free Design Services & Guides",
+      { label: "Styling Services" },
+      { label: "Gift Cards" },
+      { label: "Registry" },
+      { label: "Furniture & Decor: Free Design Services & Guides" },
     ],
   },
   {
     title: "Connect",
-    links: ["Events", "Contact Us", "Stories"],
+    links: [
+      { label: "Events" },
+      { label: "Contact Us" },
+      { label: "Stories", href: "/blogs" },
+    ],
   },
 ];
 
@@ -91,7 +102,7 @@ function getSocialLinks(company?: CompanyInfo) {
 // --- REUSABLE COMPONENTS ---
 
 // 1. Mobile Collapsible Section
-const MobileCollapsible: React.FC<{ title: string; links: string[] }> = ({
+const MobileCollapsible: React.FC<{ title: string; links: FooterLink[] }> = ({
   title,
   links,
 }) => {
@@ -114,8 +125,8 @@ const MobileCollapsible: React.FC<{ title: string; links: string[] }> = ({
         <ul className="pb-4 space-y-2 text-sm text-gray-600">
           {links?.map((link, index) => (
             <li key={index}>
-              <a href="#" className="hover:underline">
-                {link}
+              <a href={link.href ?? "#"} className="hover:underline">
+                {link.label}
               </a>
             </li>
           ))}
@@ -262,8 +273,11 @@ const Footer: React.FC = () => {
                   <ul className="space-y-2 text-sm text-gray-600">
                     {section.links?.map((link, linkIndex) => (
                       <li key={linkIndex}>
-                        <a href="#" className="hover:underline text-[12px]">
-                          {link}
+                        <a
+                          href={link.href ?? "#"}
+                          className="hover:underline text-[12px]"
+                        >
+                          {link.label}
                         </a>
                       </li>
                     ))}
