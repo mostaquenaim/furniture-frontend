@@ -186,7 +186,7 @@ const AllBlogsAdminComp: React.FC = () => {
             </p>
           </div>
           <Link
-            href="/admin/blogs/create"
+            href="/admin/blog/add"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-xl hover:bg-slate-700 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
@@ -628,7 +628,7 @@ const EmptyState: React.FC<{ hasSearch: boolean; onClear: () => void }> = ({
       </button>
     ) : (
       <Link
-        href="/admin/blogs/create"
+        href="/admin/blog/add"
         className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm rounded-xl hover:bg-slate-700 transition-colors"
       >
         <Plus className="w-4 h-4" /> Create first post

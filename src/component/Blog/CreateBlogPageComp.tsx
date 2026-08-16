@@ -35,7 +35,7 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { optimizeImage } from "@/utils/imageOptimizer";
 import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
 import { generateSlug } from "@/utils/validation";
-import useFetchABlog from "@/hooks/Blog/useFetchABlog";
+import useFetchABlogAdmin from "@/hooks/Admin/Blog/useFetchABlogAdmin";
 import { useParams, useRouter } from "next/navigation";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
@@ -92,7 +92,12 @@ const renderMarkdown = (text: string) => {
   );
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="text-teal-600 hover:underline">$1</a>',
+    (_match, text: string, url: string) => {
+      const safeUrl = /^(https?:|mailto:|\/|#)/i.test(url.trim())
+        ? url
+        : "#";
+      return `<a href="${safeUrl}" class="text-teal-600 hover:underline">${text}</a>`;
+    },
   );
   html = html.replace(
     /^&gt; (.*$)/gim,
@@ -326,7 +331,7 @@ export default function CreateEditBlogPage() {
   const router = useRouter();
   const isEdit = !!slug;
 
-  const { blog, isLoading: isBlogLoading } = useFetchABlog(
+  const { blog, isLoading: isBlogLoading } = useFetchABlogAdmin(
     slug ? String(slug) : undefined,
   );
 

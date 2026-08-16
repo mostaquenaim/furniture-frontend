@@ -87,7 +87,12 @@ const parseMarkdown = (raw: string): string => {
   );
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="text-teal-700 underline underline-offset-4 hover:text-teal-900 transition-colors" target="_blank" rel="noopener noreferrer">$1</a>',
+    (_match, text: string, url: string) => {
+      const safeUrl = /^(https?:|mailto:|\/|#)/i.test(url.trim())
+        ? url
+        : "#";
+      return `<a href="${safeUrl}" class="text-teal-700 underline underline-offset-4 hover:text-teal-900 transition-colors" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    },
   );
 
   // 8. Paragraph wrapping — skip already-block-level HTML tags
@@ -114,10 +119,11 @@ export default function BlogPostPage() {
 
   const joinedIDs = subcategoryIds?.join(",");
 
-  console.log(blog?.subCategories, subcategoryIds, joinedIDs, "subcategoryIds");
-
   const { relatedProducts, isLoading: isRelatedLoading } =
-    useFetchRelatedProducts({ isEnabled: isLoading, categoryIds: joinedIDs });
+    useFetchRelatedProducts({
+      isEnabled: !isLoading && !!joinedIDs,
+      categoryIds: joinedIDs,
+    });
 
   if (isLoading)
     return (
@@ -202,7 +208,7 @@ export default function BlogPostPage() {
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
           <div className="mt-10 flex flex-wrap gap-2">
-            {post.tags.map(({ tag }: any) => (
+            {post.tags.map((tag: any) => (
               <span
                 key={tag.id}
                 className="text-[11px] font-sans bg-stone-100 text-stone-500 px-3 py-1.5 rounded-full tracking-wide"
@@ -225,7 +231,7 @@ export default function BlogPostPage() {
                   key={idx}
                   className="text-sm italic text-gray-500 hover:text-teal-700 cursor-pointer transition-colors"
                 >
-                  #{item?.subCategory?.name.replace(/\s+/g, "")}
+                  #{item?.name?.replace(/\s+/g, "")}
                 </span>
               ))}
             </div>
@@ -234,7 +240,7 @@ export default function BlogPostPage() {
       </div>
 
       {/* Related Products */}
-      {relatedProducts && (
+      {(isRelatedLoading || relatedProducts.length > 0) && (
         <div className="max-w-7xl mx-auto px-6 pb-24">
           <Title title="Recommended Furniture" />
           <ShowProductsFlex

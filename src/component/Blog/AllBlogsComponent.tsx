@@ -19,7 +19,7 @@ export default function AllBlogsComponent() {
     isLoading: isBlogsLoading,
   } = useFetchBlogs({
     activeCategory,
-    page: 1,
+    page,
     limit: 6,
     search: "",
   });
@@ -157,7 +157,7 @@ export default function AllBlogsComponent() {
           </div>
 
           {/* meta / pagination */}
-          {meta && meta.totalPages > 0 && (
+          {meta && meta.totalPages > 1 && (
             <div className="flex justify-center items-center gap-6 mt-16 font-sans">
               <button
                 disabled={page === 1}

@@ -69,7 +69,7 @@ const useFetchRelatedProducts = ({
     refetch,
     isFetching,
   }: UseQueryResult<RelatedProduct[], AxiosError> = useQuery({
-    queryKey: ["related-products", productSlug],
+    queryKey: ["related-products", productSlug, productIds, categoryIds, categorySlug],
     queryFn: fetchRelatedProducts,
     enabled: !!isEnabled,
     placeholderData: keepPreviousData,

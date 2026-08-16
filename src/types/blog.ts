@@ -4,9 +4,13 @@ interface BlogCategory {
 
 interface BlogSubCategory {
   id: number;
-  subCategory: {
-    name: string;
-  };
+  name: string;
+  slug?: string;
+}
+
+interface BlogTag {
+  id: number;
+  name: string;
 }
 
 export interface BlogPost {
@@ -17,7 +21,7 @@ export interface BlogPost {
   image?: string | null;
   published?: boolean;
   categoryId?: number | null;
-  tags?: { tag: { id: number; name: string } }[];
+  tags?: BlogTag[];
   createdAt: string;
   updatedAt?: string;
   category?: BlogCategory & { id?: number; slug?: string };
