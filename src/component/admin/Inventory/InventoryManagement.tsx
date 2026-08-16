@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import {
   Search,
   AlertTriangle,
+  PackageX,
   History,
   SlidersHorizontal,
   X,
@@ -31,12 +33,15 @@ const REASON_OPTIONS: { value: AdjustReason; label: string }[] = [
 
 export default function InventoryManagement() {
   const axiosSecure = useAxiosSecure();
+  const searchParams = useSearchParams();
 
   const [rows, setRows] = useState<InventoryRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [onlyLowStock, setOnlyLowStock] = useState(false);
+  const [onlyLowStock, setOnlyLowStock] = useState(
+    () => searchParams.get("onlyLowStock") === "true",
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [lowStockCount, setLowStockCount] = useState(0);
 
@@ -190,7 +195,7 @@ export default function InventoryManagement() {
         {lowStockCount > 0 && (
           <span className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-full text-xs font-medium">
             <AlertTriangle size={14} />
-            {lowStockCount} item{lowStockCount > 1 ? "s" : ""} low on stock
+            {lowStockCount} item{lowStockCount > 1 ? "s" : ""} need restocking
           </span>
         )}
       </div>
@@ -221,7 +226,7 @@ export default function InventoryManagement() {
           }`}
         >
           <SlidersHorizontal size={14} />
-          Low stock only
+          Needs restocking
         </button>
       </div>
 
@@ -275,13 +280,23 @@ export default function InventoryManagement() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
-                          row.isLowStock
-                            ? "bg-red-50 text-red-700"
-                            : "bg-green-50 text-green-700"
+                          row.quantity <= 0
+                            ? "bg-red-100 text-red-700"
+                            : row.isLowStock
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-emerald-100 text-emerald-700"
                         }`}
                       >
-                        {row.isLowStock && <AlertTriangle size={10} />}
-                        {row.isLowStock ? "Low Stock" : "In Stock"}
+                        {row.quantity <= 0 ? (
+                          <PackageX size={10} />
+                        ) : (
+                          row.isLowStock && <AlertTriangle size={10} />
+                        )}
+                        {row.quantity <= 0
+                          ? "Out of Stock"
+                          : row.isLowStock
+                            ? "Low Stock"
+                            : "In Stock"}
                       </span>
                     </td>
                     <td className="px-6 py-4">

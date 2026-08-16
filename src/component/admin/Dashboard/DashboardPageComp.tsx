@@ -11,6 +11,7 @@ import StatsGrid from "./Components/StatsGrid";
 import PieceInventoryStatsTiles from "./Components/PieceInventoryStatsTiles";
 import StalePieceAlertCard from "./Components/StalePieceAlertCard";
 import ReturningAlertCard from "./Components/ReturningAlertCard";
+import StockAlertsCard from "./Components/StockAlertsCard";
 import SalesChart from "./Components/SalesChart";
 import TopProductsTable from "./Components/TopProductsTable";
 import RecentOrders from "./Components/RecentOrders";
@@ -204,6 +205,7 @@ export default function DashboardPageComp() {
           <PieceInventoryStatsTiles />
           <StalePieceAlertCard />
           <ReturningAlertCard />
+          <StockAlertsCard />
 
           {/* Charts */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
