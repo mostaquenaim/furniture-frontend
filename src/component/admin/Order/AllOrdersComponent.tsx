@@ -1174,7 +1174,7 @@ export default function AllOrdersComponent() {
   return (
     <div className="min-h-screen ">
       {/* Header */}
-      <PageHeader eyebrow="Commerce" title="All Orders">
+      <PageHeader title="All Orders">
         <div className="hidden md:flex items-center gap-4">
           {orders?.statusCounts?.PENDING && orders.statusCounts.PENDING > 0 && (
             <div className="text-right">
@@ -1186,17 +1186,6 @@ export default function AllOrdersComponent() {
               </p>
             </div>
           )}
-          {orders?.statusCounts?.DELIVERED &&
-            orders.statusCounts.DELIVERED > 0 && (
-              <div className="text-right">
-                <p className="text-lg font-bold font-mono text-emerald-600">
-                  {orders.statusCounts.DELIVERED}
-                </p>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">
-                  Delivered
-                </p>
-              </div>
-            )}
         </div>
       </PageHeader>
 
