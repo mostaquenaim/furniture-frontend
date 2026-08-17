@@ -1172,7 +1172,7 @@ export default function AllOrdersComponent() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="min-h-screen ">
       {/* Header */}
       <PageHeader eyebrow="Commerce" title="All Orders">
         <div className="hidden md:flex items-center gap-4">

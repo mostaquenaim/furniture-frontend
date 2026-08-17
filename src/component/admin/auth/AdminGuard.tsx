@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AdminGuard({
   children,
@@ -13,20 +13,20 @@ export default function AdminGuard({
   const router = useRouter();
 
   const isAllowedRole = (role: string) =>
-    role === 'ORDERMANAGER' ||
-    role === 'SUPERADMIN' ||
-    role === 'PRODUCTMANAGER' ||
-    role === 'INVENTORYMANAGER' ||
-    role === 'SUPPORT';
+    role === "ORDERMANAGER" ||
+    role === "SUPERADMIN" ||
+    role === "PRODUCTMANAGER" ||
+    role === "INVENTORYMANAGER" ||
+    role === "SUPPORT";
 
   useEffect(() => {
     if (!user) {
-      router.replace('/admin/login');
+      router.replace("/admin/login");
       return;
     }
 
     if (!isAllowedRole(user.role)) {
-      router.replace('/');
+      router.replace("/");
     }
   }, [user, router, loading]);
 
