@@ -223,7 +223,7 @@ const OrderSummary = ({
             </div>
             {coupon && (
               <p className="mt-2 text-green-600 text-sm">
-                Coupon "{coupon}" applied!{" "}
+                Coupon &quot;{coupon}&quot; applied!{" "}
                 {discountAmount > 0 ? (
                   <>
                     Discount: <TakaIcon /> {discountAmount.toLocaleString()}
