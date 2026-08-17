@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import useAxiosPublic from "../Axios/useAxiosPublic";
+import useAxiosSecure from "../Axios/useAxiosSecure";
 import { Invoice } from "@/types/invoice";
 
 const useFetchInvoice = (id?: string) => {
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const fetchInvoice = async (): Promise<Invoice> => {
-    const { data } = await axiosPublic.get<Invoice>(`/invoices/${id}`);
+    const { data } = await axiosSecure.get<Invoice>(`/invoices/${id}`);
     return data;
   };
 

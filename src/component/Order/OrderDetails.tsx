@@ -90,6 +90,8 @@ const OrderDetails = () => {
   };
 
   const handleDownloadInvoice = async () => {
+    console.log(order, "orderdata");
+
     setDownloading(true);
     try {
       const res = await fetch(
@@ -253,7 +255,8 @@ const OrderDetails = () => {
                   className={`text-[10px] uppercase tracking-widest px-5 py-2.5 border font-bold
                 ${latestPayment.status === "PAID" ? "border-green-600 text-green-600" : "border-orange-500 text-orange-500"}`}
                 >
-                  Payment: {isPartiallyPaid ? "Partially Paid" : latestPayment.status}
+                  Payment:{" "}
+                  {isPartiallyPaid ? "Partially Paid" : latestPayment.status}
                 </span>
               )}
             </div>
@@ -285,23 +288,25 @@ const OrderDetails = () => {
           )}
 
           {/* Deposit Paid — Balance Due Banner */}
-          {!isPaymentIncomplete && isPartiallyPaid && order.remainingAmount! > 0 && (
-            <div className="mt-8 p-6 bg-white border border-amber-100 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
-              <div className="flex gap-4 items-center">
-                <FiCreditCard className="text-amber-500 text-2xl shrink-0" />
-                <div>
-                  <p className="text-sm font-bold text-amber-700 uppercase tracking-tight">
-                    Deposit Paid — Balance Due on Delivery
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    You&apos;ve paid a {order.advancePercentage}% deposit. The
-                    remaining ৳{order.remainingAmount} is due when your order
-                    is delivered.
-                  </p>
+          {!isPaymentIncomplete &&
+            isPartiallyPaid &&
+            order.remainingAmount! > 0 && (
+              <div className="mt-8 p-6 bg-white border border-amber-100 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
+                <div className="flex gap-4 items-center">
+                  <FiCreditCard className="text-amber-500 text-2xl shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-amber-700 uppercase tracking-tight">
+                      Deposit Paid — Balance Due on Delivery
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      You&apos;ve paid a {order.advancePercentage}% deposit. The
+                      remaining ৳{order.remainingAmount} is due when your order
+                      is delivered.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
         </header>
 
         {/* Order Progress Stepper */}
@@ -398,9 +403,7 @@ const OrderDetails = () => {
                   {order.payments.map((p: any, idx: number) => (
                     <div
                       key={p.id ?? idx}
-                      className={
-                        idx > 0 ? "pt-4 border-t border-gray-100" : ""
-                      }
+                      className={idx > 0 ? "pt-4 border-t border-gray-100" : ""}
                     >
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500 uppercase tracking-wider">

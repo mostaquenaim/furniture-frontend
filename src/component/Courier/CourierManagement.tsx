@@ -1055,10 +1055,13 @@ export default function CourierManagement() {
   const handleSaveProvider = async (data: any) => {
     try {
       if (typeof showProviderModal === "object" && showProviderModal?.id) {
-        await axiosSecure.patch(`/providers/${showProviderModal.id}`, data);
+        await axiosSecure.patch(
+          `/courier/providers/${showProviderModal.id}`,
+          data,
+        );
         toast.success("Provider updated");
       } else {
-        await axiosSecure.post("/providers", data);
+        await axiosSecure.post("/courier/providers", data);
         toast.success("Provider created");
       }
       setShowProviderModal(null);
@@ -1074,7 +1077,7 @@ export default function CourierManagement() {
     setIsProcessing(true);
 
     try {
-      await axiosSecure.delete(`/providers/${deleteId}`);
+      await axiosSecure.delete(`/courier/providers/${deleteId}`);
       toast.success("Provider deleted");
 
       setDeleteId(null);

@@ -9,6 +9,7 @@ import { FullScreenCenter } from '../Screen/FullScreenCenter';
 import LoadingDots from '../Loading/LoadingDS';
 import useAxiosSecure from '@/hooks/Axios/useAxiosSecure';
 import useFetchInvoiceSettings from '@/hooks/Settings/useFetchInvoiceSettings';
+import toast from 'react-hot-toast';
 
 // ── tiny helpers ────────────────────────────────────────────────────────────
 const taka = (n: number | string) =>
@@ -58,7 +59,7 @@ const InvoiceComp = () => {
 
   const [downloading, setDownloading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
-//   const axiosSecure = useAxiosSecure()
+  const axiosSecure = useAxiosSecure();
 
   if (isLoading) {
     return <FullScreenCenter><LoadingDots /></FullScreenCenter>;
@@ -78,17 +79,19 @@ const InvoiceComp = () => {
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/invoices/${invoice.id}/pdf`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } },
+      const res = await axiosSecure.get(`/invoices/${invoice.id}/pdf`, {
+        responseType: 'blob',
+      });
+      const url = URL.createObjectURL(
+        new Blob([res.data], { type: 'application/pdf' }),
       );
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `invoice-${invoice.invoiceNo}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Failed to download invoice');
     } finally {
       setDownloading(false);
     }
