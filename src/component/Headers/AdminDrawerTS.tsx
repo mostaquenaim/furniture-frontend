@@ -16,6 +16,22 @@ import { useAuth } from "@/context/AuthContext";
 import { usePermissions } from "@/context/PermissionsContext";
 import { ADMIN_NAV_SECTIONS, type NavSection } from "@/config/adminPermissions";
 
+const ROLE_LABELS: Record<string, string> = {
+  SUPERADMIN: "Super Admin",
+  ORDERMANAGER: "Order Manager",
+  PRODUCTMANAGER: "Product Manager",
+  INVENTORYMANAGER: "Inventory Manager",
+  SUPPORT: "Support",
+  CUSTOMER: "Customer",
+};
+
+function getInitials(name?: string | null): string {
+  if (!name?.trim()) return "AD";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 const AdminDrawer = () => {
   const { isAdminOpen, toggleAdminDrawer, isMobile } = useAdminDrawer();
   const pathname = usePathname();
@@ -283,15 +299,19 @@ const AdminDrawer = () => {
               <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
                 <div className="relative">
                   <div className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">SA</span>
+                    <span className="text-white font-semibold text-sm">
+                      {getInitials(user?.name)}
+                    </span>
                   </div>
                   <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">
-                    Ondorkotha Admin
+                    {user?.name?.trim() || "Admin"}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">Super Admin</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user ? (ROLE_LABELS[user.role] ?? user.role) : ""}
+                  </p>
                 </div>
               </div>
               <Link
@@ -309,7 +329,9 @@ const AdminDrawer = () => {
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
                 <div className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">SA</span>
+                  <span className="text-white font-semibold text-sm">
+                    {getInitials(user?.name)}
+                  </span>
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
               </div>
@@ -421,13 +443,17 @@ const AdminDrawer = () => {
             <div className="border-t border-gray-100 p-4">
               <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg mb-3">
                 <div className="w-9 h-9 bg-linear-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">SA</span>
+                  <span className="text-white font-semibold text-sm">
+                    {getInitials(user?.name)}
+                  </span>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    Ondorkotha Admin
+                    {user?.name?.trim() || "Admin"}
                   </p>
-                  <p className="text-xs text-gray-500">Super Admin</p>
+                  <p className="text-xs text-gray-500">
+                    {user ? (ROLE_LABELS[user.role] ?? user.role) : ""}
+                  </p>
                 </div>
               </div>
               <Link
