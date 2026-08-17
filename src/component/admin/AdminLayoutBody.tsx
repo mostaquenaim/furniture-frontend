@@ -3,6 +3,7 @@
 import { useAdminDrawer } from "@/context/AdminContext";
 import AdminDrawer from "@/component/Headers/AdminDrawerTS";
 import AdminHeader from "@/component/Headers/AdminHeader";
+import RoutePermissionGuard from "@/component/admin/auth/RoutePermissionGuard";
 
 export default function AdminLayoutBody({
   children,
@@ -21,7 +22,9 @@ export default function AdminLayoutBody({
       >
         <AdminHeader />
         <main className="p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-screen">
-          <div className="max-w-7xl mx-auto">{children}</div>
+          <div className="max-w-7xl mx-auto">
+            <RoutePermissionGuard>{children}</RoutePermissionGuard>
+          </div>
         </main>
       </div>
     </div>
