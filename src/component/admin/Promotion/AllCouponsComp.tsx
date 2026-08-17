@@ -23,10 +23,16 @@ import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
 import useFetchCoupons from "@/hooks/Promotion/useFetchCoupons";
+import useFetchCategories from "@/hooks/Categories/Categories/useFetchCategories";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type CouponDiscountType = "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_DELIVERY";
+
+interface CouponCategory {
+  categoryId: number;
+  category?: { id: number; name: string | null };
+}
 
 interface Coupon {
   id: number;
@@ -38,6 +44,10 @@ interface Coupon {
   expiryDate: string;
   startDate: string;
   isActive: boolean;
+  usageLimit?: number | null;
+  usedCount?: number;
+  perUserLimit?: number | null;
+  categories?: CouponCategory[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -51,6 +61,9 @@ interface CouponFormData {
   expiryDate: string;
   startDate: string;
   isActive: boolean;
+  usageLimit: string;
+  perUserLimit: string;
+  categoryIds: number[];
 }
 
 interface ApiError {
@@ -71,6 +84,9 @@ const DEFAULT_FORM: CouponFormData = {
   expiryDate: "",
   startDate: new Date().toISOString().slice(0, 10),
   isActive: true,
+  usageLimit: "",
+  perUserLimit: "",
+  categoryIds: [],
 };
 
 const DISCOUNT_TYPE_OPTIONS: {
@@ -128,6 +144,7 @@ function isNotStarted(startDate: string): boolean {
 const AllCouponsComp: React.FC = () => {
   const axiosSecure = useAxiosSecure();
   const { coupons, isLoading, refetch } = useFetchCoupons();
+  const { categoryList } = useFetchCategories({ isActive: true });
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -166,6 +183,20 @@ const AllCouponsComp: React.FC = () => {
     if (!formData.expiryDate) errors.expiryDate = "Expiry date is required";
     else if (new Date(formData.expiryDate) <= new Date(formData.startDate))
       errors.expiryDate = "Expiry date must be after start date";
+
+    if (
+      formData.usageLimit &&
+      (!Number.isInteger(Number(formData.usageLimit)) ||
+        Number(formData.usageLimit) <= 0)
+    )
+      errors.usageLimit = "Must be a whole number greater than 0";
+
+    if (
+      formData.perUserLimit &&
+      (!Number.isInteger(Number(formData.perUserLimit)) ||
+        Number(formData.perUserLimit) <= 0)
+    )
+      errors.perUserLimit = "Must be a whole number greater than 0";
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -215,6 +246,9 @@ const AllCouponsComp: React.FC = () => {
       expiryDate: toDateInputValue(coupon.expiryDate),
       startDate: toDateInputValue(coupon.startDate),
       isActive: coupon.isActive,
+      usageLimit: coupon.usageLimit?.toString() ?? "",
+      perUserLimit: coupon.perUserLimit?.toString() ?? "",
+      categoryIds: coupon.categories?.map((c) => c.categoryId) ?? [],
     });
     setValidationErrors({});
   }, []);
@@ -252,6 +286,9 @@ const AllCouponsComp: React.FC = () => {
     expiryDate: new Date(data.expiryDate).toISOString(),
     startDate: new Date(data.startDate).toISOString(),
     isActive: data.isActive,
+    usageLimit: data.usageLimit ? Number(data.usageLimit) : null,
+    perUserLimit: data.perUserLimit ? Number(data.perUserLimit) : null,
+    categoryIds: data.categoryIds,
   });
 
   const saveCoupon = useCallback(
@@ -387,7 +424,12 @@ const AllCouponsComp: React.FC = () => {
                   />
                 </td>
                 <td className="px-5 py-4 align-top">
-                  <ConditionFields formData={formData} onChange={handleInputChange} />
+                  <ConditionFields
+                    formData={formData}
+                    onChange={handleInputChange}
+                    errors={validationErrors}
+                    categoryList={categoryList}
+                  />
                 </td>
                 <td className="px-5 py-4 align-top">
                   <ValidityFields
@@ -493,18 +535,46 @@ const AllCouponsComp: React.FC = () => {
                   {/* Conditions */}
                   <td className="px-5 py-4 align-top">
                     {isEditing ? (
-                      <ConditionFields formData={formData} onChange={handleInputChange} />
+                      <ConditionFields
+                        formData={formData}
+                        onChange={handleInputChange}
+                        errors={validationErrors}
+                        categoryList={categoryList}
+                      />
                     ) : (
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 space-y-1 min-w-35">
                         {coupon.minOrderValue ? (
-                          <span>
+                          <div>
                             Min order:{" "}
                             <span className="font-medium text-gray-900">
                               ${coupon.minOrderValue}
                             </span>
-                          </span>
+                          </div>
                         ) : (
-                          <span className="text-gray-400 text-xs italic">No minimum</span>
+                          <div className="text-gray-400 text-xs italic">No minimum</div>
+                        )}
+                        <div className="text-xs text-gray-500">
+                          Used: {coupon.usedCount ?? 0}
+                          {coupon.usageLimit ? ` / ${coupon.usageLimit}` : " (unlimited)"}
+                        </div>
+                        {coupon.perUserLimit ? (
+                          <div className="text-xs text-gray-500">
+                            Max {coupon.perUserLimit} per customer
+                          </div>
+                        ) : null}
+                        {coupon.categories && coupon.categories.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {coupon.categories.map((c) => (
+                              <span
+                                key={c.categoryId}
+                                className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700"
+                              >
+                                {c.category?.name ?? `#${c.categoryId}`}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-[10px] text-gray-400 italic">All categories</div>
                         )}
                       </div>
                     )}
@@ -742,29 +812,100 @@ const DiscountFields: FC<DiscountFieldsProps> = ({ formData, onChange, errors })
   </div>
 );
 
-// Min Order Value
+// Min Order Value, usage limits, and category eligibility
 interface ConditionFieldsProps {
   formData: CouponFormData;
   onChange: (field: keyof CouponFormData, value: any) => void;
+  errors?: Record<string, string>;
+  categoryList?: { id: number; name: string }[];
 }
-const ConditionFields: FC<ConditionFieldsProps> = ({ formData, onChange }) => (
-  <div className="min-w-[130px]">
-    <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-        $
-      </span>
-      <input
-        type="number"
-        min={0}
-        step={0.01}
-        placeholder="Min order"
-        value={formData.minOrderValue}
-        onChange={(e) => onChange("minOrderValue", e.target.value)}
-        className={`${inputClass()} pl-7`}
-      />
+const ConditionFields: FC<ConditionFieldsProps> = ({
+  formData,
+  onChange,
+  errors = {},
+  categoryList = [],
+}) => {
+  const toggleCategory = (id: number) => {
+    const next = formData.categoryIds.includes(id)
+      ? formData.categoryIds.filter((c) => c !== id)
+      : [...formData.categoryIds, id];
+    onChange("categoryIds", next);
+  };
+
+  return (
+    <div className="space-y-2 min-w-40">
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+          $
+        </span>
+        <input
+          type="number"
+          min={0}
+          step={0.01}
+          placeholder="Min order"
+          value={formData.minOrderValue}
+          onChange={(e) => onChange("minOrderValue", e.target.value)}
+          className={`${inputClass()} pl-7`}
+        />
+      </div>
+
+      <div>
+        <input
+          type="number"
+          min={1}
+          step={1}
+          placeholder="Total usage limit"
+          value={formData.usageLimit}
+          onChange={(e) => onChange("usageLimit", e.target.value)}
+          className={inputClass(errors.usageLimit)}
+        />
+        {errors.usageLimit && (
+          <p className="text-xs text-red-600">{errors.usageLimit}</p>
+        )}
+      </div>
+
+      <div>
+        <input
+          type="number"
+          min={1}
+          step={1}
+          placeholder="Uses per customer"
+          value={formData.perUserLimit}
+          onChange={(e) => onChange("perUserLimit", e.target.value)}
+          className={inputClass(errors.perUserLimit)}
+        />
+        {errors.perUserLimit && (
+          <p className="text-xs text-red-600">{errors.perUserLimit}</p>
+        )}
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-500 mb-1">
+          Categories (none = all)
+        </p>
+        <div className="max-h-28 overflow-y-auto border border-gray-200 rounded-lg p-1.5 space-y-1 bg-white">
+          {categoryList.length === 0 && (
+            <p className="text-xs text-gray-400 italic px-1">No categories</p>
+          )}
+          {categoryList.map((cat) => (
+            <label
+              key={cat.id}
+              className="flex items-center gap-1.5 text-xs cursor-pointer px-1 py-0.5 rounded hover:bg-gray-50"
+            >
+              <input
+                type="checkbox"
+                checked={formData.categoryIds.includes(cat.id)}
+                onChange={() => toggleCategory(cat.id)}
+                className="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+              />
+              {cat.name}
+            </label>
+          ))}
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Start / Expiry dates
 interface ValidityFieldsProps {

@@ -350,7 +350,7 @@ export default function ShowEachProduct() {
 
     try {
       const productSizeId =
-        selectedSizeId || currentVariant?.color?.sizes?.[0].id;
+        selectedSizeId || currentVariant?.color?.sizes?.[0]?.id;
 
       const payload = {
         productSizeId,
@@ -484,7 +484,7 @@ export default function ShowEachProduct() {
 
     setIsAdding(true);
     try {
-      const productSizeId = selectedSizeId || currentVariant?.color?.sizes?.[0].id;
+      const productSizeId = selectedSizeId || currentVariant?.color?.sizes?.[0]?.id;
       await axiosSecure.post("/cart/items", { productSizeId, quantity });
 
       refetch();
@@ -859,6 +859,13 @@ export default function ShowEachProduct() {
               <p className="text-gray-400 line-through text-lg">৳{basePrice}</p>
             )}
           </div>
+          {/* Fully out-of-stock: every color/size was filtered out server-side.
+              Reached only via a direct link — listings never surface this product. */}
+          {(!product.colors || product.colors.length === 0) && (
+            <div className="mb-6 border border-red-200 bg-red-50 text-red-600 text-xs px-4 py-3 rounded">
+              This product is currently out of stock.
+            </div>
+          )}
           {/* Color Selection with HexCodes */}
           {product.showColor && (
             <div className="mb-6">

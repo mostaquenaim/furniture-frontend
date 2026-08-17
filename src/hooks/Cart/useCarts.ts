@@ -28,6 +28,8 @@ interface CartResponse {
   couponId?: number;
   coupon?: CartCoupon;
   items: CartItem[];
+  discountAmount?: number;
+  freeDelivery?: boolean;
 }
 
 interface UseFetchCartsOptions {

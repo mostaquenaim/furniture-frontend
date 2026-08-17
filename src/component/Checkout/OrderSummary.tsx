@@ -16,7 +16,9 @@ interface OrderSummaryProps {
   surcharge?: number;
   refetch: () => void;
   coupon?: string;
+  discountAmount?: number;
   deliveryFee?: number;
+  freeDelivery?: boolean;
   isAddressGiven?: boolean;
   handleConfirmOrder?: () => void;
   paymentMethod?: string;
@@ -30,7 +32,9 @@ const OrderSummary = ({
   surcharge,
   refetch,
   coupon,
+  discountAmount = 0,
   deliveryFee,
+  freeDelivery = false,
   isAddressGiven = false,
   handleConfirmOrder,
   paymentMethod,
@@ -39,13 +43,14 @@ const OrderSummary = ({
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
   const [code, setCode] = useState(coupon && coupon);
-  const [discount, setDiscount] = useState(0);
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const isCheckoutPage = param?.includes("/checkout");
 
   // console.log(cartItems,'cartItems');
 
-  // handle apply coupon
+  // handle apply coupon — the persisted discount always comes back down via
+  // the `discountAmount` prop once refetch() resolves (it's recomputed
+  // server-side from the cart, never cached client-side), so this handler
+  // only needs to trigger that refetch and give immediate toast feedback.
   const handleApplyCoupon = async () => {
     if (!code?.trim()) return toast.error("Please enter a coupon code");
 
@@ -55,15 +60,7 @@ const OrderSummary = ({
       });
       const data = await res.data;
 
-      console.log("Coupon applied:", data);
-
-      // Update UI
-      setDiscount(data.discountAmount);
-      setAppliedCoupon(data.coupon.code);
       refetch();
-      // Optionally update subtotal / total
-      // setSubtotal(data.cart.subtotalAtAdd);
-      // setTotal(data.cart.total);
 
       toast.success(
         `Coupon ${data.coupon.code} applied! Discount: ${data.discountAmount}`,
@@ -143,10 +140,20 @@ const OrderSummary = ({
               <TakaIcon /> {subtotal.toLocaleString()}
             </span>
           </div>
+          {discountAmount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>Discount</span>
+              <span className="flex items-center gap-1">
+                − <TakaIcon /> {discountAmount.toLocaleString()}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>Shipping</span>
             <span className="text-gray-500">
-              {deliveryFee ? (
+              {freeDelivery ? (
+                <span className="text-green-600">Free</span>
+              ) : deliveryFee ? (
                 <span className="">
                   <TakaIcon /> {deliveryFee}
                 </span>
@@ -216,8 +223,14 @@ const OrderSummary = ({
             </div>
             {coupon && (
               <p className="mt-2 text-green-600 text-sm">
-                Coupon "{coupon}" applied! Discount: <TakaIcon />{" "}
-                {discount.toLocaleString()}
+                Coupon "{coupon}" applied!{" "}
+                {discountAmount > 0 ? (
+                  <>
+                    Discount: <TakaIcon /> {discountAmount.toLocaleString()}
+                  </>
+                ) : (
+                  "It doesn't apply to your current cart."
+                )}
               </p>
             )}
           </details>

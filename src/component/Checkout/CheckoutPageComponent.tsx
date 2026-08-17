@@ -67,9 +67,12 @@ const CheckoutPageComponent = () => {
   } = useFetchCarts({ isSummary: true });
 
   const subtotal = Number(cart?.subtotalAtAdd ?? 0);
+  const discountAmount = Number(cart?.discountAmount ?? 0);
+  const freeDelivery = !!cart?.freeDelivery;
   const handlingSurcharge = 0;
 
-  const total = subtotal + deliveryFee;
+  const effectiveDeliveryFee = freeDelivery ? 0 : deliveryFee;
+  const total = subtotal - discountAmount + effectiveDeliveryFee;
 
   const selectedDistrict = districts?.find((d) => d.id === address.districtId);
 
@@ -633,6 +636,8 @@ const CheckoutPageComponent = () => {
               refetch={refetch}
               coupon={cart.coupon?.code}
               deliveryFee={deliveryFee}
+              freeDelivery={freeDelivery}
+              discountAmount={discountAmount}
               isAddressGiven={
                 !!(
                   address.name &&

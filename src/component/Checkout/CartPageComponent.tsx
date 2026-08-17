@@ -103,9 +103,10 @@ const CartPageComponent = () => {
 
   // console.log(cartItems,'cartitems');
   const subtotal = Number(cart?.subtotalAtAdd ?? 0);
+  const discountAmount = Number(cart?.discountAmount ?? 0);
 
   const handlingSurcharge = 0;
-  const total = subtotal + handlingSurcharge;
+  const total = subtotal - discountAmount + handlingSurcharge;
 
   return (
     <div className="max-w-375 mx-auto p-4 lg:p-8 font-sans overflow-x-hidden">
@@ -171,6 +172,7 @@ const CartPageComponent = () => {
             surcharge={handlingSurcharge}
             refetch={refetch}
             coupon={cart?.coupon?.code}
+            discountAmount={discountAmount}
           />
         </aside>
       </div>
