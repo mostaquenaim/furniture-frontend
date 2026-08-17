@@ -3,8 +3,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
+import useOrderTrackingSocket from "@/hooks/Order/useOrderTrackingSocket";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import Link from "next/link";
 import {
@@ -37,25 +38,31 @@ const OrderDetails = () => {
   const [initialized, setInitialized] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  useEffect(() => {
+  const fetchOrder = useCallback(async () => {
     if (!orderId) return;
-    const fetchOrder = async () => {
-      try {
-        const res = await axiosSecure.get(
-          `orders/track/${orderId}?details=true`,
-        );
+    try {
+      const res = await axiosSecure.get(
+        `orders/track/${orderId}?details=true`,
+      );
 
-        devLog(res.data);
+      devLog(res.data);
 
-        setOrder(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrder();
+      setOrder(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, [orderId, axiosSecure]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
+
+  // Refetch the order whenever the backend pushes a status change for it
+  // (e.g. a courier webhook or admin update) — keeps this page live without
+  // a manual refresh, while the REST call above stays the source of truth.
+  useOrderTrackingSocket({ orderId, onStatusUpdated: fetchOrder });
 
   const handleOpenReview = (item: any) => {
     setSelectedItem(item);

@@ -652,23 +652,6 @@ export default function CompanyInfoComp() {
                 />
               </Field>
             </Section>
-
-            <Section
-              title="Privacy Policy"
-              description="Full privacy policy text shown on your storefront"
-            >
-              <Field
-                label="Privacy policy content"
-                hint="Supports HTML — shown at ondorkotha.com/privacy-policy"
-              >
-                <Textarea
-                  value={val("privacyPolicy")}
-                  onChange={(v) => set("privacyPolicy", v)}
-                  placeholder="<h2>Privacy Policy</h2>&#10;<p>We collect…</p>"
-                  rows={10}
-                />
-              </Field>
-            </Section>
           </div>
         )}
 

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
 import Image from "next/image";
+import Link from "next/link";
 import useFetchCompany from "@/hooks/Company/useFetchCompany";
 import { CompanyInfo } from "@/types/company";
 
@@ -28,37 +29,37 @@ const footerData: { title: string; links: FooterLink[] }[] = [
   {
     title: "Help",
     links: [
-      { label: "Track Your Order" },
-      { label: "Start a Return Or Exchange" },
-      { label: "Returns & Exchanges" },
-      { label: "Customer Service" },
-      { label: "Check Gift Card Balance" },
-      { label: "Current Promotions" },
+      { label: "Track Your Order", href: "/help/order-tracking" },
+      { label: "Start a Return Or Exchange", href: "/refund" },
+      { label: "Returns & Exchanges", href: "/pages/return-policy" },
+      { label: "Customer Service", href: "/help/help-center" },
+      { label: "Check Gift Card Balance", href: "/pages/gift-card-balance" },
+      { label: "Current Promotions", href: "/sales" },
     ],
   },
   {
     title: "About Us",
     links: [
-      { label: "Our Story" },
-      { label: "Diversity & Inclusion" },
-      { label: "Careers" },
-      { label: "Anthro Impact" },
+      { label: "Our Story", href: "/about" },
+      { label: "Diversity & Inclusion", href: "/pages/diversity-inclusion" },
+      { label: "Careers", href: "/pages/careers" },
+      { label: "Our Impact", href: "/pages/our-impact" },
     ],
   },
   {
     title: "Services",
     links: [
-      { label: "Styling Services" },
-      { label: "Gift Cards" },
-      { label: "Registry" },
-      { label: "Furniture & Decor: Free Design Services & Guides" },
+      { label: "Styling Services", href: "/pages/styling-services" },
+      { label: "Gift Cards", href: "/pages/gift-cards" },
+      { label: "Registry", href: "/pages/registry" },
+      { label: "Free Design Services & Guides", href: "/pages/design-services" },
     ],
   },
   {
     title: "Connect",
     links: [
-      { label: "Events" },
-      { label: "Contact Us" },
+      { label: "Events", href: "/pages/events" },
+      { label: "Contact Us", href: "/help/contact-us" },
       { label: "Stories", href: "/blogs" },
     ],
   },
@@ -66,13 +67,14 @@ const footerData: { title: string; links: FooterLink[] }[] = [
 
 // Icons for the fourth column (Desktop view only)
 const desktopConnectIcons = [
-  { label: "Store Locator", icon: MapPin },
-  { label: "AnthroPerks", icon: Gift },
-  { label: "Sign Up For Texts", icon: Phone },
-  { label: "Chat With Us", icon: MessageCircle },
+  { label: "Store Locator", icon: MapPin, href: "/pages/store-locator" },
+  { label: "Rewards", icon: Gift, href: "/pages/rewards" },
+  { label: "Sign Up For Texts", icon: Phone, href: "/pages/sms-signup" },
+  { label: "Chat With Us", icon: MessageCircle, href: "/help/contact-us" },
 ];
 
-// countries for bottom links
+// countries for bottom links — this business operates in one country, so
+// these are decorative (all point home) rather than a real locale switcher.
 const countries = ["US", "Canada", "France", "Germany", "Italy", "Spain", "UK"];
 
 // legal links for bottom links
@@ -204,13 +206,13 @@ const SmsAppBanner: React.FC = () => (
           OMG sales
         </p>
       </div>
-      <a
-        href="#"
+      <Link
+        href="/pages/sms-signup"
         className="flex items-center text-sm font-semibold mt-4 sm:mt-0 whitespace-nowrap"
       >
         RIGHT THIS WAY
         <span className="ml-2">&rarr;</span>
-      </a>
+      </Link>
     </div>
   </div>
 );
@@ -220,15 +222,15 @@ const SocialAndAppLinks: React.FC<{
   socials: { name: string; href: string; icon: ReactNode }[];
 }> = ({ socials }) => (
   <div className="flex flex-col md:flex-row justify-center lg:gap-4 items-center py-6">
-    {/* App Store Image - Mocked as a button/div */}
-    <div className="mb-4 md:mb-0">
+    {/* App Store Image */}
+    <Link href="/pages/mobile-app" className="mb-4 md:mb-0 inline-block">
       <Image
         src="/icons/download-from-apple.svg"
         alt="Download on the App Store"
         width={100}
         height={60}
       />
-    </div>
+    </Link>
 
     {/* Social Icons */}
     {socials.length > 0 && (
@@ -295,7 +297,7 @@ const Footer: React.FC = () => {
                     className="border-b-2 lg:border-b-0 border-gray-200 w-full lg:w-fit py-4 lg:py-0 "
                   >
                     <a
-                      href="#"
+                      href={item.href}
                       className="heading flex justify-center items-center hover:text-amber-700 transition-colors blue-link text-xs"
                     >
                       <item.icon size={20} className="mr-3 text-gray-500" />
@@ -361,15 +363,15 @@ const Footer: React.FC = () => {
           {/* Country Links */}
           <div className="flex flex-wrap justify-center mb-2 lg:mb-0 pb-8 space-y-2">
             {countries?.map((country, idx) => (
-              <a
+              <Link
                 key={country}
-                href="#"
+                href="/"
                 className={`hover:underline px-4 ${
                   idx !== countries.length - 1 ? "border-r border-gray-300" : ""
                 }`}
               >
                 {country}
-              </a>
+              </Link>
             ))}
           </div>
           <div className="flex flex-col lg:flex-row justify-between gap-4">

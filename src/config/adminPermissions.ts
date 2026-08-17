@@ -197,6 +197,20 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
         ],
       },
       {
+        name: "Privacy Policy",
+        icon: FileText,
+        sub: [
+          { href: "/admin/cms/privacy-policy", label: "Edit Policy", requiredAction: "CMS_PRIVACY_POLICY_MANAGE" },
+        ],
+      },
+      {
+        name: "Email Templates",
+        icon: FileText,
+        sub: [
+          { href: "/admin/cms/email-templates", label: "All Templates", requiredAction: "CMS_EMAIL_TEMPLATE_MANAGE" },
+        ],
+      },
+      {
         name: "Banners",
         icon: Image,
         sub: [

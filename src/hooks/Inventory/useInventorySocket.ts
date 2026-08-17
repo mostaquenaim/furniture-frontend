@@ -10,7 +10,7 @@ import {
 } from "@/types/inventory";
 
 const SOCKET_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(
-  /\/api\/?$/,
+  /\/api(\/v\d+)?\/?$/,
   "",
 );
 
