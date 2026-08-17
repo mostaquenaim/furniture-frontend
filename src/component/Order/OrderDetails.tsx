@@ -90,23 +90,22 @@ const OrderDetails = () => {
   };
 
   const handleDownloadInvoice = async () => {
-    console.log(order, "orderdata");
-
+    if (!order?.invoiceId) return;
     setDownloading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/invoices/${order.invoiceId}/pdf`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        },
+      const res = await axiosSecure.get(`/invoices/${order.invoiceId}/pdf`, {
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(
+        new Blob([res.data], { type: "application/pdf" }),
       );
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `invoice-${order.invoiceId}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Failed to download invoice");
     } finally {
       setDownloading(false);
     }
@@ -238,14 +237,16 @@ const OrderDetails = () => {
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button
-                onClick={handleDownloadInvoice}
-                disabled={downloading}
-                className="cursor-pointer flex items-center gap-2 text-[10px] uppercase tracking-widest px-5 py-2.5 border border-black font-bold hover:bg-black hover:text-white transition-all active:scale-95 disabled:opacity-50"
-              >
-                <FiDownload className={downloading ? "animate-bounce" : ""} />
-                {downloading ? "Preparing..." : "Download Invoice"}
-              </button>
+              {order.invoiceId && (
+                <button
+                  onClick={handleDownloadInvoice}
+                  disabled={downloading}
+                  className="cursor-pointer flex items-center gap-2 text-[10px] uppercase tracking-widest px-5 py-2.5 border border-black font-bold hover:bg-black hover:text-white transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <FiDownload className={downloading ? "animate-bounce" : ""} />
+                  {downloading ? "Preparing..." : "Download Invoice"}
+                </button>
+              )}
 
               <span className="text-[10px] uppercase tracking-widest px-5 py-2.5 bg-black text-white font-bold">
                 {order.status}
