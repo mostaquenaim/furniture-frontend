@@ -156,7 +156,7 @@ export default function DashboardPageComp() {
 
             {/* Custom date pickers */}
             <div
-              className={`flex items-center gap-2 bg-white border rounded-lg px-3 py-2 transition-colors ${
+              className={`flex flex-col sm:flex-row w-full items-center gap-2 bg-white border rounded-lg px-3 py-2 transition-colors ${
                 activePeriod === "custom"
                   ? "border-gray-900"
                   : "border-gray-200"

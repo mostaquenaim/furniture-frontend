@@ -166,7 +166,7 @@ export default function StaticPagesAdmin() {
               <p className="text-sm text-gray-500">No pages yet.</p>
               <button
                 onClick={openNew}
-                className="mt-3 text-sm text-indigo-600 hover:underline"
+                className="mt-3 text-sm cursor-pointer text-indigo-600 hover:underline hover:underline-offset-4 hover:text-indigo-700"
               >
                 Create your first page
               </button>
