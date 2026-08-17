@@ -136,7 +136,7 @@ export default function DashboardPageComp() {
           </div>
 
           {/* Date controls */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex flex-col md:flex-row items-start sm:items-center gap-3">
             {/* Day / Week / Month buttons */}
             <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
               {PERIODS.map((p) => (
