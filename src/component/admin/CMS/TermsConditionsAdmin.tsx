@@ -203,7 +203,7 @@ export default function TermsConditionsAdmin() {
             <p className="text-sm text-gray-500">No sections yet.</p>
             <button
               onClick={openNew}
-              className="mt-3 text-sm text-indigo-600 hover:underline"
+              className="mt-3 text-sm text-indigo-600 hover:underline cursor-pointer hover:underline-offset-4 hover:text-indigo-700"
             >
               Create your first section
             </button>
