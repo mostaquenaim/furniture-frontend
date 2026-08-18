@@ -1,27 +1,16 @@
-'use client';
-import useAxiosSecure from '@/hooks/Axios/useAxiosSecure';
-import React, { useEffect } from 'react';
+"use client";
+
+import ComingSoon from "@/component/Shared/ComingSoon";
 
 const ProductSyncPrice = () => {
-    const axiosSecure = useAxiosSecure()
-    useEffect(() => {
-        const sync = async () => {
-            try {
-                const response = await axiosSecure.get('/product-sync-prices');
-                console.log('Product prices synced successfully:', response.data);
-            } catch (error) {
-                console.error('Error syncing product prices:', error);
-            }
-        }
-
-        sync()
-
-    }, [axiosSecure]);
-    return (
-        <div>
-            
-        </div>
-    );
+  return (
+    <ComingSoon
+      title="Price sync isn't available yet"
+      description="Syncing product prices from an external source will live here once this module ships."
+      backHref="/admin/products"
+      backLabel="Back to Products"
+    />
+  );
 };
 
 export default ProductSyncPrice;

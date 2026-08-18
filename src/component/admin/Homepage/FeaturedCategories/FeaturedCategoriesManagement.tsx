@@ -22,6 +22,7 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,6 +76,7 @@ const inputCls = (error?: string) =>
 const FeaturedCategoriesManagement: React.FC = () => {
   const axiosSecure = useAxiosSecure();
   const axiosPublic = useAxiosPublic();
+  const canManage = useHasPermission("FEATURED_CATEGORY_MANAGE");
 
   const { data: tiles = [], isLoading: tilesLoading, refetch } = useQuery<FeaturedTile[]>({
     queryKey: ["featured-categories-admin"],
@@ -324,7 +326,7 @@ const FeaturedCategoriesManagement: React.FC = () => {
               Up to 6 manually curated category tiles shown on the homepage — {tiles.length}/6 used
             </p>
           </div>
-          {!isAdding && tiles.length < 6 && (
+          {canManage && !isAdding && tiles.length < 6 && (
             <button
               disabled={isBusy}
               onClick={handleAddNew}
@@ -392,6 +394,7 @@ const FeaturedCategoriesManagement: React.FC = () => {
                     key={tile.id}
                     tile={tile}
                     disabled={isBusy}
+                    canManage={canManage}
                     onEdit={() => handleEdit(tile)}
                     onDelete={() => setDeleteId(tile.id)}
                     onToggle={() => toggleActive(tile)}
@@ -409,13 +412,15 @@ const FeaturedCategoriesManagement: React.FC = () => {
             <p className="text-sm text-gray-500 mb-4">
               Add up to 6 featured category tiles for the homepage
             </p>
-            <button
-              onClick={handleAddNew}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              <Plus size={16} />
-              Add tile
-            </button>
+            {canManage && (
+              <button
+                onClick={handleAddNew}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                <Plus size={16} />
+                Add tile
+              </button>
+            )}
           </div>
         )}
 
@@ -437,12 +442,13 @@ const FeaturedCategoriesManagement: React.FC = () => {
 interface TileViewRowProps {
   tile: FeaturedTile;
   disabled: boolean;
+  canManage: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
 }
 
-const TileViewRow: FC<TileViewRowProps> = ({ tile, disabled, onEdit, onDelete, onToggle }) => (
+const TileViewRow: FC<TileViewRowProps> = ({ tile, disabled, canManage, onEdit, onDelete, onToggle }) => (
   <tr className="hover:bg-gray-50 transition-colors group">
     <td className="px-5 py-4 align-middle">
       <div className="flex items-center gap-1.5 text-gray-400">
@@ -474,13 +480,16 @@ const TileViewRow: FC<TileViewRowProps> = ({ tile, disabled, onEdit, onDelete, o
 
     <td className="px-5 py-4 align-middle">
       <button
-        onClick={onToggle}
-        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
+        onClick={canManage ? onToggle : undefined}
+        disabled={!canManage}
+        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold transition-all disabled:opacity-70 ${
+          canManage ? "hover:scale-105 active:scale-95 cursor-pointer" : "cursor-default"
+        } ${
           tile.isActive
             ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
         }`}
-        title="Click to toggle"
+        title={canManage ? "Click to toggle" : undefined}
       >
         <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tile.isActive ? "bg-emerald-500" : "bg-gray-400"}`} />
         {tile.isActive ? "Active" : "Inactive"}
@@ -488,23 +497,25 @@ const TileViewRow: FC<TileViewRowProps> = ({ tile, disabled, onEdit, onDelete, o
     </td>
 
     <td className="px-5 py-4 align-middle">
-      <div className="flex justify-end gap-1">
-        <button
-          onClick={onEdit}
-          disabled={disabled}
-          className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-30"
-          title="Edit"
-        >
-          <Edit3 size={17} />
-        </button>
-        <button
-          onClick={onDelete}
-          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          title="Delete"
-        >
-          <Trash2 size={17} />
-        </button>
-      </div>
+      {canManage && (
+        <div className="flex justify-end gap-1">
+          <button
+            onClick={onEdit}
+            disabled={disabled}
+            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-30"
+            title="Edit"
+          >
+            <Edit3 size={17} />
+          </button>
+          <button
+            onClick={onDelete}
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete"
+          >
+            <Trash2 size={17} />
+          </button>
+        </div>
+      )}
     </td>
   </tr>
 );

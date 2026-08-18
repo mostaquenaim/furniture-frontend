@@ -10,6 +10,7 @@ import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { Series } from "@/types/menu";
 import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 interface ApiError {
   response?: { data?: { message?: string } };
@@ -35,6 +36,9 @@ const AllSeriesComp = () => {
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
   const { seriesList, isLoading, refetch } = useFetchSeries({ isActive: null });
+  const canUpdate = useHasPermission("CATEGORY_UPDATE");
+  const canReorder = useHasPermission("CATEGORY_REORDER");
+  const canDelete = useHasPermission("CATEGORY_DELETE");
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Series | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -93,7 +97,9 @@ const AllSeriesComp = () => {
         isSaving={isSaving}
         onSave={handleSave}
         onEdit={(slug) => router.push(`/admin/series/update/${slug}`)}
-        onDelete={(series) => setDeleteTarget(series)}
+        onDelete={canDelete ? (series) => setDeleteTarget(series) : undefined}
+        canEdit={canUpdate}
+        canReorder={canReorder}
       />
 
       {pinnedLast.map((s) => (

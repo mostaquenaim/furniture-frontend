@@ -1,11 +1,11 @@
-import React from 'react';
+import AllSeriesGrid from "@/component/Homepage/AllSeriesGrid";
 
 const SeriesPage = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+  return (
+    <div className="py-8">
+      <AllSeriesGrid />
+    </div>
+  );
 };
 
 export default SeriesPage;

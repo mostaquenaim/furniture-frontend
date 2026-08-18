@@ -10,6 +10,7 @@ import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../../admin/Modal/DeleteConfirmationModal";
 import { Category } from "@/types/menu";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 interface ApiError {
   response?: { data?: { message?: string } };
@@ -19,6 +20,9 @@ const AllCategoriesComp = () => {
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
   const { categoryList, isLoading, refetch } = useFetchCategories({ isActive: null });
+  const canUpdate = useHasPermission("CATEGORY_UPDATE");
+  const canReorder = useHasPermission("CATEGORY_REORDER");
+  const canDelete = useHasPermission("CATEGORY_DELETE");
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -61,7 +65,9 @@ const AllCategoriesComp = () => {
         isSaving={false}
         onSave={handleSave}
         onEdit={(slug) => router.push(`/admin/category/update/${slug}`)}
-        onDelete={(category) => setDeleteTarget(category)}
+        onDelete={canDelete ? (category) => setDeleteTarget(category) : undefined}
+        canEdit={canUpdate}
+        canReorder={canReorder}
       />
 
       <DeleteConfirmationModal

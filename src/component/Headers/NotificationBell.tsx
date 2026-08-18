@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
+import toast from "react-hot-toast";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import useInventorySocket from "@/hooks/Inventory/useInventorySocket";
 import { AdminNotification } from "@/types/inventory";
@@ -70,20 +71,39 @@ export default function NotificationBell() {
   });
 
   const markRead = (id: number) => {
+    const wasUnread = items.some((n) => n.id === id && !n.readAt);
+    if (!wasUnread) return;
+
     setItems((prev) =>
-      prev.map((n) => (n.id === id && !n.readAt ? { ...n, readAt: new Date().toISOString() } : n)),
+      prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
     );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
     axiosSecure
       .post<{ unreadCount: number }>(`/admin-notifications/${id}/read`)
       .then(({ data }) => setUnreadCount(data.unreadCount))
-      .catch(() => {});
+      .catch(() => {
+        // Revert the optimistic update — the request never landed, so the
+        // badge/dot must not silently disappear as if it had.
+        setItems((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, readAt: null } : n)),
+        );
+        setUnreadCount((prev) => prev + 1);
+        toast.error("Couldn't mark notification as read");
+      });
   };
 
   const markAllRead = () => {
+    const prevItems = items;
+    const prevUnreadCount = unreadCount;
     const now = new Date().toISOString();
     setItems((prev) => prev.map((n) => (n.readAt ? n : { ...n, readAt: now })));
     setUnreadCount(0);
-    axiosSecure.post("/admin-notifications/read-all").catch(() => {});
+    axiosSecure.post("/admin-notifications/read-all").catch(() => {
+      setItems(prevItems);
+      setUnreadCount(prevUnreadCount);
+      toast.error("Couldn't mark notifications as read");
+    });
   };
 
   return (

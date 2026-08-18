@@ -24,6 +24,7 @@ import {
   ReturnRequest,
   ReturnRequestStatus,
 } from "@/types/refund.types";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const RETURN_STATUS: Record<
@@ -102,6 +103,8 @@ function ReturnRequestDetailDrawer({
   const [adminNote, setAdminNote] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
   const [refundNotes, setRefundNotes] = useState("");
+  const canManageReturn = useHasPermission("RETURN_MANAGE");
+  const canManageRefund = useHasPermission("REFUND_MANAGE");
 
   const load = async () => {
     setLoading(true);
@@ -300,7 +303,7 @@ function ReturnRequestDetailDrawer({
           )}
 
           {/* Actions */}
-          {data.status === "PENDING" && (
+          {canManageReturn && data.status === "PENDING" && (
             <DrawerSection title="Review Request" tint="slate">
               <div className="space-y-2 pt-1">
                 <textarea
@@ -330,7 +333,7 @@ function ReturnRequestDetailDrawer({
             </DrawerSection>
           )}
 
-          {data.status === "APPROVED" && (
+          {canManageReturn && data.status === "APPROVED" && (
             <DrawerSection title="Receive Item(s)" tint="slate">
               <p className="text-[11px] text-gray-500 mb-2">
                 Restocks any legacy (quantity-tracked) items automatically.
@@ -364,7 +367,7 @@ function ReturnRequestDetailDrawer({
             </DrawerSection>
           )}
 
-          {data.status === "ITEM_RECEIVED" && (
+          {canManageRefund && data.status === "ITEM_RECEIVED" && (
             <DrawerSection title="Process Refund" tint="amber">
               <p className="text-[11px] text-gray-500 mb-2">
                 Leave the amount blank to refund the full value of the returned

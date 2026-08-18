@@ -322,9 +322,8 @@ const FAQPageComp = () => {
                     </span>
                   </button>
                 ))}
-                <div className="mt-6 pt-6 border-t lg:hidden grid grid-cols-2 gap-2">
-                   <a href="/contact" className="text-center py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">Email Us</a>
-                   <a href="/live-chat" className="text-center py-2 bg-gray-50 text-gray-600 rounded-lg text-xs font-bold">Live Chat</a>
+                <div className="mt-6 pt-6 border-t lg:hidden grid grid-cols-1 gap-2">
+                   <a href="/help/contact-us" className="text-center py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">Email Us</a>
                 </div>
               </div>
            
@@ -338,16 +337,10 @@ const FAQPageComp = () => {
                 </p>
                 <div className="space-y-3">
                   <a
-                    href="/contact"
+                    href="/help/contact-us"
                     className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                   >
                     Contact Support
-                  </a>
-                  <a
-                    href="/live-chat"
-                    className="block w-full text-center px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition text-sm font-medium"
-                  >
-                    Live Chat
                   </a>
                 </div>
               </div>
@@ -514,7 +507,7 @@ const FAQPageComp = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="/contact"
+                    href="/help/contact-us"
                     className="px-8 py-3 bg-white text-black font-medium rounded-lg hover:bg-gray-100 transition"
                   >
                     Contact Us

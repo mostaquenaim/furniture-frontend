@@ -56,6 +56,7 @@ import useTrackOrder from "@/hooks/Track/useTrack";
 import { useRouter } from "next/navigation";
 import OrderFulfillmentModal from "./Fulfillment/OrderFulfillmentModal";
 import { ClipboardList } from "lucide-react";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 // ── Status configs ─────────────────────────────────────────────────────────────
 const ORDER_STATUS: Record<
@@ -300,6 +301,7 @@ function StatusDropdown({
   manualStatusEnabled: boolean;
 }) {
   const axiosSecure = useAxiosSecure();
+  const canUpdateStatus = useHasPermission("ORDER_UPDATE_STATUS");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pickGate, setPickGate] = useState<{
@@ -362,10 +364,14 @@ function StatusDropdown({
 
   const cfg = ORDER_STATUS[currentStatus];
 
-  if (!manualStatusEnabled) {
+  if (!manualStatusEnabled || !canUpdateStatus) {
     return (
       <span
-        title="Status is driven by the courier webhook — manual changes are disabled"
+        title={
+          !canUpdateStatus
+            ? undefined
+            : "Status is driven by the courier webhook — manual changes are disabled"
+        }
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide cursor-not-allowed ${cfg.color}`}
       >
         <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
@@ -432,6 +438,8 @@ function OrderDetailDrawer({
 }) {
   const axiosSecure = useAxiosSecure();
   const router = useRouter();
+  const canUpdateStatus = useHasPermission("ORDER_UPDATE_STATUS");
+  const canManageCourier = useHasPermission("COURIER_MANAGE");
 
   const { order, isLoading, refetch } = useTrackOrder({
     trackingId: orderId,
@@ -470,7 +478,7 @@ function OrderDetailDrawer({
     setSubmittingRemainder(true);
     try {
       await axiosSecure.patch(
-        `/admin/orders/${order.orderNumber}/collect-remainder`,
+        `/orders/${order.orderNumber}/collect-remainder`,
         { collectedBy: collectedBy.trim() },
       );
       toast.success("Remainder collected — order marked as paid");
@@ -516,13 +524,15 @@ function OrderDetailDrawer({
             <ClipboardList className="w-3.5 h-3.5" />
             Fulfillment
           </button>
-          <button
-            onClick={() => createShipment(order?.orderNumber)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 text-slate-600 text-xs font-medium rounded-xl hover:bg-slate-50 transition-colors"
-          >
-            <Truck className="w-3.5 h-3.5" />
-            Create Shipment
-          </button>
+          {canManageCourier && (
+            <button
+              onClick={() => createShipment(order?.orderNumber)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 text-slate-600 text-xs font-medium rounded-xl hover:bg-slate-50 transition-colors"
+            >
+              <Truck className="w-3.5 h-3.5" />
+              Create Shipment
+            </button>
+          )}
         </div>
       }
     >
@@ -774,7 +784,8 @@ function OrderDetailDrawer({
           )}
 
           {/* Collect Remainder */}
-          {order.paymentStatus === "PARTIALLY_PAID" &&
+          {canUpdateStatus &&
+            order.paymentStatus === "PARTIALLY_PAID" &&
             (order.remainingAmount ?? 0) > 0 && (
               <DrawerSection title="Collect Remainder" tint="slate">
                 {collectingRemainder ? (
@@ -934,6 +945,7 @@ function RowMenu({
   const ref = useRef<HTMLDivElement>(null);
   const { check, loading: checkLoading } = useCheckFraud();
   const { update, loading: updateLoading } = useUpdateFraudStatus();
+  const canManageFraud = useHasPermission("FRAUD_MANAGE");
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -1065,28 +1077,32 @@ function RowMenu({
           >
             View Details
           </button>
-          <button
-            onClick={handleCheckFraud}
-            disabled={checkLoading}
-            className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2 disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`w-3 h-3 ${checkLoading ? "animate-spin" : ""}`}
-            />
-            Check Fraud
-          </button>
-          <button
-            onClick={() => {
-              if (order.customerPhone) {
-                onViewFraudHistory(order.customerPhone);
-              }
-              setOpen(false);
-            }}
-            className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2"
-          >
-            <ShieldAlert className="w-3 h-3" />
-            Fraud History
-          </button>
+          {canManageFraud && (
+            <button
+              onClick={handleCheckFraud}
+              disabled={checkLoading}
+              className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2 disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`w-3 h-3 ${checkLoading ? "animate-spin" : ""}`}
+              />
+              Check Fraud
+            </button>
+          )}
+          {canManageFraud && (
+            <button
+              onClick={() => {
+                if (order.customerPhone) {
+                  onViewFraudHistory(order.customerPhone);
+                }
+                setOpen(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2"
+            >
+              <ShieldAlert className="w-3 h-3" />
+              Fraud History
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -21,6 +21,7 @@ import {
 } from "@/component/Shared/Admin/AdminUI/AdminUI";
 import useRefunds from "@/hooks/Refunds/useRefunds";
 import { PaymentRefund, RefundStatus } from "@/types/refund.types";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const REFUND_STATUS: Record<
@@ -270,8 +271,10 @@ function RefundDetailDrawer({
     }
   };
 
+  const canManage = useHasPermission("REFUND_MANAGE");
   const cfg = data ? REFUND_STATUS[data.status] : null;
-  const isActionable = data && ["PENDING", "PROCESSING"].includes(data.status);
+  const isActionable =
+    canManage && data && ["PENDING", "PROCESSING"].includes(data.status);
 
   return (
     <DetailDrawer
@@ -389,6 +392,7 @@ function RefundDetailDrawer({
 const LIMIT = 20;
 
 export default function RefundsAdmin() {
+  const canManage = useHasPermission("REFUND_MANAGE");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<RefundStatus | "">("");
@@ -426,13 +430,15 @@ export default function RefundsAdmin() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Sales" title="Refunds">
-        <button
-          onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Direct Refund
-        </button>
+        {canManage && (
+          <button
+            onClick={() => setShowNewModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Direct Refund
+          </button>
+        )}
       </PageHeader>
 
       <div className="space-y-5">

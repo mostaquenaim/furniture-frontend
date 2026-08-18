@@ -56,7 +56,7 @@ const AddSize = () => {
     setIsLoading(true);
 
     try {
-      await axiosSecure.post("/size", {
+      await axiosSecure.post("/sizes", {
         ...formData,
         variantId: Number(formData.variantId),
       });

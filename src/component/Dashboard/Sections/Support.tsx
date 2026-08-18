@@ -135,7 +135,7 @@ const Support = () => {
           <HelpCircle className="w-8 h-8 mx-auto text-gray-400 mb-3" />
           <p className="text-sm text-gray-500 mb-2">Need instant answers?</p>
           <a
-            href="/help"
+            href="/help/help-center"
             className="text-sm font-medium text-gray-900 hover:text-gray-700 transition"
           >
             Visit Help Center →

@@ -38,6 +38,11 @@ interface GenericReorderTableProps<T extends BaseItem> {
   description: string;
   isSaving: boolean;
   nowFetching?: string;
+  // Both default true so existing callers that haven't been updated keep
+  // their current behavior — pass explicitly once the caller knows the
+  // viewer's permissions.
+  canEdit?: boolean;
+  canReorder?: boolean;
 }
 
 export function GenericReorderTable<T extends BaseItem>({
@@ -49,6 +54,8 @@ export function GenericReorderTable<T extends BaseItem>({
   title,
   description,
   isSaving,
+  canEdit = true,
+  canReorder = true,
 }: GenericReorderTableProps<T>) {
   const [list, setList] = useState<T[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
@@ -58,7 +65,7 @@ export function GenericReorderTable<T extends BaseItem>({
   }, [initialData]);
 
   const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
+    if (!canReorder || !result.destination) return;
     const items = Array.from(list);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
@@ -87,7 +94,7 @@ export function GenericReorderTable<T extends BaseItem>({
           <h1 className="text-xl font-bold text-slate-800">{title}</h1>
           <p className="text-sm text-slate-500">{description}</p>
         </div>
-        {hasChanges && (
+        {canReorder && hasChanges && (
           <button
             onClick={handleSave}
             disabled={isSaving}
@@ -140,6 +147,7 @@ export function GenericReorderTable<T extends BaseItem>({
                       key={item.id}
                       draggableId={item.id.toString()}
                       index={index}
+                      isDragDisabled={!canReorder}
                     >
                       {(provided, snapshot) => (
                         <tr
@@ -153,12 +161,14 @@ export function GenericReorderTable<T extends BaseItem>({
                           )}
                         >
                           <td className="px-4 py-4">
-                            <div
-                              {...provided.dragHandleProps}
-                              className="text-slate-400 hover:text-indigo-600 cursor-grab"
-                            >
-                              <GripVertical size={20} />
-                            </div>
+                            {canReorder && (
+                              <div
+                                {...provided.dragHandleProps}
+                                className="text-slate-400 hover:text-indigo-600 cursor-grab"
+                              >
+                                <GripVertical size={20} />
+                              </div>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold">
@@ -211,12 +221,14 @@ export function GenericReorderTable<T extends BaseItem>({
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex justify-end gap-1">
-                              <button
-                                onClick={() => onEdit(item.slug)}
-                                className="p-2 text-slate-400 hover:text-indigo-600"
-                              >
-                                <Edit3 size={18} />
-                              </button>
+                              {canEdit && (
+                                <button
+                                  onClick={() => onEdit(item.slug)}
+                                  className="p-2 text-slate-400 hover:text-indigo-600"
+                                >
+                                  <Edit3 size={18} />
+                                </button>
+                              )}
                               {onDelete && (
                                 <button
                                   onClick={() => onDelete(item)}

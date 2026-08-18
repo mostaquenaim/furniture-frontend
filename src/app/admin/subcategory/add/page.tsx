@@ -160,7 +160,7 @@ const AddSubcategory = () => {
       });
 
       toast.success("Subcategory created successfully");
-      setTimeout(() => router.push("/admin/subcategories"), 1200);
+      setTimeout(() => router.push("/admin/subcategory/all"), 1200);
     } catch (err) {
       if (axios.isAxiosError(err)) {
         toast.error(
@@ -335,7 +335,7 @@ const AddSubcategory = () => {
         <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
           <button
             type="button"
-            onClick={() => router.push("/admin/subcategories")}
+            onClick={() => router.push("/admin/subcategory/all")}
             className="px-5 py-2 border border-gray-200 rounded-lg"
           >
             Cancel

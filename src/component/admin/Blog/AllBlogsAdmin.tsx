@@ -28,6 +28,7 @@ import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
 import useFetchBlogCategories, { BlogCategory } from "@/hooks/Blog/useFetchBlogCategories";
 import useFetchBlogsAdmin from "@/hooks/Admin/Blog/useFetchBlogsAdmin";
 import { BlogPost } from "@/types/blog";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type FilterStatus = "all" | "published" | "draft";
@@ -69,6 +70,9 @@ function useDebounce<T>(value: T, delay = 400): T {
 // ── Main Component ─────────────────────────────────────────────────────────────
 const AllBlogsAdminComp: React.FC = () => {
   const axiosSecure = useAxiosSecure();
+  const canCreate = useHasPermission("BLOG_CREATE");
+  const canUpdate = useHasPermission("BLOG_UPDATE");
+  const canDelete = useHasPermission("BLOG_DELETE");
 
   // ── All state declared before hooks that depend on them ──
   const [page, setPage] = useState(1);
@@ -185,13 +189,15 @@ const AllBlogsAdminComp: React.FC = () => {
               Manage and publish your editorial content
             </p>
           </div>
-          <Link
-            href="/admin/blog/add"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-xl hover:bg-slate-700 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            New Post
-          </Link>
+          {canCreate && (
+            <Link
+              href="/admin/blog/add"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-xl hover:bg-slate-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              New Post
+            </Link>
+          )}
         </div>
 
         {/* Stats */}
@@ -359,6 +365,8 @@ const AllBlogsAdminComp: React.FC = () => {
                         isToggling={togglingId === blog.id}
                         onTogglePublish={() => togglePublish(blog)}
                         onDelete={() => setDeleteId(blog.id)}
+                        canUpdate={canUpdate}
+                        canDelete={canDelete}
                       />
                     ))}
                   </tbody>
@@ -402,6 +410,7 @@ const AllBlogsAdminComp: React.FC = () => {
                 handleStatusChange("all");
                 handleCategoryChange(null);
               }}
+              canCreate={canCreate}
             />
           )}
         </div>
@@ -425,6 +434,8 @@ interface BlogRowProps {
   isToggling: boolean;
   onTogglePublish: () => void;
   onDelete: () => void;
+  canUpdate: boolean;
+  canDelete: boolean;
 }
 
 const BlogRow: React.FC<BlogRowProps> = ({
@@ -432,6 +443,8 @@ const BlogRow: React.FC<BlogRowProps> = ({
   isToggling,
   onTogglePublish,
   onDelete,
+  canUpdate,
+  canDelete,
 }) => {
   const excerpt = truncate(stripMarkdown(blog.content), 90);
   return (
@@ -483,10 +496,10 @@ const BlogRow: React.FC<BlogRowProps> = ({
       </td>
       <td className="px-6 py-4">
         <button
-          onClick={onTogglePublish}
-          disabled={isToggling}
-          title="Click to toggle"
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${blog.published ? "bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200" : "bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200"}`}
+          onClick={canUpdate ? onTogglePublish : undefined}
+          disabled={isToggling || !canUpdate}
+          title={canUpdate ? "Click to toggle" : undefined}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all disabled:opacity-50 ${canUpdate ? "hover:scale-105 active:scale-95 cursor-pointer" : "cursor-default"} ${blog.published ? "bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200" : "bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200"}`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${blog.published ? "bg-teal-500" : "bg-amber-400"}`}
@@ -496,32 +509,47 @@ const BlogRow: React.FC<BlogRowProps> = ({
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={onTogglePublish}
-            disabled={isToggling}
-            title={blog.published ? "Unpublish" : "Publish"}
-            className="p-2 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors disabled:opacity-50"
-          >
-            {blog.published ? (
-              <EyeOff className="w-4 h-4" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
-          </button>
-          <Link
-            href={`/admin/blog/update/${blog.slug}`}
-            className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-            title="Edit post"
-          >
-            <Edit3 className="w-4 h-4" />
-          </Link>
-          <button
-            onClick={onDelete}
-            title="Delete post"
-            className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {canUpdate && (
+            <button
+              onClick={onTogglePublish}
+              disabled={isToggling}
+              title={blog.published ? "Unpublish" : "Publish"}
+              className="p-2 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors disabled:opacity-50"
+            >
+              {blog.published ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          )}
+          {canUpdate && (
+            <Link
+              href={`/admin/blog/update/${blog.slug}`}
+              className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+              title="Edit post"
+            >
+              <Edit3 className="w-4 h-4" />
+            </Link>
+          )}
+          {canUpdate && (
+            <Link
+              href={`/admin/cms/seo?url=${encodeURIComponent(`/blogs/${blog.slug}`)}`}
+              className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+              title="Manage SEO for this page"
+            >
+              <Search className="w-4 h-4" />
+            </Link>
+          )}
+          {canDelete && (
+            <button
+              onClick={onDelete}
+              title="Delete post"
+              className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </td>
     </tr>
@@ -603,10 +631,11 @@ const StatCard: React.FC<StatCardProps> = ({
 };
 
 // ── EmptyState ────────────────────────────────────────────────────────────────
-const EmptyState: React.FC<{ hasSearch: boolean; onClear: () => void }> = ({
-  hasSearch,
-  onClear,
-}) => (
+const EmptyState: React.FC<{
+  hasSearch: boolean;
+  onClear: () => void;
+  canCreate: boolean;
+}> = ({ hasSearch, onClear, canCreate }) => (
   <div className="text-center py-16 px-6">
     <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
       <BookOpen className="w-6 h-6 text-slate-400" />
@@ -627,12 +656,14 @@ const EmptyState: React.FC<{ hasSearch: boolean; onClear: () => void }> = ({
         Clear filters
       </button>
     ) : (
-      <Link
-        href="/admin/blog/add"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm rounded-xl hover:bg-slate-700 transition-colors"
-      >
-        <Plus className="w-4 h-4" /> Create first post
-      </Link>
+      canCreate && (
+        <Link
+          href="/admin/blog/add"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm rounded-xl hover:bg-slate-700 transition-colors"
+        >
+          <Plus className="w-4 h-4" /> Create first post
+        </Link>
+      )
     )}
   </div>
 );

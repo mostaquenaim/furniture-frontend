@@ -19,6 +19,7 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import useTicketDetail from "@/hooks/Tickets/useTicketDetail";
 import useAssignableStaff from "@/hooks/Tickets/useAssignableStaff";
 import { TicketPriority, TicketStatus } from "@/types/ticket.types";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 // ── Status / priority config (mirrors TicketsAdmin.tsx) ────────────────────────
 const TICKET_STATUS: Record<
@@ -73,6 +74,9 @@ export default function TicketDetail({ id }: { id: number | string }) {
 
   const { ticket, isLoading } = useTicketDetail(id);
   const { staff } = useAssignableStaff();
+  const canReply = useHasPermission("TICKET_REPLY");
+  const canAssign = useHasPermission("TICKET_ASSIGN");
+  const canManage = useHasPermission("TICKET_MANAGE");
 
   const [replyBody, setReplyBody] = useState("");
   const [isInternalNote, setIsInternalNote] = useState(false);
@@ -217,88 +221,96 @@ export default function TicketDetail({ id }: { id: number | string }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100">
-          {/* Assign dropdown */}
-          <div className="flex items-center gap-2">
-            <User className="w-3.5 h-3.5 text-gray-400" />
-            <select
-              value={""}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                if (val) assignMutation.mutate(val);
-              }}
-              disabled={assignMutation.isPending}
-              className="py-2 px-3 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400 text-gray-700"
-            >
-              <option value="">
-                {ticket.assignedTo?.name
-                  ? `Assigned: ${ticket.assignedTo.name}`
-                  : "Assign to…"}
-              </option>
-              {staff.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name ?? s.email} ({s.role})
-                </option>
-              ))}
-            </select>
-          </div>
+        {(canAssign || canManage) && (
+          <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100">
+            {/* Assign dropdown */}
+            {canAssign && (
+              <div className="flex items-center gap-2">
+                <User className="w-3.5 h-3.5 text-gray-400" />
+                <select
+                  value={""}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val) assignMutation.mutate(val);
+                  }}
+                  disabled={assignMutation.isPending}
+                  className="py-2 px-3 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400 text-gray-700"
+                >
+                  <option value="">
+                    {ticket.assignedTo?.name
+                      ? `Assigned: ${ticket.assignedTo.name}`
+                      : "Assign to…"}
+                  </option>
+                  {staff.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name ?? s.email} ({s.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-          {/* Priority dropdown */}
-          <select
-            value={ticket.priority}
-            onChange={(e) =>
-              priorityMutation.mutate(e.target.value as TicketPriority)
-            }
-            disabled={priorityMutation.isPending}
-            className="py-2 px-3 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400 text-gray-700"
-          >
-            {(Object.keys(TICKET_PRIORITY) as TicketPriority[]).map((p) => (
-              <option key={p} value={p}>
-                {TICKET_PRIORITY[p].label} Priority
-              </option>
-            ))}
-          </select>
+            {/* Priority dropdown */}
+            {canManage && (
+              <select
+                value={ticket.priority}
+                onChange={(e) =>
+                  priorityMutation.mutate(e.target.value as TicketPriority)
+                }
+                disabled={priorityMutation.isPending}
+                className="py-2 px-3 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400 text-gray-700"
+              >
+                {(Object.keys(TICKET_PRIORITY) as TicketPriority[]).map((p) => (
+                  <option key={p} value={p}>
+                    {TICKET_PRIORITY[p].label} Priority
+                  </option>
+                ))}
+              </select>
+            )}
 
-          {/* Explicit status action buttons */}
-          <div className="flex items-center gap-2 ml-auto">
-            {ticket.status === "OPEN" && (
-              <button
-                onClick={() => statusMutation.mutate("IN_PROGRESS")}
-                disabled={statusMutation.isPending}
-                className="px-3 py-2 text-xs font-medium bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
-              >
-                Mark In Progress
-              </button>
-            )}
-            {(ticket.status === "OPEN" || ticket.status === "IN_PROGRESS") && (
-              <button
-                onClick={() => statusMutation.mutate("RESOLVED")}
-                disabled={statusMutation.isPending}
-                className="px-3 py-2 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-              >
-                Mark Resolved
-              </button>
-            )}
-            {ticket.status !== "CLOSED" && (
-              <button
-                onClick={() => statusMutation.mutate("CLOSED")}
-                disabled={statusMutation.isPending}
-                className="px-3 py-2 text-xs font-medium bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-              >
-                Close Ticket
-              </button>
-            )}
-            {ticket.status === "CLOSED" && (
-              <button
-                onClick={() => statusMutation.mutate("OPEN")}
-                disabled={statusMutation.isPending}
-                className="px-3 py-2 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                Reopen Ticket
-              </button>
+            {/* Explicit status action buttons */}
+            {canManage && (
+              <div className="flex items-center gap-2 ml-auto">
+                {ticket.status === "OPEN" && (
+                  <button
+                    onClick={() => statusMutation.mutate("IN_PROGRESS")}
+                    disabled={statusMutation.isPending}
+                    className="px-3 py-2 text-xs font-medium bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                  >
+                    Mark In Progress
+                  </button>
+                )}
+                {(ticket.status === "OPEN" || ticket.status === "IN_PROGRESS") && (
+                  <button
+                    onClick={() => statusMutation.mutate("RESOLVED")}
+                    disabled={statusMutation.isPending}
+                    className="px-3 py-2 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  >
+                    Mark Resolved
+                  </button>
+                )}
+                {ticket.status !== "CLOSED" && (
+                  <button
+                    onClick={() => statusMutation.mutate("CLOSED")}
+                    disabled={statusMutation.isPending}
+                    className="px-3 py-2 text-xs font-medium bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                  >
+                    Close Ticket
+                  </button>
+                )}
+                {ticket.status === "CLOSED" && (
+                  <button
+                    onClick={() => statusMutation.mutate("OPEN")}
+                    disabled={statusMutation.isPending}
+                    className="px-3 py-2 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  >
+                    Reopen Ticket
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Thread */}
@@ -370,6 +382,7 @@ export default function TicketDetail({ id }: { id: number | string }) {
         </div>
 
         {/* Composer */}
+        {canReply && (
         <div className="border-t border-gray-100 p-4 space-y-2">
           <textarea
             value={replyBody}
@@ -414,6 +427,7 @@ export default function TicketDetail({ id }: { id: number | string }) {
             </button>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

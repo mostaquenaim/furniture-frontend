@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { useAttributeCRUD } from "@/hooks/Admin/Attributes/useAttributeCRUD";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 interface PaymentMethodFormData {
   displayName: string;
@@ -44,6 +45,7 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 const PaymentMethodsComp = () => {
   const { paymentMethods, isLoading, refetch } = useFetchPaymentMethods();
   const axiosSecure = useAxiosSecure();
+  const canManage = useHasPermission("PAYMENT_METHOD_MANAGE");
 
   const {
     editingId,
@@ -206,14 +208,14 @@ const PaymentMethodsComp = () => {
                       </label>
                     ) : (
                       <button
-                        disabled={isProcessing}
-                        onClick={() => handleQuickToggle(method)}
+                        disabled={isProcessing || !canManage}
+                        onClick={canManage ? () => handleQuickToggle(method) : undefined}
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition disabled:opacity-50 ${
                           method.isEnabled
                             ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
                             : "bg-red-100 text-red-600 hover:bg-red-200"
                         }`}
-                        title="Click to toggle"
+                        title={canManage ? "Click to toggle" : undefined}
                       >
                         {method.isEnabled ? "Enabled" : "Disabled"}
                       </button>
@@ -313,12 +315,14 @@ const PaymentMethodsComp = () => {
                           </button>
                         </>
                       ) : (
-                        <button
-                          onClick={() => handleEditInit(method)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
-                        >
-                          <Edit3 size={18} />
-                        </button>
+                        canManage && (
+                          <button
+                            onClick={() => handleEditInit(method)}
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                        )
                       )}
                     </div>
                   </td>

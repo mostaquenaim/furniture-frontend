@@ -14,6 +14,7 @@ import {
 import axios from "axios";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import useInventorySocket from "@/hooks/Inventory/useInventorySocket";
+import { useHasPermission } from "@/context/PermissionsContext";
 import {
   AdjustReason,
   InventoryListResponse,
@@ -34,6 +35,7 @@ const REASON_OPTIONS: { value: AdjustReason; label: string }[] = [
 export default function InventoryManagement() {
   const axiosSecure = useAxiosSecure();
   const searchParams = useSearchParams();
+  const canAdjustStock = useHasPermission("INVENTORY_MANAGE");
 
   const [rows, setRows] = useState<InventoryRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -308,22 +310,23 @@ export default function InventoryManagement() {
                         >
                           <History size={14} />
                         </button>
-                        {row.trackingMode === "PIECE_BARCODE" ? (
-                          <button
-                            disabled
-                            title="Piece-tracked — adjust via Receive/Return scans, not a manual quantity edit"
-                            className="px-3 py-1.5 text-xs font-medium text-gray-300 cursor-not-allowed rounded-lg"
-                          >
-                            Adjust
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => openAdjust(row)}
-                            className="px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                          >
-                            Adjust
-                          </button>
-                        )}
+                        {canAdjustStock &&
+                          (row.trackingMode === "PIECE_BARCODE" ? (
+                            <button
+                              disabled
+                              title="Piece-tracked — adjust via Receive/Return scans, not a manual quantity edit"
+                              className="px-3 py-1.5 text-xs font-medium text-gray-300 cursor-not-allowed rounded-lg"
+                            >
+                              Adjust
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => openAdjust(row)}
+                              className="px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            >
+                              Adjust
+                            </button>
+                          ))}
                       </div>
                     </td>
                   </tr>

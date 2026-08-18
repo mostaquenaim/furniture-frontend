@@ -10,6 +10,7 @@ import useFetchSubcategories from "@/hooks/Categories/Subcategories/useFetchSubc
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../../admin/Modal/DeleteConfirmationModal";
 import { Category } from "@/types/menu";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 interface ApiError {
   response?: { data?: { message?: string } };
@@ -21,6 +22,9 @@ const AllSubcategoriesComp = () => {
   const { subcategoryList, isLoading, refetch } = useFetchSubcategories({
     isActive: null,
   });
+  const canUpdate = useHasPermission("CATEGORY_UPDATE");
+  const canReorder = useHasPermission("CATEGORY_REORDER");
+  const canDelete = useHasPermission("CATEGORY_DELETE");
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -63,7 +67,9 @@ const AllSubcategoriesComp = () => {
         isSaving={false}
         onSave={handleSave}
         onEdit={(slug) => router.push(`/admin/subcategory/update/${slug}`)}
-        onDelete={(subcategory) => setDeleteTarget(subcategory)}
+        onDelete={canDelete ? (subcategory) => setDeleteTarget(subcategory) : undefined}
+        canEdit={canUpdate}
+        canReorder={canReorder}
       />
 
       <DeleteConfirmationModal

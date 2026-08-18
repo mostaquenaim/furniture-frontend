@@ -24,6 +24,7 @@ import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
 import useFetchHomepageGallery, {
   HomepageGalleryItem,
 } from "@/hooks/Homepage/Gallery/useFetchHomepageGallery";
+import { useHasPermission } from "@/context/PermissionsContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,9 @@ const toSlug = (name: string) =>
 const AllHomepageGalleryComp: React.FC = () => {
   const axiosSecure = useAxiosSecure();
   const { items, isLoading, refetch } = useFetchHomepageGallery();
+  const canCreate = useHasPermission("HOMEPAGE_GALLERY_CREATE");
+  const canUpdate = useHasPermission("HOMEPAGE_GALLERY_UPDATE");
+  const canDelete = useHasPermission("HOMEPAGE_GALLERY_DELETE");
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -285,7 +289,7 @@ const AllHomepageGalleryComp: React.FC = () => {
             Manage the marquee product gallery shown on the homepage
           </p>
         </div>
-        {!isAdding && (
+        {canCreate && !isAdding && (
           <button
             disabled={editingId !== null}
             onClick={handleAddNew}
@@ -525,7 +529,7 @@ const AllHomepageGalleryComp: React.FC = () => {
                     ) : (
                       <StatusBadge
                         isActive={item.isActive}
-                        onToggle={() => toggleStatus(item)}
+                        onToggle={canUpdate ? () => toggleStatus(item) : undefined}
                       />
                     )}
                   </td>
@@ -552,21 +556,25 @@ const AllHomepageGalleryComp: React.FC = () => {
                       </div>
                     ) : (
                       <div className="flex justify-end gap-1">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          disabled={isAdding}
-                          className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-30"
-                          title="Edit"
-                        >
-                          <Edit3 size={18} />
-                        </button>
-                        <button
-                          onClick={() => setDeleteId(item.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {canUpdate && (
+                          <button
+                            onClick={() => handleEdit(item)}
+                            disabled={isAdding}
+                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-30"
+                            title="Edit"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => setDeleteId(item.id)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
                       </div>
                     )}
                   </td>
@@ -587,13 +595,15 @@ const AllHomepageGalleryComp: React.FC = () => {
           <p className="text-sm text-gray-500 mb-4">
             Add products to display in the homepage marquee gallery
           </p>
-          <button
-            onClick={handleAddNew}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            <Plus size={16} />
-            Add Item
-          </button>
+          {canCreate && (
+            <button
+              onClick={handleAddNew}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <Plus size={16} />
+              Add Item
+            </button>
+          )}
         </div>
       )}
 
@@ -767,12 +777,15 @@ interface StatusBadgeProps {
 const StatusBadge: FC<StatusBadgeProps> = ({ isActive, onToggle }) => (
   <button
     onClick={onToggle}
-    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
+    disabled={!onToggle}
+    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+      onToggle ? "hover:scale-105 active:scale-95 cursor-pointer" : "cursor-default"
+    } ${
       isActive
         ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
     }`}
-    title="Click to toggle"
+    title={onToggle ? "Click to toggle" : undefined}
   >
     <span
       className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
