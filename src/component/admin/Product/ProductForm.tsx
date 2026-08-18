@@ -2,7 +2,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
-import { Save, X } from "lucide-react";
+import Link from "next/link";
+import { Save, X, Search } from "lucide-react";
 import { PageHeader } from "@/component/PageHeader/PageHeader";
 import { FormSection } from "@/component/admin/Product/FormSection";
 import {
@@ -79,8 +80,8 @@ export interface SizeDetail {
 }
 
 type UploadedImage =
-  | { url: string; serialNo: number; colorId?: never }
-  | { url: string; colorId: number; serialNo?: never };
+  | { url: string; serialNo: number; alt?: string; colorId?: never }
+  | { url: string; colorId: number; serialNo?: never; alt?: never };
 
 type ColorImageMap = Record<number, string[]>;
 
@@ -288,6 +289,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
         id: String(img.id),
         preview: img.image,
         serialNo: img.serialNo,
+        alt: img.alt ?? "",
         colorId: null,
         file: null,
       })) ?? [],
@@ -783,6 +785,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           defaultImages.map(async (img) => ({
             image: await uploadIfNew(img),
             serialNo: img.serialNo,
+            alt: img.alt?.trim() || undefined,
           })),
         );
 
@@ -860,7 +863,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           ...defaultImages.map(async (img) => {
             if (!img.file) return null;
             const url = await handleUploadWithCloudinary(img.file);
-            return { url, serialNo: img.serialNo };
+            return { url, serialNo: img.serialNo, alt: img.alt?.trim() || undefined };
           }),
           ...formData.selectedColors.flatMap((colorId) =>
             colorUseDefault[colorId]
@@ -882,7 +885,11 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
             (img): img is Extract<UploadedImage, { serialNo: number }> =>
               "serialNo" in img,
           )
-          .map((img) => ({ image: img.url, serialNo: img.serialNo }));
+          .map((img) => ({
+            image: img.url,
+            serialNo: img.serialNo,
+            alt: img.alt,
+          }));
 
         const colorImageMap = uploadedImages
           .filter(
@@ -1020,6 +1027,18 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           }
           backLink={isEditMode ? "/admin/products" : "/admin"}
         />
+
+        {isEditMode && formData.slug && (
+          <div className="flex justify-end -mt-4 mb-2">
+            <Link
+              href={`/admin/cms/seo?url=${encodeURIComponent(`/products/${formData.slug}`)}`}
+              className="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 hover:underline"
+            >
+              <Search size={12} />
+              Manage SEO for this page
+            </Link>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* ── Basic Information ── */}

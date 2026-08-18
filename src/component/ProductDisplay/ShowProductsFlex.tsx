@@ -62,7 +62,7 @@ const ShowProductsFlex = ({
                 >
                   <div className="aspect-3/4 bg-gray-100 mb-3 overflow-hidden relative">
                     <Image
-                      alt={product.title}
+                      alt={product.images?.[0]?.alt || product.title}
                       fill
                       className="object-cover"
                       src={

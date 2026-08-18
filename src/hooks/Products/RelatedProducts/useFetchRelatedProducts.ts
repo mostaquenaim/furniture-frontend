@@ -11,6 +11,7 @@ export interface RelatedProductImage {
   id?: number;
   image: string;
   serialNo?: number;
+  alt?: string | null;
 }
 
 export interface RelatedProduct {

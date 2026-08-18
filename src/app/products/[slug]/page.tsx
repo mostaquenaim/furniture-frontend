@@ -1,5 +1,6 @@
 import ProductPageComponent from '@/component/ProductDisplay/ShowEachProduct';
 import { Metadata } from 'next';
+import { getSeoOverride, seoOverrideToMetadata } from '@/lib/seo/getSeoOverride';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -21,18 +22,22 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const schema = await getProductSchema(slug);
+  const [schema, seoOverride] = await Promise.all([
+    getProductSchema(slug),
+    getSeoOverride(`/products/${slug}`),
+  ]);
   const productSchema = Array.isArray(schema)
     ? schema.find((s: { '@type': string }) => s['@type'] === 'Product')
     : null;
 
-  if (!productSchema) return { title: 'Product | Ondorkotha' };
+  if (!productSchema)
+    return seoOverrideToMetadata(seoOverride, { title: 'Product | Ondorkotha' });
 
   const images = Array.isArray(productSchema.image)
     ? productSchema.image.slice(0, 1)
     : [];
 
-  return {
+  return seoOverrideToMetadata(seoOverride, {
     title: `${productSchema.name} | Ondorkotha`,
     description: productSchema.description ?? 'Premium furniture at Ondorkotha',
     openGraph: {
@@ -40,7 +45,7 @@ export async function generateMetadata({
       description: productSchema.description ?? '',
       images,
     },
-  };
+  });
 }
 
 export default async function ProductById({

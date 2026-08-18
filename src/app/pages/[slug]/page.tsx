@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { StaticPage } from "@/types/static-page";
+import { getSeoOverride, seoOverrideToMetadata } from "@/lib/seo/getSeoOverride";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -22,13 +23,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const page = await getPage(slug);
+  const [page, seoOverride] = await Promise.all([
+    getPage(slug),
+    getSeoOverride(`/pages/${slug}`),
+  ]);
   if (!page) return { title: "Not Found" };
 
-  return {
+  return seoOverrideToMetadata(seoOverride, {
     title: page.metaTitle ?? `${page.title} | Ondorkotha`,
     description: page.metaDescription ?? undefined,
-  };
+  });
 }
 
 export default async function StaticPageRoute({

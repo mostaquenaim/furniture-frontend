@@ -17,6 +17,7 @@ export interface ProductImageItem {
   preview: string;
   colorId: number | null;
   serialNo: number;
+  alt?: string;
   originalSize?: number;
   optimizedSize?: number;
 }
@@ -75,6 +76,12 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
     onImagesChange(updated);
   };
 
+  const updateAlt = (imageId: string, alt: string) => {
+    onImagesChange(
+      images.map((img) => (img.id === imageId ? { ...img, alt } : img)),
+    );
+  };
+
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
   };
@@ -114,42 +121,50 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {images?.map((image, index) => (
-          <div
-            key={image.id}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            className={`group relative aspect-square rounded-lg overflow-hidden gray-border bg-background cursor-move ${
-              draggedIndex === index ? "opacity-50" : ""
-            }`}
-          >
-            <img
-              src={image.preview}
-              alt={`Product ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded p-1">
-              <GripVertical className="w-4 h-4 text-foreground" />
-            </div>
-            <button
-              type="button"
-              onClick={() => removeImage(image.id)}
-              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+          <div key={image.id} className="flex flex-col gap-1">
+            <div
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`group relative aspect-square rounded-lg overflow-hidden gray-border bg-background cursor-move ${
+                draggedIndex === index ? "opacity-50" : ""
+              }`}
             >
-              <X className="w-3 h-3" />
-            </button>
-            <div className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm rounded px-2 py-0.5 text-xs font-medium">
-              #{image.serialNo}
-            </div>
-            {image.originalSize && image.optimizedSize && (
-              <div className="absolute bottom-2 right-2 bg-green-500/90 backdrop-blur-sm rounded px-1.5 py-0.5 text-xs text-white">
-                {Math.round(
-                  (1 - image.optimizedSize / image.originalSize) * 100
-                )}
-                % smaller
+              <img
+                src={image.preview}
+                alt={image.alt || `Product ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded p-1">
+                <GripVertical className="w-4 h-4 text-foreground" />
               </div>
-            )}
+              <button
+                type="button"
+                onClick={() => removeImage(image.id)}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <div className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm rounded px-2 py-0.5 text-xs font-medium">
+                #{image.serialNo}
+              </div>
+              {image.originalSize && image.optimizedSize && (
+                <div className="absolute bottom-2 right-2 bg-green-500/90 backdrop-blur-sm rounded px-1.5 py-0.5 text-xs text-white">
+                  {Math.round(
+                    (1 - image.optimizedSize / image.originalSize) * 100
+                  )}
+                  % smaller
+                </div>
+              )}
+            </div>
+            <input
+              type="text"
+              value={image.alt ?? ""}
+              onChange={(e) => updateAlt(image.id, e.target.value)}
+              placeholder="Alt text (for SEO/accessibility)"
+              className="w-full px-2 py-1 text-xs gray-border rounded focus:outline-none focus:border-primary"
+            />
           </div>
         ))}
 

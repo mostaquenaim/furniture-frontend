@@ -57,6 +57,7 @@ export interface ProductImage {
   id: number;
   image: string;
   serialNo: number;
+  alt?: string | null;
   productId: number;
 }
 

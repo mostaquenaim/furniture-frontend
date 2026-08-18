@@ -113,7 +113,10 @@ export function QuickShopModal({
           </div>
           <img
             src={sortedImages[currentImageIndex]?.image}
-            alt={product.title}
+            alt={
+              (sortedImages[currentImageIndex] as { alt?: string })?.alt ||
+              product.title
+            }
             className="w-full h-full object-cover aspect-square md:aspect-auto"
           />
 

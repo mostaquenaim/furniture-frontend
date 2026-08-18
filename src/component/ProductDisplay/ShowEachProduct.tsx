@@ -672,7 +672,10 @@ export default function ShowEachProduct() {
                     displayImages[activeImgIndex]?.image) ||
                   ""
                 }
-                alt={product.title}
+                alt={
+                  (displayImages?.[activeImgIndex] as { alt?: string })
+                    ?.alt || product.title
+                }
                 className="w-20 h-24 object-cover"
               />
               <div className="flex-1">
@@ -716,7 +719,7 @@ export default function ShowEachProduct() {
                 >
                   <img
                     src={img.image}
-                    alt="thumbnail"
+                    alt={img.alt || `${product.title} thumbnail ${idx + 1}`}
                     className="w-full aspect-4/5 object-cover"
                   />
                 </button>
@@ -758,7 +761,10 @@ export default function ShowEachProduct() {
 
             <img
               src={displayImages?.[activeImgIndex]?.image || ""}
-              alt={product.title}
+              alt={
+                (displayImages?.[activeImgIndex] as { alt?: string })?.alt ||
+                product.title
+              }
               onClick={() => setIsLightboxOpen(true)}
               className="w-full h-full object-cover transition-opacity duration-300"
               style={{
@@ -1150,7 +1156,10 @@ export default function ShowEachProduct() {
           >
             <img
               src={displayImages?.[activeImgIndex]?.image || ""}
-              alt={product.title}
+              alt={
+                (displayImages?.[activeImgIndex] as { alt?: string })?.alt ||
+                product.title
+              }
               onClick={(e) => e.stopPropagation()}
               className="max-w-full max-h-screen object-contain select-none"
               style={{ touchAction: "pinch-zoom" }}

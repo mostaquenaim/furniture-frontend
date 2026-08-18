@@ -3,6 +3,8 @@
 
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Search } from "lucide-react";
 import { FiUpload, FiX } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -312,6 +314,15 @@ const AddOrUpdateCategoryComp = () => {
           }`}
           required
         />
+        {isUpdateMode && formData.slug && (
+          <Link
+            href={`/admin/cms/seo?url=${encodeURIComponent(`/categories/${formData.slug}`)}`}
+            className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 hover:underline"
+          >
+            <Search size={12} />
+            Manage SEO for this page
+          </Link>
+        )}
       </div>
 
       {/* Image */}

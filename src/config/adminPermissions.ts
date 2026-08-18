@@ -13,6 +13,7 @@ import {
   Boxes,
   RotateCcw,
   Ticket,
+  Search,
 } from "lucide-react";
 import { MdCategory } from "react-icons/md";
 import type { ElementType } from "react";
@@ -187,6 +188,13 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
         icon: FileText,
         sub: [
           { href: "/admin/cms/static-pages", label: "All Pages", requiredAction: "CMS_STATIC_PAGE_MANAGE" },
+        ],
+      },
+      {
+        name: "SEO",
+        icon: Search,
+        sub: [
+          { href: "/admin/cms/seo", label: "Page Meta", requiredAction: "SEO_MANAGE" },
         ],
       },
       {

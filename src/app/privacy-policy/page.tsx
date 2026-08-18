@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
+import { getSeoOverride, seoOverrideToMetadata } from "@/lib/seo/getSeoOverride";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -22,10 +23,13 @@ async function getCompany(): Promise<Company | null> {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const company = await getCompany();
-  return {
+  const [company, seoOverride] = await Promise.all([
+    getCompany(),
+    getSeoOverride("/privacy-policy"),
+  ]);
+  return seoOverrideToMetadata(seoOverride, {
     title: `Privacy Policy | ${company?.name ?? "Ondorkotha"}`,
-  };
+  });
 }
 
 export default async function PrivacyPolicyPage() {
