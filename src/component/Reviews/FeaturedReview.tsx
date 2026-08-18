@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 const styles = `
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&family=Jost:wght@300;400;500&display=swap');
 
-.sakigai-slim-text { font-family: 'Jost', sans-serif; }
-.sakigai-slim-display { font-family: 'Cormorant Garamond', serif; }
+.ondorkotha-slim-text { font-family: 'Jost', sans-serif; }
+.ondorkotha-slim-display { font-family: 'Cormorant Garamond', serif; }
 `;
 
 const StarIcon = ({ filled }: { filled: boolean }) => (
@@ -56,24 +56,24 @@ const FeaturedReview = () => {
                 <StarIcon key={s} filled={s <= (review.rating ?? 5)} />
               ))}
             </div>
-            <span className="sakigai-slim-text text-[9px] tracking-[0.2em] text-[#c9a96e] uppercase font-bold">
+            <span className="ondorkotha-slim-text text-[9px] tracking-[0.2em] text-[#c9a96e] uppercase font-bold">
               Customer Favorite
             </span>
           </div>
 
           {/* Middle: The Quote (Full width on mobile) */}
           <div className="flex-1 px-0 md:px-10 text-center">
-            <p className="sakigai-slim-display italic text-[1.15rem] md:text-[1.3rem] text-[#ede8df] leading-relaxed line-clamp-3 md:line-clamp-2">
+            <p className="ondorkotha-slim-display italic text-[1.15rem] md:text-[1.3rem] text-[#ede8df] leading-relaxed line-clamp-3 md:line-clamp-2">
               “{review.comment}”
             </p>
           </div>
 
           {/* Right Side / Mobile Attribution */}
           <div className="md:pl-8 md:border-l border-[#1a1814] text-center md:text-left">
-            <p className="sakigai-slim-text text-[11px] font-medium text-[#ede8df] uppercase tracking-wider mb-0.5">
+            <p className="ondorkotha-slim-text text-[11px] font-medium text-[#ede8df] uppercase tracking-wider mb-0.5">
               {userName}
             </p>
-            <p className="sakigai-slim-text text-[10px] text-[#7a6e5e]">
+            <p className="ondorkotha-slim-text text-[10px] text-[#7a6e5e]">
               Verified Buyer <span className="hidden sm:inline">—</span> <br className="sm:hidden" />
               <span className="text-[#c9a96e] font-medium ml-1 md:ml-0">{productTitle}</span>
             </p>

@@ -298,7 +298,6 @@ export default function ShowEachProduct() {
       (s: any) => s.id === (selectedSizeId || color?.sizes?.[0]?.id),
     );
 
-    // console.log(color, size, "currentVariant");
     return { color, size };
   }, [product, selectedColorId, selectedSizeId]);
 
@@ -356,8 +355,6 @@ export default function ShowEachProduct() {
         productSizeId,
         quantity: quantity,
       };
-
-      // console.log("Payload:", payload);
 
       const hasUser = isAuthenticated();
 
