@@ -202,7 +202,7 @@ const SmsAppBanner: React.FC = () => (
           Get the message!
         </h4>
         <p className="text-sm">
-          sign up for SMS texts for **INSTANT** access to new arrivals, events &
+          sign up for SMS texts for <span className="font-bold">INSTANT</span> access to new arrivals, events &
           OMG sales
         </p>
       </div>
@@ -377,12 +377,12 @@ const Footer: React.FC = () => {
           <div className="flex flex-col lg:flex-row justify-between gap-4">
             <div className="max-w-7xl mx-auto lg:mx-0 px-4 flex flex-wrap justify-center lg:justify-between items-center">
               {/* Legal Links (Responsive: stacked on mobile, in line on desktop) */}
-              <div className="flex flex-row flex-wrap sm:space-y-0 sm:space-x-3 sm:text-left space-y-2 items-center justify-center ">
+              <div className="flex flex-col sm:flex-row flex-wrap sm:space-y-0 sm:space-x-3 sm:text-left space-y-2 items-center justify-center">
                 {legalLinks?.map((link, idx) => (
                   <a
                     key={link.label}
                     href={link.href}
-                    className={`hover:underline blue-link px-2 ${idx != legalLinks.length - 1 ? "border-gray-200 border-r-2" : ""}`}
+                    className={`hover:underline blue-link pr-3 ${idx != legalLinks.length - 1 ? "border-gray-200 border-r-2" : ""}`}
                   >
                     {link.label}
                   </a>
