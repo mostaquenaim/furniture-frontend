@@ -12,6 +12,10 @@ import {
   GTMNoScript,
   GTMScript,
 } from "@/component/TagManager/GoogleTagManager";
+import {
+  MetaPixelNoScript,
+  MetaPixelScript,
+} from "@/component/TagManager/MetaPixel";
 import WhatsAppButton from "@/component/WhatsApp/WhatsAppButton";
 import { Suspense } from "react";
 import PageViewTracker from "@/component/PageView/PageViewTracker";
@@ -40,6 +44,7 @@ interface Company {
   metaDescription: string | null;
   favicon: string | null;
   ogImage: string | null;
+  metaPixelId: string | null;
 }
 
 async function getCompany(): Promise<Company | null> {
@@ -68,18 +73,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const company = await getCompany();
+
   return (
     <html lang="en" className={`${bodoni.variable} ${cinzel.variable} regular`}>
       <head>
         <GTMScript />
+        <MetaPixelScript pixelId={company?.metaPixelId ?? null} />
       </head>
       <body>
         <GTMNoScript />
+        <MetaPixelNoScript pixelId={company?.metaPixelId ?? null} />
         <Providers>
           {/* page view tracker */}
           <Suspense fallback={null}>

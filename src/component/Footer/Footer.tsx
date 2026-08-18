@@ -361,7 +361,7 @@ const Footer: React.FC = () => {
           )}
 
           {/* Country Links */}
-          <div className="flex flex-wrap justify-center mb-2 lg:mb-0 pb-8 space-y-2">
+          {/* <div className="flex flex-wrap justify-center mb-2 lg:mb-0 pb-8 space-y-2">
             {countries?.map((country, idx) => (
               <Link
                 key={country}
@@ -373,7 +373,7 @@ const Footer: React.FC = () => {
                 {country}
               </Link>
             ))}
-          </div>
+          </div> */}
           <div className="flex flex-col lg:flex-row justify-between gap-4">
             <div className="max-w-7xl mx-auto lg:mx-0 px-4 flex flex-wrap justify-center lg:justify-between items-center">
               {/* Legal Links (Responsive: stacked on mobile, in line on desktop) */}
