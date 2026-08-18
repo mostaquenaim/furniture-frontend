@@ -31,6 +31,7 @@ interface CompanyInfo {
   metaTitle: string | null;
   metaDescription: string | null;
   ogImage: string | null;
+  metaPixelId: string | null;
   updatedAt: string;
 }
 
@@ -911,6 +912,22 @@ export default function CompanyInfoComp() {
                   </div>
                 </div>
               )}
+            </Section>
+
+            <Section
+              title="Tracking & analytics"
+              description="Injected site-wide once set — leave blank to skip"
+            >
+              <Field
+                label="Meta Pixel ID"
+                hint="From Meta Events Manager — enables Facebook/Instagram ad conversion tracking"
+              >
+                <Input
+                  value={val("metaPixelId")}
+                  onChange={(v) => set("metaPixelId", v)}
+                  placeholder="123456789012345"
+                />
+              </Field>
             </Section>
           </div>
         )}
