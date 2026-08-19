@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getSeoOverride, seoOverrideToMetadata } from "@/lib/seo/getSeoOverride";
+import {
+  getSeoOverride,
+  seoOverrideToMetadata,
+} from "@/lib/seo/getSeoOverride";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -35,11 +38,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PrivacyPolicyPage() {
   const company = await getCompany();
 
-  if (!company || !company.privacyPolicy) notFound();
-
   return (
     <main className="max-w-3xl mx-auto px-4 md:px-8 py-16 text-[#222222]">
       <h1 className="text-3xl font-light mb-10">Privacy Policy</h1>
+      {!company || !company.privacyPolicy ? (
+        <p className="text-sm text-gray-500">
+          No privacy policy available right now.
+        </p>
+      ) : null}
       <div
         className="prose-static"
         dangerouslySetInnerHTML={{ __html: company.privacyPolicy }}
