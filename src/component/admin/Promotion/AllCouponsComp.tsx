@@ -25,6 +25,7 @@ import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
 import useFetchCoupons from "@/hooks/Promotion/useFetchCoupons";
 import useFetchCategories from "@/hooks/Categories/Categories/useFetchCategories";
 import { useHasPermission } from "@/context/PermissionsContext";
+import DemoGenerateButton from "@/component/admin/DemoGenerateButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -380,16 +381,19 @@ const AllCouponsComp: React.FC = () => {
             Create and manage promotional coupon codes
           </p>
         </div>
-        {!isAdding && canCreate && (
-          <button
-            disabled={editingId !== null}
-            onClick={handleAddNew}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Plus size={16} />
-            Add Coupon
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          <DemoGenerateButton entity="coupon" onGenerated={refetch} />
+          {!isAdding && canCreate && (
+            <button
+              disabled={editingId !== null}
+              onClick={handleAddNew}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus size={16} />
+              Add Coupon
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table */}

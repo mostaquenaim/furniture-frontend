@@ -11,6 +11,7 @@ import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../../admin/Modal/DeleteConfirmationModal";
 import { Category } from "@/types/menu";
 import { useHasPermission } from "@/context/PermissionsContext";
+import DemoGenerateButton from "@/component/admin/DemoGenerateButton";
 
 interface ApiError {
   response?: { data?: { message?: string } };
@@ -57,6 +58,10 @@ const AllCategoriesComp = () => {
 
   return (
     <>
+      <div className="flex justify-end">
+        <DemoGenerateButton entity="category" onGenerated={refetch} />
+      </div>
+
       <GenericReorderTable
         title="Product Categories"
         description="Drag categories to reorder them within their series."

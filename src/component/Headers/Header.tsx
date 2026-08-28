@@ -431,13 +431,13 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const res = await axiosSecure.post("/auth/logout");
-      logout();
-      setLoading(false);
+      await axiosSecure.post("/auth/logout");
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
+      logout();
       setLoading(false);
     }
   };

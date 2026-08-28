@@ -27,14 +27,6 @@ export const hasRequiredRole = (requiredRoles: string[]): boolean => {
   return requiredRoles.includes(userRole);
 };
 
-export const logout = (): void => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  //   localStorage.removeItem('userData');
-  window.location.href = "/";
-};
-
 export const getToken = (): string | null => {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("token");

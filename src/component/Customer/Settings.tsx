@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import {
   User,
   Bell,
@@ -48,6 +51,9 @@ const Settings = () => {
   const [activeSection, setActiveSection] = useState<string>("profile");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const router = useRouter();
+  const { logout } = useAuth();
+  const axiosSecure = useAxiosSecure();
 
   // User profile data
   const [profile, setProfile] = useState({
@@ -193,9 +199,15 @@ const Settings = () => {
     );
   };
 
-  const handleLogout = () => {
-    // Handle logout logic
-    console.log("Logging out...");
+  const handleLogout = async () => {
+    try {
+      await axiosSecure.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      logout();
+      router.push("/");
+    }
   };
 
   const ProfileSection = () => (

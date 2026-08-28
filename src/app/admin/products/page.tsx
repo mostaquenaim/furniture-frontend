@@ -14,6 +14,7 @@ import {
   SubCategoryRelation,
 } from "@/types/product.types";
 import { Search } from "lucide-react";
+import DemoGenerateButton from "@/component/admin/DemoGenerateButton";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -134,6 +135,7 @@ const AllProducts = () => {
         <h1 className="text-2xl font-semibold text-gray-800">All Products</h1>
 
         <div className="flex items-center gap-3">
+          <DemoGenerateButton entity="product" onGenerated={refetch} />
           <button
             onClick={handleRefresh}
             disabled={isFetching}

@@ -4,6 +4,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import toast from "react-hot-toast";
@@ -12,6 +13,18 @@ import axios from "axios";
 import { mergeGuestUserWithRealUser } from "@/utils/merge";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { pushGTMEvent } from "@/lib/gtm";
+
+// Demo login credentials for public demo deployments — kept in sync by hand
+// with the demo accounts created in the backend's prisma/seed.ts.
+const IS_DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+const DEMO_ACCOUNTS = [
+  { role: "Super Admin", email: "demo-admin@sakigai.com" },
+  { role: "Product Manager", email: "demo-productmanager@sakigai.com" },
+  { role: "Order Manager", email: "demo-ordermanager@sakigai.com" },
+  { role: "Support", email: "demo-support@sakigai.com" },
+  { role: "Customer", email: "demo-customer@sakigai.com" },
+];
+const DEMO_PASSWORD = "Demo@1234";
 
 type ModalView =
   | "signin"
@@ -57,6 +70,7 @@ export default function AuthModal({
 
   const axiosPublic = useAxiosPublic();
   const { setUser, setToken } = useAuth();
+  const router = useRouter();
 
   // validate password
   const validatePassword = (password: string) => {
@@ -215,9 +229,10 @@ export default function AuthModal({
         toast.success(`Welcome to Ondorkotha`);
         handleView("signin");
         onClose();
-        // data.user.role === "CUSTOMER"
-        //   ? router.push("/")
-        //   : router.push("/admin/dashboard");
+
+        if (data.user.role !== "CUSTOMER") {
+          router.push("/admin");
+        }
       }
     } catch (err: unknown) {
       let errorMessage = "";
@@ -359,7 +374,10 @@ export default function AuthModal({
       toast.success(`Welcome to Ondorkotha`);
       handleView("signin");
       onClose();
-      // router.push("/");
+
+      if (data.user.role !== "CUSTOMER") {
+        router.push("/admin");
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
@@ -506,6 +524,22 @@ export default function AuthModal({
                 Sign in so you can save items to your wishlists, track your
                 orders, and check out faster!
               </p>
+              {/* demo credentials — public demo deployments only */}
+              {IS_DEMO_MODE && (
+                <div className="mb-6 rounded border border-amber-200 bg-amber-50 p-4 text-xs text-gray-700">
+                  <p className="mb-2 font-semibold text-amber-800">
+                    Demo credentials (password: {DEMO_PASSWORD})
+                  </p>
+                  <ul className="space-y-1">
+                    {DEMO_ACCOUNTS.map((account) => (
+                      <li key={account.email} className="flex justify-between gap-2">
+                        <span className="text-gray-500">{account.role}</span>
+                        <span className="font-mono">{account.email}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {/* google sign in */}
               <GoogleSignInButton />
               {/* or line */}

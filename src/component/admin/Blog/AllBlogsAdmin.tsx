@@ -29,6 +29,7 @@ import useFetchBlogCategories, { BlogCategory } from "@/hooks/Blog/useFetchBlogC
 import useFetchBlogsAdmin from "@/hooks/Admin/Blog/useFetchBlogsAdmin";
 import { BlogPost } from "@/types/blog";
 import { useHasPermission } from "@/context/PermissionsContext";
+import DemoGenerateButton from "@/component/admin/DemoGenerateButton";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type FilterStatus = "all" | "published" | "draft";
@@ -189,15 +190,18 @@ const AllBlogsAdminComp: React.FC = () => {
               Manage and publish your editorial content
             </p>
           </div>
-          {canCreate && (
-            <Link
-              href="/admin/blog/add"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-xl hover:bg-slate-700 transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              New Post
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+            <DemoGenerateButton entity="blog-post" onGenerated={refetch} />
+            {canCreate && (
+              <Link
+                href="/admin/blog/add"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-xl hover:bg-slate-700 transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                New Post
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
