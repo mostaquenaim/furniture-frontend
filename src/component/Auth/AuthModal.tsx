@@ -178,17 +178,21 @@ export default function AuthModal({
         payload.email = email;
       }
 
+      if (password.trim()) {
+        payload.password = password;
+      }
+
       const res = await axiosPublic.post("/auth/signin", payload, {
         withCredentials: true,
       });
 
-      setReceivedOtp(
-        res.data.otpDetails.message
-          ? res.data.otpDetails.message
-          : res.data.otpDetails,
-      );
-
       const data = res.data;
+
+      if (data.otpDetails) {
+        setReceivedOtp(
+          data.otpDetails.message ? data.otpDetails.message : data.otpDetails,
+        );
+      }
 
       if (data.otpSentTo) {
         setVerificationTarget(data.otpSentTo);
@@ -409,13 +413,12 @@ export default function AuthModal({
   const passWordField = () => {
     return (
       <div className="mb-4">
-        <label className="block text-sm mb-2">Password*</label>
+        <label className="block text-sm mb-2">Password (optional)</label>
         <input
           type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-gray-500"
-          required
         />
         <button
           type="button"
@@ -538,7 +541,7 @@ export default function AuthModal({
                 </div>
 
                 {/* password  */}
-                {/* {passWordField()} */}
+                {passWordField()}
 
                 <div className="flex items-center mb-4">
                   <input

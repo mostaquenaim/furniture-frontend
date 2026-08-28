@@ -143,7 +143,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
 
 export default function ShowEachProduct() {
   const { slug } = useParams<{ slug: string }>();
-  const { refetch } = useCartCount();
+  const { cartCount, refetch } = useCartCount();
   const { product, isLoading } = useFetchAProduct(slug);
   devLog('single product,', product);
   const {
@@ -189,6 +189,7 @@ export default function ShowEachProduct() {
   const [showCartPreview, setShowCartPreview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingBuyNow, setPendingBuyNow] = useState(false);
+  const [showBuyNowConfirm, setShowBuyNowConfirm] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [isZoomed, setIsZoomed] = useState(false);
@@ -486,9 +487,23 @@ export default function ShowEachProduct() {
       return;
     }
 
+    // Buy Now checks out only this product — anything already in the cart
+    // would otherwise ride along into the same order, so we confirm before
+    // wiping it. Skipped when the cart is already empty.
+    if (cartCount > 0) {
+      setShowBuyNowConfirm(true);
+      return;
+    }
+
+    await proceedBuyNow();
+  };
+
+  const proceedBuyNow = async () => {
     setIsAdding(true);
     try {
       const productSizeId = selectedSizeId || currentVariant?.color?.sizes?.[0]?.id;
+
+      await axiosSecure.delete("/cart/clear");
       await axiosSecure.post("/cart/items", { productSizeId, quantity });
 
       refetch();
@@ -532,7 +547,7 @@ export default function ShowEachProduct() {
         });
       }
 
-      router.push("/cart");
+      router.push("/checkout");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         const errorMessage = (err.response?.data as { message?: string })?.message;
@@ -1131,6 +1146,38 @@ export default function ShowEachProduct() {
           }
         }}
       />
+
+      {/* Buy Now confirmation — warns before wiping existing cart items */}
+      {showBuyNowConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-2xl w-100 max-w-full p-6 space-y-4">
+            <h3 className="text-lg font-bold">Buy this item now?</h3>
+            <p className="text-sm text-gray-600">
+              You already have {cartCount} item{cartCount > 1 ? "s" : ""} in
+              your cart. Buying now will remove{" "}
+              {cartCount > 1 ? "them" : "it"} and check out only this
+              product.
+            </p>
+            <div className="flex justify-end gap-2 mt-2">
+              <button
+                onClick={() => setShowBuyNowConfirm(false)}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowBuyNowConfirm(false);
+                  proceedBuyNow();
+                }}
+                className="px-4 py-2 bg-[#4a5568] text-white rounded-lg text-sm hover:bg-black cursor-pointer"
+              >
+                Clear Cart & Buy Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox */}
       {isLightboxOpen && (
