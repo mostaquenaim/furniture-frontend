@@ -30,7 +30,9 @@ function SaleCard({ product }: { product: Product }) {
   const [hovered, setHovered] = useState(false);
   const secondImage = product.images?.sort((a, b) => a.serialNo - b.serialNo)[1];
 
-  const hasDiscount = product.basePrice - product.price >= 1;
+  // price is null when no discount is set — fall back to basePrice
+  const salePrice = product.price ?? product.basePrice;
+  const hasDiscount = product.basePrice - salePrice >= 1;
   const discountLabel =
     product.discountType === "PERCENT"
       ? `${product.discount}% Off`
@@ -67,7 +69,7 @@ function SaleCard({ product }: { product: Product }) {
 
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-semibold text-red-600">
-          ৳{product.price?.toLocaleString()}
+          ৳{salePrice?.toLocaleString()}
         </span>
         {hasDiscount && (
           <span className="text-[10px] text-gray-400 line-through">

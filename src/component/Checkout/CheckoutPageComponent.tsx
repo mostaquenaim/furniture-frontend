@@ -465,7 +465,7 @@ const CheckoutPageComponent = () => {
             </div>
 
             {/* Zone - only show if district selected */}
-            {address.districtId && (
+            {!!address.districtId && (
               <div>
                 <label className="text-xs font-bold uppercase tracking-wide block mb-3">
                   Zone*

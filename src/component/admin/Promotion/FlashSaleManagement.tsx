@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
+import { formatDateTime, toDateTimeLocal } from "@/utils/datetime";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -73,15 +74,6 @@ const DEFAULT_FORM: FormData = {
 const inputCls =
   "block w-full text-sm border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors bg-white border-gray-300";
 
-const toLocalDateTime = (iso: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}`;
-};
-
 function getStatus(sale: {
   isActive: boolean;
   startDate: string;
@@ -99,11 +91,7 @@ function getStatus(sale: {
   return { label: "Live", color: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" };
 }
 
-const fmt = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+const fmt = formatDateTime;
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -145,8 +133,8 @@ const FlashSaleManagement: React.FC = () => {
           title: sale.title,
           subtitle: sale.subtitle ?? "",
           bannerText: sale.bannerText ?? "",
-          startDate: toLocalDateTime(sale.startDate),
-          endDate: toLocalDateTime(sale.endDate),
+          startDate: toDateTimeLocal(sale.startDate),
+          endDate: toDateTimeLocal(sale.endDate),
           isActive: sale.isActive,
         });
         setSelectedProducts(sale.products.map((p) => p.product));

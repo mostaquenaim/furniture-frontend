@@ -225,7 +225,7 @@ const SizeRow = memo(
             }
             className="w-32 px-2 py-1 text-xs border border-slate-200 rounded bg-white outline-none"
           >
-            <option value="">Default</option>
+            <option value="">Default (product)</option>
             <option value="PERCENT">Percent (%)</option>
             <option value="FIXED">Fixed (৳)</option>
           </select>
@@ -277,7 +277,7 @@ const SizeRow = memo(
           )}
         </td>
         <td className="py-3 font-semibold text-sm text-green-700">
-          ৳{parseInt(finalPrice).toLocaleString()}
+          ৳{Number(finalPrice).toLocaleString()}
         </td>
         <td className="py-3 text-right pr-2">
           {hasCustomDiscount && (

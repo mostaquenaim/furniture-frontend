@@ -26,6 +26,12 @@ import useFetchCoupons from "@/hooks/Promotion/useFetchCoupons";
 import useFetchCategories from "@/hooks/Categories/Categories/useFetchCategories";
 import { useHasPermission } from "@/context/PermissionsContext";
 import DemoGenerateButton from "@/component/admin/DemoGenerateButton";
+import {
+  formatDateTime,
+  fromDateTimeLocal,
+  startOfTodayLocal,
+  toDateTimeLocal,
+} from "@/utils/datetime";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,8 +81,6 @@ interface ApiError {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const toDateInputValue = (iso: string) => iso?.slice(0, 10) ?? "";
-
 const DEFAULT_FORM: CouponFormData = {
   code: "",
   discountType: "PERCENTAGE",
@@ -84,7 +88,7 @@ const DEFAULT_FORM: CouponFormData = {
   minOrderValue: "",
   maxDiscount: "",
   expiryDate: "",
-  startDate: new Date().toISOString().slice(0, 10),
+  startDate: "",
   isActive: true,
   usageLimit: "",
   perUserLimit: "",
@@ -129,7 +133,7 @@ function formatDiscountValue(coupon: Coupon): string {
   if (coupon.discountType === "PERCENTAGE")
     return coupon.discountValue != null ? `${coupon.discountValue}%` : "—";
   if (coupon.discountType === "FIXED_AMOUNT")
-    return coupon.discountValue != null ? `$${coupon.discountValue}` : "—";
+    return coupon.discountValue != null ? `৳${coupon.discountValue}` : "—";
   return "—";
 }
 
@@ -185,9 +189,33 @@ const AllCouponsComp: React.FC = () => {
     )
       errors.discountValue = "Percentage must be between 1 and 100";
 
-    if (!formData.expiryDate) errors.expiryDate = "Expiry date is required";
-    else if (new Date(formData.expiryDate) <= new Date(formData.startDate))
-      errors.expiryDate = "Expiry date must be after start date";
+    if (
+      formData.discountType === "FIXED_AMOUNT" &&
+      Number(formData.discountValue) <= 0
+    )
+      errors.discountValue = "Amount must be greater than 0";
+
+    if (
+      formData.maxDiscount &&
+      (isNaN(Number(formData.maxDiscount)) || Number(formData.maxDiscount) <= 0)
+    )
+      errors.maxDiscount = "Max discount must be greater than 0";
+
+    if (
+      formData.minOrderValue &&
+      (isNaN(Number(formData.minOrderValue)) ||
+        Number(formData.minOrderValue) < 0)
+    )
+      errors.minOrderValue = "Min order cannot be negative";
+
+    if (!formData.startDate) errors.startDate = "Start date & time is required";
+    if (!formData.expiryDate)
+      errors.expiryDate = "Expiry date & time is required";
+    else if (
+      formData.startDate &&
+      new Date(formData.expiryDate) <= new Date(formData.startDate)
+    )
+      errors.expiryDate = "Expiry must be after start";
 
     if (
       formData.usageLimit &&
@@ -214,14 +242,14 @@ const AllCouponsComp: React.FC = () => {
       !formData.discountValue
     )
       return false;
-    if (!formData.expiryDate) return false;
+    if (!formData.startDate || !formData.expiryDate) return false;
     return true;
   }, [formData]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
   const resetForm = useCallback(() => {
-    setFormData(DEFAULT_FORM);
+    setFormData({ ...DEFAULT_FORM, startDate: startOfTodayLocal() });
     setValidationErrors({});
   }, []);
 
@@ -248,8 +276,8 @@ const AllCouponsComp: React.FC = () => {
       discountValue: coupon.discountValue?.toString() ?? "",
       minOrderValue: coupon.minOrderValue?.toString() ?? "",
       maxDiscount: coupon.maxDiscount?.toString() ?? "",
-      expiryDate: toDateInputValue(coupon.expiryDate),
-      startDate: toDateInputValue(coupon.startDate),
+      expiryDate: toDateTimeLocal(coupon.expiryDate),
+      startDate: toDateTimeLocal(coupon.startDate),
       isActive: coupon.isActive,
       usageLimit: coupon.usageLimit?.toString() ?? "",
       perUserLimit: coupon.perUserLimit?.toString() ?? "",
@@ -288,8 +316,8 @@ const AllCouponsComp: React.FC = () => {
         : Number(data.discountValue),
     minOrderValue: data.minOrderValue ? Number(data.minOrderValue) : null,
     maxDiscount: data.maxDiscount ? Number(data.maxDiscount) : null,
-    expiryDate: new Date(data.expiryDate).toISOString(),
-    startDate: new Date(data.startDate).toISOString(),
+    expiryDate: fromDateTimeLocal(data.expiryDate),
+    startDate: fromDateTimeLocal(data.startDate),
     isActive: data.isActive,
     usageLimit: data.usageLimit ? Number(data.usageLimit) : null,
     perUserLimit: data.perUserLimit ? Number(data.perUserLimit) : null,
@@ -533,7 +561,7 @@ const AllCouponsComp: React.FC = () => {
                         </div>
                         {coupon.maxDiscount && (
                           <div className="text-xs text-gray-400">
-                            Max: ${coupon.maxDiscount}
+                            Max: ৳{coupon.maxDiscount}
                           </div>
                         )}
                       </div>
@@ -555,7 +583,7 @@ const AllCouponsComp: React.FC = () => {
                           <div>
                             Min order:{" "}
                             <span className="font-medium text-gray-900">
-                              ${coupon.minOrderValue}
+                              ৳{coupon.minOrderValue}
                             </span>
                           </div>
                         ) : (
@@ -601,11 +629,7 @@ const AllCouponsComp: React.FC = () => {
                         <div className="flex items-center gap-1">
                           <Calendar size={12} />
                           <span>
-                            {new Date(coupon.startDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
+                            {formatDateTime(coupon.startDate)}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
@@ -613,11 +637,7 @@ const AllCouponsComp: React.FC = () => {
                           <span
                             className={expired ? "text-red-500 font-medium" : ""}
                           >
-                            {new Date(coupon.expiryDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
+                            {formatDateTime(coupon.expiryDate)}
                           </span>
                         </div>
                         {expired && (
@@ -792,7 +812,7 @@ const DiscountFields: FC<DiscountFieldsProps> = ({ formData, onChange, errors })
       <div className="space-y-1">
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-            {formData.discountType === "PERCENTAGE" ? "%" : "$"}
+            {formData.discountType === "PERCENTAGE" ? "%" : "৳"}
           </span>
           <input
             type="number"
@@ -813,15 +833,20 @@ const DiscountFields: FC<DiscountFieldsProps> = ({ formData, onChange, errors })
 
     {/* Max discount — only for PERCENTAGE */}
     {formData.discountType === "PERCENTAGE" && (
-      <input
-        type="number"
-        min={0}
-        step={0.01}
-        placeholder="Max discount ($)"
-        value={formData.maxDiscount}
-        onChange={(e) => onChange("maxDiscount", e.target.value)}
-        className={inputClass()}
-      />
+      <div className="space-y-1">
+        <input
+          type="number"
+          min={0}
+          step={0.01}
+          placeholder="Max discount (৳)"
+          value={formData.maxDiscount}
+          onChange={(e) => onChange("maxDiscount", e.target.value)}
+          className={inputClass(errors.maxDiscount)}
+        />
+        {errors.maxDiscount && (
+          <p className="text-xs text-red-600">{errors.maxDiscount}</p>
+        )}
+      </div>
     )}
   </div>
 );
@@ -850,7 +875,7 @@ const ConditionFields: FC<ConditionFieldsProps> = ({
     <div className="space-y-2 min-w-40">
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-          $
+          ৳
         </span>
         <input
           type="number"
@@ -859,9 +884,12 @@ const ConditionFields: FC<ConditionFieldsProps> = ({
           placeholder="Min order"
           value={formData.minOrderValue}
           onChange={(e) => onChange("minOrderValue", e.target.value)}
-          className={`${inputClass()} pl-7`}
+          className={`${inputClass(errors.minOrderValue)} pl-7`}
         />
       </div>
+      {errors.minOrderValue && (
+        <p className="text-xs text-red-600">{errors.minOrderValue}</p>
+      )}
 
       <div>
         <input
@@ -930,18 +958,21 @@ interface ValidityFieldsProps {
 const ValidityFields: FC<ValidityFieldsProps> = ({ formData, onChange, errors }) => (
   <div className="space-y-2 min-w-[150px]">
     <div className="space-y-1">
-      <label className="text-xs text-gray-500">Start</label>
+      <label className="text-xs text-gray-500">Start date &amp; time</label>
       <input
-        type="date"
+        type="datetime-local"
         value={formData.startDate}
         onChange={(e) => onChange("startDate", e.target.value)}
-        className={inputClass()}
+        className={inputClass(errors.startDate)}
       />
+      {errors.startDate && (
+        <p className="text-xs text-red-600">{errors.startDate}</p>
+      )}
     </div>
     <div className="space-y-1">
-      <label className="text-xs text-gray-500">Expiry</label>
+      <label className="text-xs text-gray-500">Expiry date &amp; time</label>
       <input
-        type="date"
+        type="datetime-local"
         value={formData.expiryDate}
         onChange={(e) => onChange("expiryDate", e.target.value)}
         className={inputClass(errors.expiryDate)}

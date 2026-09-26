@@ -34,6 +34,10 @@ const EachProductShow = ({
             Date.now() - new Date(product.createdAt).getTime() <=
               60 * 24 * 60 * 60 * 1000);
 
+        // price is null when no discount is set — fall back to basePrice
+        const salePrice = product.price ?? product.basePrice;
+        const isDiscounted = product.basePrice - salePrice >= 1;
+
         return (
           <Link
             href={`/products/${product.slug}`}
@@ -71,7 +75,7 @@ const EachProductShow = ({
               )}
 
               {/* Discount Badge */}
-              {product.basePrice - product.price >= 1 && (
+              {isDiscounted && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">
                   {product.discountType === "PERCENT"
                     ? `${product.discount}% OFF`
@@ -103,18 +107,18 @@ const EachProductShow = ({
             </h3>
 
             <div className="mb-3">
-              {product.basePrice - product.price >= 1 ? (
+              {isDiscounted ? (
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-red-600 font-medium">
-                    <TakaIcon /> {product.price}
+                    <TakaIcon /> {salePrice.toLocaleString()}
                   </p>
                   <p className="text-[10px] text-gray-400 line-through">
-                    <TakaIcon /> {product.basePrice}
+                    <TakaIcon /> {product.basePrice.toLocaleString()}
                   </p>
                 </div>
               ) : (
                 <p className="text-xs text-gray-600">
-                  <TakaIcon /> {product.basePrice}
+                  <TakaIcon /> {product.basePrice.toLocaleString()}
                 </p>
               )}
             </div>
