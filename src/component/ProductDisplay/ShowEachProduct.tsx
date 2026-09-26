@@ -547,7 +547,7 @@ export default function ShowEachProduct() {
         });
       }
 
-      router.push("/checkout");
+      router.push("/checkout/shipping-address");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         const errorMessage = (err.response?.data as { message?: string })?.message;
