@@ -237,7 +237,8 @@ const BookModal: React.FC<{
     setPickGate(null);
     setBookError(null);
     try {
-      const r = await axiosSecure.get(`/orders/track/${id}`);
+      // details=true — without it the response has no total/remainingAmount
+      const r = await axiosSecure.get(`/orders/track/${id}?details=true`);
       console.log(r.data, "couriodata");
       const o = r.data;
 
@@ -260,7 +261,14 @@ const BookModal: React.FC<{
         ]
           .filter(Boolean)
           .join(", "),
-        codAmount: o.total ?? 0,
+        // Mirrors backend resolveCodAmount: prepaid → 0, advance paid → the
+        // remainder, otherwise the full total.
+        codAmount:
+          o.deliveryMethod !== "COD"
+            ? 0
+            : o.advanceRequired
+              ? (o.remainingAmount ?? 0)
+              : (o.total ?? 0),
         itemDescription:
           o.items
             ?.map(
