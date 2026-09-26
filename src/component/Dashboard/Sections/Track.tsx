@@ -169,7 +169,9 @@ const Track = () => {
                     className="flex gap-4 pb-4 mb-4 border-b border-gray-50 last:border-none last:mb-0"
                   >
                     <img
-                      src={item.image}
+                      loading="lazy"
+                      decoding="async"
+                      src={item.image || "/images/placeholder.svg"}
                       alt={item.name}
                       className="w-16 h-20 object-cover bg-gray-100"
                     />

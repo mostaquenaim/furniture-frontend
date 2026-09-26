@@ -58,6 +58,8 @@ const EachProductShow = ({
             <div className="relative aspect-3/4 overflow-hidden bg-gray-50 mb-4">
               {mainImage && (
                 <img
+                  loading="lazy"
+                  decoding="async"
                   src={
                     hoveredProduct === product.id && productImage
                       ? productImage

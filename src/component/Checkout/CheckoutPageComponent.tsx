@@ -31,6 +31,11 @@ const CheckoutPageComponent = () => {
   const [selectedZone, setSelectedZone] = useState<number | "">("");
   const [selectedArea, setSelectedArea] = useState<number | "">("");
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
+  // "ready" only once the server has quoted a fee for the selected zone —
+  // placing an order is blocked until then so the shown fee is the charged fee.
+  const [deliveryFeeStatus, setDeliveryFeeStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
   const [showModal, setShowModal] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [otpRequired, setOtpRequired] = useState(false);
@@ -197,48 +202,43 @@ const CheckoutPageComponent = () => {
     fire();
   }, [cart?.id]);
 
+  // Delivery fee depends only on district + zone + cart weight (the server
+  // reads the weight from the cart itself), and is the same quote the order
+  // will be charged with.
   useEffect(() => {
-    if (!selectedZone || !address.districtId || !cart?.id) return;
+    if (!selectedZone || !address.districtId || !cart?.id) {
+      setDeliveryFee(0);
+      setDeliveryFeeStatus("idle");
+      return;
+    }
 
-    const totalWeight =
-      cart?.items?.reduce((acc, item) => {
-        console.log(item.productSize?.color?.product?.weight, acc);
-        const weight = item.productSize?.color?.product?.weight || 0;
-        return acc + weight * item.quantity;
-      }, 0) || 0;
-
-    console.log(totalWeight);
-
-    if (totalWeight <= 0) return;
+    let cancelled = false;
+    setDeliveryFeeStatus("loading");
 
     const timeout = setTimeout(() => {
       axiosSecure
         .post("/delivery/fee", {
           cityId: address.districtId,
           zoneId: selectedZone,
-          areaId: selectedArea || undefined,
           cartId: cart.id,
-          weight: totalWeight,
         })
-
         .then((res) => {
-          console.log(res.data, "delivery fee data");
-          setDeliveryFee(res.data.fee);
+          if (cancelled) return;
+          setDeliveryFee(Number(res.data.fee));
+          setDeliveryFeeStatus("ready");
         })
         .catch(() => {
+          if (cancelled) return;
           setDeliveryFee(0);
+          setDeliveryFeeStatus("error");
         });
     }, 400);
 
-    return () => clearTimeout(timeout);
-  }, [
-    address.districtId,
-    axiosSecure,
-    cart?.id,
-    cart?.items,
-    selectedArea,
-    selectedZone,
-  ]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [address.districtId, axiosSecure, cart?.id, cart?.items, selectedZone]);
 
   useEffect(() => {
     if (SSLCOMMERZ_ENABLED && !finalCODAvailable && paymentMethod === "cod") {
@@ -298,12 +298,17 @@ const CheckoutPageComponent = () => {
     cartId: cart!.id,
     address,
     paymentMethod: paymentMethod === "cod" ? "COD" : "ONLINE",
+    expectedDeliveryFee: deliveryFee,
     ...(withOtp ? { otp: withOtp } : {}),
   });
 
   const handlePlaceOrder = async () => {
     if (!cart?.id) { toast.error("Cart not found"); return; }
     if (!selectedZone) { toast.error("Please select zone"); return; }
+    if (deliveryFeeStatus !== "ready") {
+      toast.error("Delivery charge is still being calculated");
+      return;
+    }
 
     // If OTP step is active, require a 6-digit code before submitting
     if (otpRequired && otpValue.length !== 6) {
@@ -360,9 +365,29 @@ const CheckoutPageComponent = () => {
         router.push(`/checkout/payment?orderId=${orderId}`);
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Order failed");
-      // Keep modal open on OTP failure so user can retry
-      if (!otpRequired) setShowModal(false);
+      const errData = error?.response?.data;
+      toast.error(errData?.message || "Order failed");
+
+      if (errData?.code === "DELIVERY_FEE_CHANGED") {
+        // Show the updated charge and make the customer confirm again. The
+        // OTP (if any) was already consumed server-side, so start that step over.
+        setDeliveryFee(Number(errData.deliveryFee));
+        setShowModal(false);
+        setOtpRequired(false);
+        setOtpValue("");
+        return;
+      }
+
+      // Keep modal open on a wrong/expired OTP so the user can retry
+      if (otpRequired && /otp/i.test(errData?.message ?? "")) return;
+
+      // Anything else (coupon removed, price changed…) may have changed the
+      // cart server-side — reload it so the summary shows what will actually
+      // be charged. Any OTP was consumed, so the next attempt sends a new one.
+      refetch();
+      setShowModal(false);
+      setOtpRequired(false);
+      setOtpValue("");
     } finally {
       setPlacingOrder(false);
     }
@@ -423,8 +448,6 @@ const CheckoutPageComponent = () => {
                     ...prev,
                     districtId: id,
                   }));
-
-                  setDeliveryFee(district?.deliveryFee ?? 0);
 
                   // auto-switch to online if COD not allowed
                   if (SSLCOMMERZ_ENABLED && district && !finalCODAvailable) {
@@ -635,7 +658,9 @@ const CheckoutPageComponent = () => {
               surcharge={handlingSurcharge}
               refetch={refetch}
               coupon={cart.coupon?.code}
+              couponError={cart.couponError}
               deliveryFee={deliveryFee}
+              deliveryFeeLoading={deliveryFeeStatus === "loading"}
               freeDelivery={freeDelivery}
               discountAmount={discountAmount}
               isAddressGiven={
@@ -645,7 +670,10 @@ const CheckoutPageComponent = () => {
                   address.districtId &&
                   selectedZone &&
                   address.fullAddress &&
-                  address.postCode
+                  deliveryFeeStatus === "ready" &&
+                  // the server rejects orders with an ineligible coupon —
+                  // the summary shows why and offers to remove it
+                  !cart.couponError
                 )
               }
               handleConfirmOrder={handleConfirmOrder}
@@ -731,9 +759,21 @@ const CheckoutPageComponent = () => {
                     <span className="font-medium">Subtotal:</span> <TakaIcon />{" "}
                     {subtotal.toLocaleString()}
                   </p>
+                  {discountAmount > 0 && (
+                    <p>
+                      <span className="font-medium">Discount:</span> −{" "}
+                      <TakaIcon /> {discountAmount.toLocaleString()}
+                    </p>
+                  )}
                   <p>
                     <span className="font-medium">Shipping:</span>{" "}
-                    {deliveryFee ? <TakaIcon /> : ""} {deliveryFee ?? "TBD"}
+                    {freeDelivery ? (
+                      "Free"
+                    ) : (
+                      <>
+                        <TakaIcon /> {deliveryFee}
+                      </>
+                    )}
                   </p>
                   <p className="font-bold">
                     <span className="font-medium">Total:</span> <TakaIcon />{" "}

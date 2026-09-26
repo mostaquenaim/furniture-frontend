@@ -46,6 +46,8 @@ function SaleCard({ product }: { product: Product }) {
       <div className="relative aspect-3/4 overflow-hidden bg-gray-100 mb-2">
         {mainImage && (
           <img
+            loading="lazy"
+            decoding="async"
             src={hovered && secondImage ? secondImage.image : mainImage.image}
             alt={product.title}
             className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.04]"
@@ -65,11 +67,11 @@ function SaleCard({ product }: { product: Product }) {
 
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-semibold text-red-600">
-          ৳{product.price.toLocaleString()}
+          ৳{product.price?.toLocaleString()}
         </span>
         {hasDiscount && (
           <span className="text-[10px] text-gray-400 line-through">
-            ৳{product.basePrice.toLocaleString()}
+            ৳{product.basePrice?.toLocaleString()}
           </span>
         )}
       </div>

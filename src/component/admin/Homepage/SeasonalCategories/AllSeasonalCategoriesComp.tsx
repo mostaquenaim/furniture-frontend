@@ -27,6 +27,7 @@ import useFetchSeasonalCategories, {
   SeasonalCategory,
 } from "@/hooks/Homepage/SeasonalCategories/useFetchSeasonalCategories";
 import { useHasPermission } from "@/context/PermissionsContext";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -164,6 +165,8 @@ const AllSeasonalCategoriesComp: React.FC = () => {
         toast.error("Image size should be less than 5MB");
         return;
       }
+
+      void checkImageDimensions(file, IMAGE_SPECS.seasonalCategory);
 
       setFormData((prev) => ({ ...prev, image: file }));
       setImagePreview(URL.createObjectURL(file));
@@ -685,6 +688,7 @@ const CategoryImageUpload: FC<CategoryImageUploadProps> = ({
         </span>
       </label>
     )}
+    <p className="text-[10px] text-gray-400 whitespace-nowrap">{specLabel(IMAGE_SPECS.seasonalCategory)}</p>
     {error && <p className="text-xs text-red-600">{error}</p>}
   </div>
 );

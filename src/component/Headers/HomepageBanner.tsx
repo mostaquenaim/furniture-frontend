@@ -21,7 +21,7 @@ const HomepageBanner = () => {
 
   return (
     <div className="w-full my-5">
-      {banners.map((banner: Banner) => (
+      {banners.map((banner: Banner, index: number) => (
         <Link key={banner.id} href={banner?.link || "/"} className="block">
           {/* Mobile */}
           <div
@@ -31,7 +31,7 @@ const HomepageBanner = () => {
               src={banner.image}
               alt={banner.title || "Banner"}
               fill
-              priority
+              priority={index === 0}
               unoptimized
               sizes="100vw"
               className="object-cover"
@@ -40,13 +40,19 @@ const HomepageBanner = () => {
 
           {/* Desktop */}
           <div
-            className={`relative ${banner.device === "DESKTOP" ? "hidden md:block" : "hidden"} w-full aspect-4/1`}
+            className={`relative ${
+              banner.device === "DESKTOP"
+                ? "hidden md:block"
+                : banner.device === "MOBILE"
+                  ? "hidden"
+                  : "block" // "Both": same 4:1 slide on every screen
+            } w-full aspect-4/1`}
           >
             <Image
               src={banner.image}
               alt={banner.title || "Banner"}
               fill
-              priority
+              priority={index === 0}
               unoptimized
               sizes="100vw"
               className="object-cover"

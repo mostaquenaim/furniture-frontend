@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { optimizeImage } from "@/utils/imageOptimizer";
+import { checkImagesDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 import toast from "react-hot-toast";
 import { Color } from "@/types/product.types";
 
@@ -37,6 +38,9 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+
+    // Check the originals — the optimizer keeps the aspect ratio
+    void checkImagesDimensions(Array.from(files), IMAGE_SPECS.product);
 
     setIsOptimizing(true);
 
@@ -116,6 +120,9 @@ export const DefaultImageUploader: React.FC<DefaultImageUploaderProps> = ({
         </span>
         <span className="text-sm text-muted-foreground">
           ({images.length} {images.length === 1 ? "image" : "images"})
+        </span>
+        <span className="ml-auto text-xs text-muted-foreground">
+          Recommended: {specLabel(IMAGE_SPECS.product)}
         </span>
       </div>
 
@@ -224,6 +231,9 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // Check the originals — the optimizer keeps the aspect ratio
+    void checkImagesDimensions(Array.from(files), IMAGE_SPECS.product);
+
     setIsOptimizing(true);
 
     try {
@@ -315,6 +325,9 @@ export const ColorImageUploader: React.FC<ColorImageUploaderProps> = ({
           <span className="text-sm text-muted-foreground">
             ({displayImages.length}{" "}
             {displayImages.length === 1 ? "image" : "images"})
+          </span>
+          <span className="text-xs text-muted-foreground">
+            · {specLabel(IMAGE_SPECS.product)}
           </span>
         </div>
 

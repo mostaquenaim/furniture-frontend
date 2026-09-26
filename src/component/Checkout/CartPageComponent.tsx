@@ -172,6 +172,8 @@ const CartPageComponent = () => {
             surcharge={handlingSurcharge}
             refetch={refetch}
             coupon={cart?.coupon?.code}
+            couponError={cart?.couponError}
+            freeDelivery={!!cart?.freeDelivery}
             discountAmount={discountAmount}
           />
         </aside>
@@ -247,13 +249,13 @@ const CartItemComponent = ({
              hover:shadow-md hover:-translate-y-0.5"
         >
           <img
-            src={item?.productSize?.color?.product?.images?.[0]?.image || ""}
+            src={item?.productSize?.color?.product?.images?.[0]?.image || "/images/placeholder.svg"}
             alt={item?.productSize?.color?.product?.title || "Product"}
             className="object-cover w-full h-full
                transition-transform duration-300
                hover:scale-110"
             onError={(e) =>
-              (e.currentTarget.src = "/images/categories/fallback.jpg")
+              (e.currentTarget.src = "/images/placeholder.svg")
             }
           />
         </Link>

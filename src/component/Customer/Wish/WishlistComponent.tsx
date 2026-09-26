@@ -272,7 +272,9 @@ const WishlistComponent = () => {
                   >
                     <div onClick={() => handleProductClick(item)}>
                       <img
-                        src={item.images?.[0]?.image}
+                        loading="lazy"
+                        decoding="async"
+                        src={item.images?.[0]?.image || "/images/placeholder.svg"}
                         alt={item.title}
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />

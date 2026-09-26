@@ -131,7 +131,9 @@ export default function AllBlogsComponent() {
                     {/* Furniture photography looks best in 3:2 or 16:9 rather than 4:5 */}
                     <div className="aspect-[3/2] overflow-hidden mb-6 bg-slate-100">
                       <img
-                        src={post.image || "/placeholder-furniture.jpg"}
+                        loading="lazy"
+                        decoding="async"
+                        src={post.image || "/images/placeholder.svg"}
                         alt={post.title}
                         className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
                       />

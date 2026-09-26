@@ -61,7 +61,9 @@ const ProductItem = ({
     >
       <div className="relative aspect-square w-full overflow-hidden bg-gray-100 shadow-sm">
         <img
-          src={product.images?.[0]?.image}
+          loading="lazy"
+          decoding="async"
+          src={product.images?.[0]?.image || "/images/placeholder.svg"}
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
         />

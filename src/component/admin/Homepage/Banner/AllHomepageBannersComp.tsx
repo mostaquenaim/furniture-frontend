@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useCallback, useMemo, FC } from "react";
+import React, { useState, useCallback, useEffect, useMemo, FC } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import {
   Edit3,
@@ -23,6 +23,7 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
 import useFetchHomepageBanners from "@/hooks/Homepage/Banner/useFetchHomepageBanners";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 // Types
 export interface Banner {
@@ -127,6 +128,19 @@ const AllBannersComp: React.FC = () => {
     },
     [],
   );
+
+  // Re-check whenever a new file is picked or the target device changes,
+  // since desktop and mobile slides have different shapes
+  useEffect(() => {
+    if (formData.image instanceof File) {
+      void checkImageDimensions(
+        formData.image,
+        formData.device === "MOBILE"
+          ? IMAGE_SPECS.heroMobile
+          : IMAGE_SPECS.heroDesktop,
+      );
+    }
+  }, [formData.image, formData.device]);
 
   const removeImage = useCallback(() => {
     setFormData((prev) => ({ ...prev, image: null }));
@@ -332,6 +346,7 @@ const AllBannersComp: React.FC = () => {
                     onImageChange={handleImageChange}
                     onImageRemove={removeImage}
                     error={validationErrors.image}
+                    device={formData.device}
                   />
                 </td>
                 <td className="px-6 py-4 min-w-[220px]">
@@ -399,6 +414,7 @@ const AllBannersComp: React.FC = () => {
                         onImageChange={handleImageChange}
                         onImageRemove={removeImage}
                         error={validationErrors.image}
+                        device={formData.device}
                       />
                     ) : (
                       <BannerThumbnail banner={banner} />
@@ -582,6 +598,7 @@ interface BannerImageUploadProps {
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onImageRemove: () => void;
   error?: string;
+  device?: BannerFormData["device"];
 }
 
 const BannerImageUpload: React.FC<BannerImageUploadProps> = ({
@@ -589,6 +606,7 @@ const BannerImageUpload: React.FC<BannerImageUploadProps> = ({
   onImageChange,
   onImageRemove,
   error,
+  device,
 }) => (
   <div className="flex flex-col gap-1">
     {imagePreview ? (
@@ -632,6 +650,9 @@ const BannerImageUpload: React.FC<BannerImageUploadProps> = ({
         </span>
       </label>
     )}
+    <p className="text-[10px] text-gray-400 whitespace-nowrap">
+      {device === "MOBILE" ? specLabel(IMAGE_SPECS.heroMobile) : specLabel(IMAGE_SPECS.heroDesktop)}
+    </p>
     {error && <p className="text-xs text-red-600">{error}</p>}
   </div>
 );

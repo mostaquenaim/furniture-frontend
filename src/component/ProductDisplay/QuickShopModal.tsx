@@ -112,7 +112,7 @@ export function QuickShopModal({
             <Heart size={12} fill="currentColor" /> 596
           </div>
           <img
-            src={sortedImages[currentImageIndex]?.image}
+            src={sortedImages[currentImageIndex]?.image || "/images/placeholder.svg"}
             alt={
               (sortedImages[currentImageIndex] as { alt?: string })?.alt ||
               product.title

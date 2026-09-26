@@ -19,6 +19,7 @@ import {
 import WhatsAppButton from "@/component/WhatsApp/WhatsAppButton";
 import { Suspense } from "react";
 import PageViewTracker from "@/component/PageView/PageViewTracker";
+import ImageFallbackHandler from "@/component/Shared/ImageFallbackHandler";
 
 const avenir = localFont({
   src: "../../public/fonts/avenir/AvenirNext-Regular.woff",
@@ -83,6 +84,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${bodoni.variable} ${cinzel.variable} regular`}>
       <head>
+        <ImageFallbackHandler />
         <GTMScript />
         <MetaPixelScript pixelId={company?.metaPixelId ?? null} />
       </head>

@@ -28,6 +28,8 @@ const FeaturedCategories = () => {
                 className="group relative aspect-square overflow-hidden rounded-xl"
               >
                 <img
+                  loading="lazy"
+                  decoding="async"
                   src={tile.image || tile.subcategory.image || FALLBACK}
                   alt={tile.subcategory.name}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"

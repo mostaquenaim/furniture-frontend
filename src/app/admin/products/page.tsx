@@ -58,13 +58,13 @@ const AllProducts = () => {
       !Array.isArray(product.images) ||
       product.images.length === 0
     ) {
-      return "/placeholder.jpg";
+      return "/images/placeholder.svg";
     }
 
     const sortedImages = [...product.images].sort(
       (a, b) => (a.serialNo || 0) - (b.serialNo || 0),
     );
-    return sortedImages[0]?.image || "/placeholder.jpg";
+    return sortedImages[0]?.image || "/images/placeholder.svg";
   };
 
   // Handle View Product
@@ -265,7 +265,7 @@ const AllProducts = () => {
                         className="w-12 h-12 rounded object-cover border border-gray-200 bg-gray-100"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src =
-                            "/placeholder.jpg";
+                            "/images/placeholder.svg";
                         }}
                       />
                       <div>

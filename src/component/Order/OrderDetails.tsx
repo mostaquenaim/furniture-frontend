@@ -334,7 +334,9 @@ const OrderDetails = () => {
                 >
                   <div className="w-full sm:w-32 aspect-[3/4] overflow-hidden bg-gray-50">
                     <img
-                      src={item.image}
+                      loading="lazy"
+                      decoding="async"
+                      src={item.image || "/images/placeholder.svg"}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
@@ -533,7 +535,9 @@ const OrderDetails = () => {
 
             <div className="flex gap-6 mb-10 bg-[#fffdfa] border border-gray-100 p-4">
               <img
-                src={selectedItem?.image}
+                loading="lazy"
+                decoding="async"
+                src={selectedItem?.image || "/images/placeholder.svg"}
                 className="w-16 h-20 object-cover"
                 alt=""
               />

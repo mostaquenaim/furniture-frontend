@@ -23,6 +23,7 @@ import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
 import { useHasPermission } from "@/context/PermissionsContext";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -154,6 +155,7 @@ const FeaturedCategoriesManagement: React.FC = () => {
         toast.error("Image must be under 5 MB");
         return;
       }
+      void checkImageDimensions(file, IMAGE_SPECS.featuredCategory);
       setFormData((prev) => ({ ...prev, image: file }));
       setValidationErrors((prev) => ({ ...prev, image: "" }));
     },
@@ -591,6 +593,7 @@ const EditRow: FC<EditRowProps> = ({
           <span className={`text-[9px] ${errors.image ? "text-red-400" : "text-gray-400"}`}>Upload *</span>
         </label>
       )}
+      <p className="text-[10px] text-gray-400 mt-1 whitespace-nowrap">{specLabel(IMAGE_SPECS.featuredCategory)}</p>
       {errors.image && <p className="text-xs text-red-600 mt-1">{errors.image}</p>}
     </td>
 

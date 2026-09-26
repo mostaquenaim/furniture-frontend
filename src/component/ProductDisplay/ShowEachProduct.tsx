@@ -689,7 +689,7 @@ export default function ShowEachProduct() {
                     displayImages[activeImgIndex] &&
                     displayImages[activeImgIndex]?.image &&
                     displayImages[activeImgIndex]?.image) ||
-                  ""
+                  "/images/placeholder.svg"
                 }
                 alt={
                   (displayImages?.[activeImgIndex] as { alt?: string })
@@ -779,7 +779,7 @@ export default function ShowEachProduct() {
             )}
 
             <img
-              src={displayImages?.[activeImgIndex]?.image || ""}
+              src={displayImages?.[activeImgIndex]?.image || "/images/placeholder.svg"}
               alt={
                 (displayImages?.[activeImgIndex] as { alt?: string })?.alt ||
                 product.title
@@ -1217,7 +1217,7 @@ export default function ShowEachProduct() {
             onClick={() => setIsLightboxOpen(false)}
           >
             <img
-              src={displayImages?.[activeImgIndex]?.image || ""}
+              src={displayImages?.[activeImgIndex]?.image || "/images/placeholder.svg"}
               alt={
                 (displayImages?.[activeImgIndex] as { alt?: string })?.alt ||
                 product.title

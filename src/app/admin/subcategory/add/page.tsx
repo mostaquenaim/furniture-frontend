@@ -10,6 +10,7 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 interface Category {
   id: number;
@@ -109,6 +110,8 @@ const AddSubcategory = () => {
       toast.error("Image must be under 2MB");
       return;
     }
+
+    void checkImageDimensions(file, IMAGE_SPECS.subcategory);
 
     setFormData((prev) => ({ ...prev, image: file }));
     setImagePreview(URL.createObjectURL(file));
@@ -294,6 +297,9 @@ const AddSubcategory = () => {
               />
             </label>
           )}
+          <p className="text-xs text-gray-500 mt-1">
+            Recommended: {specLabel(IMAGE_SPECS.subcategory)}
+          </p>
         </div>
 
         {/* Settings */}

@@ -20,6 +20,7 @@ import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
 import useFetchBroadBanners from "@/hooks/Homepage/Banner/useFetchBroadBanners";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -125,6 +126,7 @@ const BroadBannerManagement: React.FC = () => {
         toast.error("Image must be under 5 MB");
         return;
       }
+      void checkImageDimensions(file, IMAGE_SPECS.broadBanner);
       setFormData((prev) => ({ ...prev, image: file }));
       setValidationErrors((prev) => ({ ...prev, image: "" }));
     },
@@ -561,6 +563,9 @@ const EditRow: FC<EditRowProps> = ({
           </span>
         </label>
       )}
+      <p className="text-[10px] text-gray-400 mt-1 whitespace-nowrap">
+        {specLabel(IMAGE_SPECS.broadBanner)}
+      </p>
       {errors.image && (
         <p className="text-xs text-red-600 mt-1">{errors.image}</p>
       )}

@@ -37,6 +37,8 @@ const CategoryNavigation = () => {
             >
               {/* Image */}
               <img
+                loading="lazy"
+                decoding="async"
                 src={category.image || FALLBACK_IMAGE}
                 alt={category.name}
                 className="w-full h-full object-cover"

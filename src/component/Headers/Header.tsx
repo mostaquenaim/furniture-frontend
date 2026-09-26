@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
-import { FC, Suspense, useEffect, useMemo, useState } from "react";
+import { FC, Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Search,
   Menu,
@@ -215,8 +215,8 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               const isSale = item.seriesType === "SALE";
               const isNewSeries = item.seriesType === "NEW";
               return (
+                <Fragment key={item.id}>
                 <Link
-                  key={item.id}
                   href={
                     isSale
                       ? "/sales"
@@ -248,6 +248,16 @@ const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                     <ChevronRight size={20} className="text-gray-400" />
                   )}
                 </Link>
+                {isSale && (
+                  <Link
+                    href="/blogs"
+                    className="py-3 border-b border-gray-100 text-lg font-medium flex justify-between items-center text-gray-700 hover:text-amber-700"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Stories
+                  </Link>
+                )}
+                </Fragment>
               );
             })}
           </div>
@@ -474,12 +484,17 @@ const Header = () => {
             >
               {isCompanyLoading ? (
                 <div className="h-10 w-28 rounded animate-pulse bg-gray-200" />
-              ) : (
+              ) : company?.logo ? (
                 <img
-                  src={company?.logo || "/logo/ondorkotha-logo-2.png"}
+                  src={
+                    company?.logo
+                    // || "/logo/ondorkotha-logo-2.png"
+                  }
                   alt={company?.name || "Company Logo"}
                   className="h-10 w-auto"
                 />
+              ) : (
+                <h1>Sakigai</h1>
               )}
             </Link>
 
@@ -565,8 +580,8 @@ const Header = () => {
                 const isNewSeries = item.seriesType === "NEW";
                 const isActive = derivedActiveNavItem === item.slug;
                 return (
+                  <Fragment key={item.id}>
                   <Link
-                    key={item.id}
                     href={isSale ? "/sales" : `/series/${item.slug}`}
                     onMouseEnter={() => {
                       setHoveredItem(isSale || isNewSeries ? null : item.slug);
@@ -587,6 +602,20 @@ const Header = () => {
                   >
                     {item.name}
                   </Link>
+                  {isSale && (
+                    <Link
+                      href="/blogs"
+                      onMouseEnter={() => setHoveredItem(null)}
+                      className={`font-semibold heading text-xs relative border-b-2 pb-4 ${
+                        pathname.startsWith("/blogs")
+                          ? "text-amber-700 border-amber-700"
+                          : "text-gray-700 hover:text-amber-700 border-transparent"
+                      }`}
+                    >
+                      Stories
+                    </Link>
+                  )}
+                  </Fragment>
                 );
               })}
           </nav>

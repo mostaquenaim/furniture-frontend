@@ -6,6 +6,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import TakaIcon from "../TakaIcon";
 import { isAuthenticated } from "@/utils/auth";
+import { getVisitorId } from "@/utils/visitor";
 import { CartItem } from "@/types/product.types";
 
 interface OrderSummaryProps {
@@ -16,8 +17,10 @@ interface OrderSummaryProps {
   surcharge?: number;
   refetch: () => void;
   coupon?: string;
+  couponError?: string | null;
   discountAmount?: number;
   deliveryFee?: number;
+  deliveryFeeLoading?: boolean;
   freeDelivery?: boolean;
   isAddressGiven?: boolean;
   handleConfirmOrder?: () => void;
@@ -32,8 +35,10 @@ const OrderSummary = ({
   surcharge,
   refetch,
   coupon,
+  couponError,
   discountAmount = 0,
   deliveryFee,
+  deliveryFeeLoading = false,
   freeDelivery = false,
   isAddressGiven = false,
   handleConfirmOrder,
@@ -42,7 +47,8 @@ const OrderSummary = ({
   const param = usePathname();
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
-  const [code, setCode] = useState(coupon && coupon);
+  const [code, setCode] = useState(coupon ?? "");
+  const [removingCoupon, setRemovingCoupon] = useState(false);
   const isCheckoutPage = param?.includes("/checkout");
 
   // console.log(cartItems,'cartItems');
@@ -71,6 +77,28 @@ const OrderSummary = ({
     }
   };
 
+  const handleRemoveCoupon = async () => {
+    if (!cartId) return;
+    try {
+      setRemovingCoupon(true);
+      if (isAuthenticated()) {
+        await axiosSecure.delete(`/cart/coupon/${cartId}`);
+      } else {
+        const visitorId = await getVisitorId();
+        await axiosSecure.delete(`/guest/cart/coupon/${cartId}`, {
+          params: { visitorId },
+        });
+      }
+      setCode("");
+      refetch();
+      toast.success("Coupon removed");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to remove coupon");
+    } finally {
+      setRemovingCoupon(false);
+    }
+  };
+
   // handle checkout
   const handleCheckout = () => {
     if (isAuthenticated()) {
@@ -82,11 +110,8 @@ const OrderSummary = ({
 
   return (
     <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4">
         <h2 className="text-lg">Order Summary</h2>
-        <span className="text-xs underline cursor-pointer">
-          {process.env.NEXT_PUBLIC_PHONE_NUMBER || "Contact Us"}
-        </span>
       </div>
       <div className="bg-gray-50 p-6 sticky top-8 border border-gray-200">
         {/* Show cart items on checkout page */}
@@ -110,7 +135,7 @@ const OrderSummary = ({
                       className="w-16 h-20 object-cover bg-gray-100"
                       onError={(e) =>
                         (e.currentTarget.src =
-                          "/images/categories/fallback.jpg")
+                          "/images/placeholder.svg")
                       }
                     />
                     <div className="flex-1 text-xs space-y-1">
@@ -153,6 +178,8 @@ const OrderSummary = ({
             <span className="text-gray-500">
               {freeDelivery ? (
                 <span className="text-green-600">Free</span>
+              ) : deliveryFeeLoading ? (
+                <span className="italic">Calculating…</span>
               ) : deliveryFee ? (
                 <span className="">
                   <TakaIcon /> {deliveryFee}
@@ -222,16 +249,32 @@ const OrderSummary = ({
               </button>
             </div>
             {coupon && (
-              <p className="mt-2 text-green-600 text-sm">
-                Coupon &quot;{coupon}&quot; applied!{" "}
-                {discountAmount > 0 ? (
-                  <>
-                    Discount: <TakaIcon /> {discountAmount.toLocaleString()}
-                  </>
+              <div className="mt-2 flex items-start justify-between gap-3 text-sm">
+                {couponError ? (
+                  <p className="text-amber-600">
+                    Coupon &quot;{coupon}&quot; can&apos;t be used: {couponError}
+                  </p>
                 ) : (
-                  "It doesn't apply to your current cart."
+                  <p className="text-green-600">
+                    Coupon &quot;{coupon}&quot; applied!{" "}
+                    {freeDelivery && discountAmount <= 0 ? (
+                      "Free delivery"
+                    ) : (
+                      <>
+                        Discount: <TakaIcon /> {discountAmount.toLocaleString()}
+                      </>
+                    )}
+                  </p>
                 )}
-              </p>
+                <button
+                  type="button"
+                  onClick={handleRemoveCoupon}
+                  disabled={removingCoupon}
+                  className="shrink-0 text-xs underline text-gray-600 hover:text-black disabled:opacity-50 cursor-pointer"
+                >
+                  {removingCoupon ? "Removing…" : "Remove"}
+                </button>
+              </div>
             )}
           </details>
         </div>

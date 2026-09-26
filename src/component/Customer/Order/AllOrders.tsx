@@ -356,6 +356,8 @@ const OrderHistoryPage = () => {
                                 <div className="w-14 h-14 bg-gray-50 rounded flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
                                   {image ? (
                                     <img
+                                      loading="lazy"
+                                      decoding="async"
                                       src={image}
                                       alt={item.productTitle}
                                       className="w-full h-full object-cover"

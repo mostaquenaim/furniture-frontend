@@ -11,6 +11,7 @@ import { Color } from "@/types/product.types";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../Modal/DeleteConfirmationModal";
 import { useAttributeCRUD } from "@/hooks/Admin/Attributes/useAttributeCRUD";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 interface ColorFormData {
   name: string;
@@ -77,6 +78,7 @@ const AllColorsComp: React.FC = () => {
       if (!file) return;
       if (!file.type.startsWith("image/")) return toast.error("Please upload an image file");
       if (file.size > 5 * 1024 * 1024) return toast.error("Image size should be less than 5MB");
+      void checkImageDimensions(file, IMAGE_SPECS.colorSwatch);
       setFormData((prev) => ({ ...prev, image: file }));
       setImagePreview(URL.createObjectURL(file));
     },
@@ -425,6 +427,7 @@ const ColorVisual: FC<ColorVisualProps> = ({ hexCode, imagePreview, onHexCodeCha
         <Upload size={20} className="text-gray-400 group-hover:text-indigo-500" />
       </label>
     )}
+    <p className="text-[10px] text-gray-400 whitespace-nowrap">{specLabel(IMAGE_SPECS.colorSwatch)}</p>
   </div>
 );
 

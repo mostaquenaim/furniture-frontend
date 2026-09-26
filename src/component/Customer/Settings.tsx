@@ -246,6 +246,9 @@ const Settings = () => {
                 className="hidden"
               />
             </label>
+            <p className="text-[10px] text-gray-400 mt-2 whitespace-nowrap">
+              400×400px
+            </p>
           </div>
         </div>
       </div>

@@ -3,10 +3,8 @@
 import { useState, type ReactNode } from "react";
 import {
   Mail,
-  User,
   Phone,
   MapPin,
-  Gift,
   MessageCircle,
   ChevronDown,
   ChevronUp,
@@ -17,8 +15,6 @@ import {
   Linkedin,
 } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
-import Image from "next/image";
-import Link from "next/link";
 import useFetchCompany from "@/hooks/Company/useFetchCompany";
 import { CompanyInfo } from "@/types/company";
 
@@ -33,7 +29,6 @@ const footerData: { title: string; links: FooterLink[] }[] = [
       { label: "Start a Return Or Exchange", href: "/refund" },
       { label: "Returns & Exchanges", href: "/pages/return-policy" },
       { label: "Customer Service", href: "/help/help-center" },
-      { label: "Check Gift Card Balance", href: "/pages/gift-card-balance" },
       { label: "Current Promotions", href: "/sales" },
     ],
   },
@@ -49,16 +44,12 @@ const footerData: { title: string; links: FooterLink[] }[] = [
   {
     title: "Services",
     links: [
-      { label: "Styling Services", href: "/pages/styling-services" },
-      { label: "Gift Cards", href: "/pages/gift-cards" },
-      { label: "Registry", href: "/pages/registry" },
       { label: "Free Design Services & Guides", href: "/pages/design-services" },
     ],
   },
   {
     title: "Connect",
     links: [
-      { label: "Events", href: "/pages/events" },
       { label: "Contact Us", href: "/help/contact-us" },
       { label: "Stories", href: "/blogs" },
     ],
@@ -68,14 +59,8 @@ const footerData: { title: string; links: FooterLink[] }[] = [
 // Icons for the fourth column (Desktop view only)
 const desktopConnectIcons = [
   { label: "Store Locator", icon: MapPin, href: "/pages/store-locator" },
-  { label: "Rewards", icon: Gift, href: "/pages/rewards" },
-  { label: "Sign Up For Texts", icon: Phone, href: "/pages/sms-signup" },
   { label: "Chat With Us", icon: MessageCircle, href: "/help/contact-us" },
 ];
-
-// countries for bottom links — this business operates in one country, so
-// these are decorative (all point home) rather than a real locale switcher.
-const countries = ["US", "Canada", "France", "Germany", "Italy", "Spain", "UK"];
 
 // legal links for bottom links
 const legalLinks = [
@@ -193,47 +178,12 @@ const EmailSignUp: React.FC = () => {
   );
 };
 
-// 3. SMS/App Banner Section
-const SmsAppBanner: React.FC = () => (
-  <div className="bg-[#b3705a] w-full mt-8">
-    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center text-white text-center sm:text-left">
-      <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
-        <h4 className="text-xl font-bold uppercase whitespace-nowrap">
-          Get the message!
-        </h4>
-        <p className="text-sm">
-          sign up for SMS texts for **INSTANT** access to new arrivals, events &
-          OMG sales
-        </p>
-      </div>
-      <Link
-        href="/pages/sms-signup"
-        className="flex items-center text-sm font-semibold mt-4 sm:mt-0 whitespace-nowrap"
-      >
-        RIGHT THIS WAY
-        <span className="ml-2">&rarr;</span>
-      </Link>
-    </div>
-  </div>
-);
-
-// 4. Social Media & App Download Links
-const SocialAndAppLinks: React.FC<{
+// 3. Social Media Links
+const SocialLinks: React.FC<{
   socials: { name: string; href: string; icon: ReactNode }[];
-}> = ({ socials }) => (
-  <div className="flex flex-col md:flex-row justify-center lg:gap-4 items-center py-6">
-    {/* App Store Image */}
-    <Link href="/pages/mobile-app" className="mb-4 md:mb-0 inline-block">
-      <Image
-        src="/icons/download-from-apple.svg"
-        alt="Download on the App Store"
-        width={100}
-        height={60}
-      />
-    </Link>
-
-    {/* Social Icons */}
-    {socials.length > 0 && (
+}> = ({ socials }) =>
+  socials.length > 0 ? (
+    <div className="flex justify-center items-center py-6">
       <div className="flex space-x-6 text-gray-700">
         {socials.map((item) => (
           <a
@@ -248,9 +198,8 @@ const SocialAndAppLinks: React.FC<{
           </a>
         ))}
       </div>
-    )}
-  </div>
-);
+    </div>
+  ) : null;
 
 // --- MAIN FOOTER COMPONENT ---
 const Footer: React.FC = () => {
@@ -320,14 +269,11 @@ const Footer: React.FC = () => {
             ))}
           </div>
 
-          <SocialAndAppLinks socials={socials} />
+          <SocialLinks socials={socials} />
         </div>
 
-        {/* Bottom Banner */}
-        <SmsAppBanner />
-
         {/* Bottom Footer Links and Copyright */}
-        <div className="py-4 text-xs text-gray-500 border-t border-gray-200">
+        <div className="py-4 text-xs text-gray-500 border-t border-gray-200 mt-8">
           {/* Contact info */}
           {(company?.phone || company?.email || company?.address) && (
             <div className="flex flex-wrap justify-center items-center gap-4 pt-6 pb-2 text-gray-600">
@@ -360,21 +306,7 @@ const Footer: React.FC = () => {
             </div>
           )}
 
-          {/* Country Links */}
-          <div className="flex flex-wrap justify-center mb-2 lg:mb-0 pb-8 space-y-2">
-            {countries?.map((country, idx) => (
-              <Link
-                key={country}
-                href="/"
-                className={`hover:underline px-4 ${
-                  idx !== countries.length - 1 ? "border-r border-gray-300" : ""
-                }`}
-              >
-                {country}
-              </Link>
-            ))}
-          </div>
-          <div className="flex flex-col lg:flex-row justify-between gap-4">
+          <div className="flex flex-col lg:flex-row justify-between gap-4 pt-6">
             <div className="max-w-7xl mx-auto lg:mx-0 px-4 flex flex-wrap justify-center lg:justify-between items-center">
               {/* Legal Links (Responsive: stacked on mobile, in line on desktop) */}
               <div className="flex flex-row flex-wrap sm:space-y-0 sm:space-x-3 sm:text-left space-y-2 items-center justify-center ">

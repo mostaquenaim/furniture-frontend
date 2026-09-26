@@ -33,6 +33,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { optimizeImage } from "@/utils/imageOptimizer";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
 import { generateSlug } from "@/utils/validation";
 import useFetchABlogAdmin from "@/hooks/Admin/Blog/useFetchABlogAdmin";
@@ -93,9 +94,7 @@ const renderMarkdown = (text: string) => {
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
     (_match, text: string, url: string) => {
-      const safeUrl = /^(https?:|mailto:|\/|#)/i.test(url.trim())
-        ? url
-        : "#";
+      const safeUrl = /^(https?:|mailto:|\/|#)/i.test(url.trim()) ? url : "#";
       return `<a href="${safeUrl}" class="text-teal-600 hover:underline">${text}</a>`;
     },
   );
@@ -170,7 +169,10 @@ const ImageUploader: React.FC<{
                 accept="image/*"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
-                  if (f) onImageChange(f);
+                  if (f) {
+                    void checkImageDimensions(f, IMAGE_SPECS.blogCover);
+                    onImageChange(f);
+                  }
                 }}
               />
             </label>
@@ -187,7 +189,8 @@ const ImageUploader: React.FC<{
                 Drop your cover image here
               </p>
               <p className="text-xs text-slate-400 mt-1">
-                PNG, JPG, WebP up to 10MB
+                Recommended {specLabel(IMAGE_SPECS.blogCover)}, subject centered · PNG, JPG, WebP
+                up to 10MB
               </p>
             </div>
             <span className="px-4 py-1.5 bg-slate-800 text-white text-xs rounded-full font-medium group-hover:bg-teal-700 transition-colors">
@@ -200,7 +203,10 @@ const ImageUploader: React.FC<{
             accept="image/*"
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f) onImageChange(f);
+              if (f) {
+                void checkImageDimensions(f, IMAGE_SPECS.blogCover);
+                onImageChange(f);
+              }
             }}
           />
         </label>

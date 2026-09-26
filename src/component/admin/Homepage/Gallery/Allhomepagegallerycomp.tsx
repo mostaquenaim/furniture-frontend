@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useCallback, useMemo, FC } from "react";
+import React, { useState, useCallback, useEffect, useMemo, FC } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import {
   Edit3,
@@ -25,6 +25,7 @@ import useFetchHomepageGallery, {
   HomepageGalleryItem,
 } from "@/hooks/Homepage/Gallery/useFetchHomepageGallery";
 import { useHasPermission } from "@/context/PermissionsContext";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -152,6 +153,17 @@ const AllHomepageGalleryComp: React.FC = () => {
     },
     [],
   );
+
+  // Re-check whenever a new file is picked or the Hero Banner flag changes,
+  // since the heading strip and gallery cards have different shapes
+  useEffect(() => {
+    if (formData.image instanceof File) {
+      void checkImageDimensions(
+        formData.image,
+        formData.isHeading ? IMAGE_SPECS.galleryHeading : IMAGE_SPECS.galleryItem,
+      );
+    }
+  }, [formData.image, formData.isHeading]);
 
   const removeImage = useCallback(() => {
     setFormData((prev) => ({ ...prev, image: null }));
@@ -685,6 +697,9 @@ const GalleryImageUpload: FC<GalleryImageUploadProps> = ({
         </span>
       </label>
     )}
+    <p className="text-[10px] text-gray-400 whitespace-nowrap">
+      {isHeading ? `${specLabel(IMAGE_SPECS.galleryHeading)}, text centered` : specLabel(IMAGE_SPECS.galleryItem)}
+    </p>
     {error && <p className="text-xs text-red-600">{error}</p>}
   </div>
 );

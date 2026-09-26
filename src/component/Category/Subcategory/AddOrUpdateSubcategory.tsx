@@ -14,6 +14,7 @@ import LoadingDots from "@/component/Loading/LoadingDS";
 import { EntityFormLayout } from "../EntityFormLayout";
 import useFetchASubcategory from "@/hooks/Categories/Subcategories/useFetchASubcategory";
 import useFetchCategories from "@/hooks/Categories/Categories/useFetchCategories";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 interface SubcategoryFormData {
   name: string;
@@ -119,6 +120,8 @@ const AddOrUpdateCategoryComp = () => {
       toast.error("Image must be under 2MB");
       return;
     }
+
+    void checkImageDimensions(file, IMAGE_SPECS.subcategory);
 
     setFormData((prev) => ({ ...prev, image: file }));
     setImagePreview(URL.createObjectURL(file));
@@ -374,6 +377,9 @@ const AddOrUpdateCategoryComp = () => {
             <FiUpload className="text-gray-400 text-2xl" />
           </div>
         )}
+        <p className="text-xs text-gray-500 mt-1">
+          Recommended: {specLabel(IMAGE_SPECS.subcategory)}
+        </p>
       </div>
 
       {/* Settings */}

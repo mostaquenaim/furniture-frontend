@@ -30,6 +30,9 @@ interface CartResponse {
   items: CartItem[];
   discountAmount?: number;
   freeDelivery?: boolean;
+  // Set when a coupon is linked but the cart doesn't qualify for it
+  // (e.g. minimum spend, category restriction).
+  couponError?: string | null;
 }
 
 interface UseFetchCartsOptions {

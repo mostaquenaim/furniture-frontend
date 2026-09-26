@@ -11,6 +11,7 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useFetchASeries from "@/hooks/Categories/Series/useFetchASeries";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
+import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
 
 interface SeriesFormData {
   name: string;
@@ -99,6 +100,13 @@ const AddOrUpdateSeriesComp = () => {
       toast.error("Please upload an image file");
       return;
     }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+
+    void checkImageDimensions(file, IMAGE_SPECS.series);
 
     // Update formData with the actual FILE object
     setFormData((prev) => ({ ...prev, image: file }));
@@ -337,7 +345,7 @@ const AddOrUpdateSeriesComp = () => {
                       <FiUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Upload Image</p>
                       <p className="text-xs text-gray-500 mt-1">
-                        PNG, JPG up to 2MB
+                        {specLabel(IMAGE_SPECS.series)} · PNG, JPG up to 2MB
                       </p>
                     </div>
                   </div>
