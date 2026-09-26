@@ -494,7 +494,7 @@ const Header = () => {
                   className="h-10 w-auto"
                 />
               ) : (
-                <h1>Sakigai</h1>
+                <h1>Ondorkotha</h1>
               )}
             </Link>
 
