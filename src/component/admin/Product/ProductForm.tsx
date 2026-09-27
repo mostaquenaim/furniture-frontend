@@ -34,6 +34,11 @@ import {
 import VariantNSizes from "./FormComponents/VariantNSizesSection";
 import BasicInfoSection from "./FormComponents/BasicInfoSection";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
+import {
+  endOfTodayLocal,
+  startOfTodayLocal,
+  toDateTimeLocal,
+} from "@/utils/datetime";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -104,6 +109,36 @@ Returns:
 • Items must be unworn with original tags
 • Free returns for store credit`;
 
+// Same rounding the backend applies (discount.utils.ts applyDiscount), so the
+// admin preview always equals what the customer is charged.
+const applyDiscount = (
+  basePrice: number,
+  discount: number | null | undefined,
+  discountType: string | null | undefined,
+): number => {
+  if (!discount || discount <= 0 || !discountType) return basePrice;
+  if (discountType === "PERCENT")
+    return Math.max(0, Math.round(basePrice - (basePrice * discount) / 100));
+  if (discountType === "FIXED") return Math.max(0, basePrice - discount);
+  return basePrice;
+};
+
+// Returns an error message if the discount would give a nonsense price.
+const discountError = (
+  basePrice: number,
+  discount: number | null | undefined,
+  discountType: string | null | undefined,
+  label: string,
+): string | null => {
+  if (!discount) return null;
+  if (discount < 0) return `${label} cannot be negative`;
+  if (discountType === "PERCENT" && discount > 100)
+    return `${label} percentage cannot exceed 100%`;
+  if (discountType === "FIXED" && discount > basePrice)
+    return `${label} (৳${discount}) cannot exceed the price (৳${basePrice})`;
+  return null;
+};
+
 const initialFormData: ProductFormData = {
   title: "",
   slug: "",
@@ -116,8 +151,8 @@ const initialFormData: ProductFormData = {
   weight: 0.5,
   discountType: "PERCENT",
   discount: 0,
-  discountStart: new Date().toISOString().split("T")[0],
-  discountEnd: new Date().toISOString().split("T")[0],
+  discountStart: startOfTodayLocal(),
+  discountEnd: endOfTodayLocal(),
   selectedSeriesIds: [],
   selectedCategoryIds: [],
   selectedSubCategoryIds: [],
@@ -267,8 +302,8 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
       showColor: product.showColor,
       discountType: product.discountType ?? "PERCENT",
       discount: product.discount || 0,
-      discountStart: product.discountStart?.split("T")[0] || "",
-      discountEnd: product.discountEnd?.split("T")[0] || "",
+      discountStart: toDateTimeLocal(product.discountStart),
+      discountEnd: toDateTimeLocal(product.discountEnd),
       selectedSeriesIds: Array.from(seriesSet),
       selectedCategoryIds: Array.from(categorySet),
       selectedSubCategoryIds: subCategoryIds,
@@ -317,10 +352,14 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
         c.sizes?.map((s: any) => ({
           sizeId: s.sizeId,
           sku: s.sku || "",
-          price: s.price || product.basePrice,
+          // The form's size "price" is the size's BASE price (it's sent back
+          // as `price` and the backend applies the discount to it). Loading
+          // s.price here — the already-discounted price — would re-apply the
+          // discount on every save.
+          price: s.basePrice ?? s.price ?? product.basePrice,
           quantity: s.quantity || 0,
-          discountType: s.discountType || null, // Add this
-          discount: s.discount || 0, // Add this
+          discountType: s.discountType || null,
+          discount: s.discount || 0,
           trackingMode: s.trackingMode,
         })) || [];
     });
@@ -410,19 +449,50 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
       .replace(/--+/g, "-")
       .trim();
 
-  // calculate discounted price
+  // A size with no discountType of its own ("Default") inherits the product
+  // default discount — that's what gets saved, so the preview uses it too.
+  const resolveSizeDiscount = (size: SizeDetail) =>
+    size.discountType
+      ? { discountType: size.discountType, discount: size.discount ?? 0 }
+      : {
+          discountType: formData.discountType ?? null,
+          discount: formData.discount ?? 0,
+        };
+
+  // True if any size (via its own or the inherited default discount) is
+  // discounted — the start/end window applies whenever that's the case.
+  const hasAnyDiscount =
+    formData.discount > 0 ||
+    formData.selectedColors.some((colorId) =>
+      (sizeSelections[colorId] || []).some(
+        (s) => (resolveSizeDiscount(s).discount ?? 0) > 0,
+      ),
+    );
+
+  // Discount window sent to the API: null/null = no expiry.
+  const discountWindowPayload = () =>
+    hasAnyDiscount && formData.discountStart && formData.discountEnd
+      ? {
+          discountStart: new Date(formData.discountStart),
+          discountEnd: new Date(formData.discountEnd),
+        }
+      : { discountStart: null, discountEnd: null };
+
+  // What each size is saved with: "Default" resolves to the product default.
+  const sizePayloadDiscount = (size: SizeDetail) => {
+    const { discountType, discount } = resolveSizeDiscount(size);
+    return discount > 0 && discountType
+      ? { discountType, discount }
+      : { discountType: null, discount: 0 };
+  };
+
   const calculateSizeDiscountedPrice = (size: SizeDetail) => {
-    const basePrice = size.price || formData.basePrice;
-
-    if (!size.discount || size.discount <= 0 || !size.discountType) {
-      return basePrice;
-    }
-
-    if (size.discountType === "PERCENT") {
-      return basePrice * (1 - size.discount / 100);
-    } else {
-      return Math.max(0, basePrice - size.discount);
-    }
+    const { discountType, discount } = resolveSizeDiscount(size);
+    return applyDiscount(
+      Number(size.price) || formData.basePrice,
+      discount,
+      discountType,
+    );
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -576,6 +646,37 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
     setColorUseDefault((prev) => ({ ...prev, [colorId]: useDefault }));
   };
 
+  // The product discount is only the default for sizes. When it changes,
+  // push the new default into sizes that are following it — ones on
+  // "Default" (no type) or still equal to the old default — and leave sizes
+  // with their own custom discount untouched.
+  const propagateDefaultDiscount = (
+    nextType: "PERCENT" | "FIXED" | undefined,
+    nextDiscount: number,
+  ) => {
+    const prevType = formData.discountType;
+    const prevDiscount = formData.discount;
+
+    setSizeSelections((prev) => {
+      let changed = false;
+      const next = Object.fromEntries(
+        Object.entries(prev).map(([colorId, sizes]) => [
+          Number(colorId),
+          sizes.map((size) => {
+            const followsDefault =
+              !size.discountType ||
+              (size.discountType === prevType &&
+                (size.discount ?? 0) === prevDiscount);
+            if (!followsDefault) return size;
+            changed = true;
+            return { ...size, discountType: nextType, discount: nextDiscount };
+          }),
+        ]),
+      );
+      return changed ? next : prev;
+    });
+  };
+
   const handleDiscountTypeChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
@@ -586,29 +687,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
       ...prev,
       discountType: value,
     }));
-
-    setSizeSelections((prev) => {
-      let changed = false;
-
-      const next = Object.fromEntries(
-        Object.entries(prev).map(([colorId, sizes]) => [
-          Number(colorId),
-          sizes.map((size) => {
-            // only update inherited discounts
-            // if (!size.discountType) {
-            changed = true;
-            return {
-              ...size,
-              discountType: value,
-            };
-            // }
-            return size;
-          }),
-        ]),
-      );
-
-      return changed ? next : prev;
-    });
+    propagateDefaultDiscount(value, formData.discount);
   };
 
   const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -619,28 +698,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
       ...prev,
       discount: value,
     }));
-
-    setSizeSelections((prev) => {
-      let changed = false;
-
-      const next = Object.fromEntries(
-        Object.entries(prev).map(([colorId, sizes]) => [
-          Number(colorId),
-          sizes.map((size) => {
-            // if (!size.discountType) {
-            changed = true;
-            return {
-              ...size,
-              discount: value,
-            };
-            // }
-            return size;
-          }),
-        ]),
-      );
-
-      return changed ? next : prev;
-    });
+    propagateDefaultDiscount(formData.discountType, value);
   };
 
   const handleDiscountStartChange = (
@@ -725,42 +783,54 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
       }
     }
 
-    // Validate discount dates
-    if (formData.discount > 0) {
-      if (new Date(formData.discountStart) > new Date(formData.discountEnd)) {
-        return "Discount end date must be after start date";
+    // Default discount (pre-fills sizes)
+    const defaultErr = discountError(
+      formData.basePrice,
+      formData.discount,
+      formData.discountType,
+      "Discount",
+    );
+    if (defaultErr) return defaultErr;
+
+    // Every size's effective discount (own, or inherited default)
+    for (const colorId of formData.selectedColors) {
+      const color = colors.find((c) => c.id === colorId);
+      for (const size of sizeSelections[colorId] || []) {
+        const { discountType, discount } = resolveSizeDiscount(size);
+        const err = discountError(
+          Number(size.price) || formData.basePrice,
+          discount,
+          discountType,
+          `Size discount${color ? ` (${color.name})` : ""}`,
+        );
+        if (err) return err;
       }
     }
 
-    // Validate size-specific discounts
-    for (const colorId of formData.selectedColors) {
-      const sizes = sizeSelections[colorId] || [];
-      for (const size of sizes) {
-        if (size.discountType && size.discount) {
-          if (size.discountType === "PERCENT" && size.discount > 100) {
-            return `Size discount percentage cannot exceed 100%`;
-          }
-          if (
-            size.discountType === "FIXED" &&
-            size.discount > (size.price || formData.basePrice)
-          ) {
-            return `Fixed discount cannot exceed the price`;
-          }
-        }
-      }
+    // Discount window: both set (a timed discount) or both empty (no expiry)
+    if (hasAnyDiscount) {
+      if (!!formData.discountStart !== !!formData.discountEnd)
+        return "Set both discount start and end, or clear both for a discount with no expiry";
+      if (
+        formData.discountStart &&
+        new Date(formData.discountStart) >= new Date(formData.discountEnd)
+      )
+        return "Discount end must be after start";
     }
 
     return null;
   };
 
   // ─── Discounted price preview ─────────────────────────────────────────────
-  const discountedPrice = useMemo(() => {
-    if (formData.discount <= 0) return formData.basePrice;
-    if (formData.discountType === "PERCENT") {
-      return formData.basePrice * (1 - formData.discount / 100);
-    }
-    return Math.max(0, formData.basePrice - formData.discount);
-  }, [formData.basePrice, formData.discount, formData.discountType]);
+  const discountedPrice = useMemo(
+    () =>
+      applyDiscount(
+        formData.basePrice,
+        formData.discount,
+        formData.discountType,
+      ),
+    [formData.basePrice, formData.discount, formData.discountType],
+  );
 
   const handleTagDropDown = () => {
     setShowDropdown(!showDropdown);
@@ -806,8 +876,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                     sku: size.sku || "",
                     price: Number(size.price) || Number(formData.basePrice),
                     quantity: Math.max(0, Number(size.quantity) || 0),
-                    discountType: size.discountType,
-                    discount: size.discount,
+                    ...sizePayloadDiscount(size),
                   }));
 
                 return {
@@ -832,14 +901,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           weight: Number(formData.weight),
           discountType: formData.discountType,
           discount: Number(formData.discount),
-          discountStart:
-            Number(formData.discount) > 0 && formData.discountStart
-              ? new Date(formData.discountStart)
-              : null,
-          discountEnd:
-            Number(formData.discount) > 0 && formData.discountEnd
-              ? new Date(formData.discountEnd)
-              : null,
+          ...discountWindowPayload(),
           note: formData.note || undefined,
           deliveryEstimate: formData.deliveryEstimate || undefined,
           productDetails: formData.productDetails || undefined,
@@ -920,8 +982,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
                 sku: size.sku || "",
                 price: Number(size.price) || Number(formData.basePrice),
                 quantity: Math.max(0, Number(size.quantity) || 0),
-                discountType: size.discountType,
-                discount: size.discount,
+                ...sizePayloadDiscount(size),
               }));
             }
 
@@ -940,14 +1001,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           showColor: formData.showColor,
           discountType: formData.discountType,
           discount: formData.discount,
-          discountStart:
-            Number(formData.discount) > 0 && formData.discountStart
-              ? new Date(formData.discountStart)
-              : undefined,
-          discountEnd:
-            Number(formData.discount) > 0 && formData.discountEnd
-              ? new Date(formData.discountEnd)
-              : undefined,
+          ...discountWindowPayload(),
           note: formData.note || undefined,
           deliveryEstimate: formData.deliveryEstimate || undefined,
           productDetails: formData.productDetails || undefined,
@@ -1270,7 +1324,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
           {/* ── Discount ── */}
           <FormSection
             title="Price"
-            description="Set up product discount (applies to all sizes by default)"
+            description="Default discount pre-filled into every size. Customers are charged each size's own price and discount (see Variant & Sizes). The start/end window switches all size discounts on and off; leave both empty for no expiry."
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* {isEditMode && ( */}
@@ -1312,7 +1366,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
               {/* {isEditMode && ( */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Final Price
+                  Default Final Price
                 </label>
                 <input
                   type="text"
@@ -1325,25 +1379,25 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date
+                  Start Date &amp; Time
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={formData.discountStart}
                   onChange={handleDiscountStartChange}
-                  disabled={!formData.discount || formData.discount <= 0}
+                  disabled={!hasAnyDiscount}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  End Date
+                  End Date &amp; Time
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={formData.discountEnd}
                   onChange={handleDiscountEndChange}
-                  disabled={!formData.discount || formData.discount <= 0}
+                  disabled={!hasAnyDiscount}
                 />
               </div>
             </div>

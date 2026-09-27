@@ -28,6 +28,7 @@ import useFetchSeasonalCategories, {
 } from "@/hooks/Homepage/SeasonalCategories/useFetchSeasonalCategories";
 import { useHasPermission } from "@/context/PermissionsContext";
 import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
+import { formatDateTime, toDateTimeLocal } from "@/utils/datetime";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -63,19 +64,8 @@ const inputClass = (error?: string) =>
     error ? "border-red-400 bg-red-50" : "border-gray-300 bg-white"
   }`;
 
-const toLocalDatetimeString = (iso: string | null) => {
-  if (!iso) return "";
-  return iso.slice(0, 16);
-};
-
-const formatDateDisplay = (iso: string | null) => {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
+const formatDateDisplay = (iso: string | null) =>
+  iso ? formatDateTime(iso) : null;
 
 const getScheduleStatus = (
   cat: SeasonalCategory,
@@ -189,8 +179,8 @@ const AllSeasonalCategoriesComp: React.FC = () => {
       link: cat.link,
       sortOrder: cat.sortOrder,
       isActive: cat.isActive,
-      startDate: toLocalDatetimeString(cat.startDate),
-      endDate: toLocalDatetimeString(cat.endDate),
+      startDate: toDateTimeLocal(cat.startDate),
+      endDate: toDateTimeLocal(cat.endDate),
     });
     setImagePreview(cat.image || null);
     setValidationErrors({});

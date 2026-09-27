@@ -53,6 +53,10 @@ const ProductItem = ({
     router.push(`/products/${product.slug}`);
   };
 
+  // Same rules as the listing cards (EachProductShow).
+  const salePrice = product.price ?? product.basePrice;
+  const isDiscounted = product.basePrice - salePrice >= 1;
+
   return (
     <div
       onClick={handleClick}
@@ -67,18 +71,25 @@ const ProductItem = ({
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
         />
-        {product.discount > 0 && (
+        {isDiscounted && (
           <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            -{product.discount}%
+            {product.discountType === "PERCENT"
+              ? `-${product.discount}%`
+              : `-৳${(product.basePrice - salePrice).toLocaleString()}`}
           </div>
         )}
       </div>
       <p className="text-[11px] sm:text-xs font-medium text-gray-800 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
         {product.title}
       </p>
-      {product.price && (
+      {salePrice != null && (
         <p className="text-[10px] sm:text-xs font-semibold text-gray-900">
-          ৳{product.price.toLocaleString()}
+          ৳{salePrice.toLocaleString()}
+          {isDiscounted && (
+            <span className="ml-1.5 font-normal text-gray-400 line-through">
+              ৳{product.basePrice.toLocaleString()}
+            </span>
+          )}
         </p>
       )}
     </div>

@@ -36,17 +36,17 @@ const WishlistComponent = () => {
         pushGTMEvent({
           event: "remove_from_wishlist",
           currency: "BDT",
-          value: found.price,
+          value: found.price ?? found.basePrice,
           items: [
             {
               item_id: String(found.id),
               item_name: found.title,
-              price: found.price,
+              price: found.price ?? found.basePrice,
               discount:
-                found.basePrice > found.price
-                  ? found.basePrice - found.price
+                found.basePrice > (found.price ?? found.basePrice)
+                  ? found.basePrice - (found.price ?? found.basePrice)
                   : 0,
-              is_on_sale: found.basePrice > found.price,
+              is_on_sale: found.basePrice > (found.price ?? found.basePrice),
             },
           ],
         });
@@ -87,17 +87,17 @@ const WishlistComponent = () => {
           pushGTMEvent({
             event: "remove_from_wishlist",
             currency: "BDT",
-            value: found.price,
+            value: found.price ?? found.basePrice,
             items: [
               {
                 item_id: String(found.id),
                 item_name: found.title,
-                price: found.price,
+                price: found.price ?? found.basePrice,
                 discount:
-                  found.basePrice > found.price
-                    ? found.basePrice - found.price
+                  found.basePrice > (found.price ?? found.basePrice)
+                    ? found.basePrice - (found.price ?? found.basePrice)
                     : 0,
-                is_on_sale: found.basePrice > found.price,
+                is_on_sale: found.basePrice > (found.price ?? found.basePrice),
               },
             ],
           });
@@ -312,9 +312,9 @@ const WishlistComponent = () => {
 
                     <div className="mt-auto pt-1">
                       <span className="text-[14px] text-gray-700 tracking-tight">
-                        ৳{item.price.toLocaleString()}
+                        ৳{(item.price ?? item.basePrice).toLocaleString()}
                       </span>
-                      {item.basePrice > item.price && (
+                      {item.basePrice - (item.price ?? item.basePrice) >= 1 && (
                         <span className="ml-2 text-[12px] text-red-700 line-through">
                           ৳{item.basePrice.toLocaleString()}
                         </span>
