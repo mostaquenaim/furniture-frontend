@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
+import { formatDateTime, toDateTimeLocal } from "@/utils/datetime";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,11 +62,6 @@ const inputCls = (error?: string) =>
     error ? "border-red-400 bg-red-50" : "border-gray-300"
   }`;
 
-const toLocalDate = (iso: string) => {
-  if (!iso) return "";
-  return iso.slice(0, 10);
-};
-
 function getBannerStatus(banner: UrgencyBanner): {
   label: string;
   color: string;
@@ -108,10 +104,14 @@ const UrgencyBannerManagement: React.FC = () => {
     const errors: Record<string, string> = {};
     if (!formData.message.trim()) errors.message = "Message is required";
     else if (formData.message.trim().length > 500) errors.message = "Max 500 characters";
-    if (!formData.startDate) errors.startDate = "Start date is required";
-    if (!formData.endDate) errors.endDate = "End date is required";
-    if (formData.startDate && formData.endDate && formData.endDate < formData.startDate)
-      errors.endDate = "End date must be after start date";
+    if (!formData.startDate) errors.startDate = "Start date & time is required";
+    if (!formData.endDate) errors.endDate = "End date & time is required";
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      new Date(formData.endDate) <= new Date(formData.startDate)
+    )
+      errors.endDate = "End must be after start";
     if (
       formData.link?.trim() &&
       !formData.link.trim().startsWith("/") &&
@@ -147,8 +147,8 @@ const UrgencyBannerManagement: React.FC = () => {
       message: banner.message,
       eventType: banner.eventType ?? "",
       link: banner.link ?? "",
-      startDate: toLocalDate(banner.startDate),
-      endDate: toLocalDate(banner.endDate),
+      startDate: toDateTimeLocal(banner.startDate),
+      endDate: toDateTimeLocal(banner.endDate),
       isActive: banner.isActive,
     });
     setValidationErrors({});
@@ -369,7 +369,7 @@ interface ViewRowProps {
 
 const ViewRow: FC<ViewRowProps> = ({ banner, disabled, onEdit, onDelete, onToggle }) => {
   const status = getBannerStatus(banner);
-  const fmt = (d: string) => new Date(d).toLocaleDateString();
+  const fmt = (d: string) => formatDateTime(d);
 
   return (
     <tr className="hover:bg-gray-50 transition-colors group">
@@ -492,7 +492,7 @@ const EditRow: FC<EditRowProps> = ({
         <div>
           <label className="text-[10px] text-gray-500 uppercase tracking-wide">Start *</label>
           <input
-            type="date"
+            type="datetime-local"
             value={formData.startDate}
             onChange={(e) => onFieldChange("startDate", e.target.value)}
             className={inputCls(errors.startDate)}
@@ -502,7 +502,7 @@ const EditRow: FC<EditRowProps> = ({
         <div>
           <label className="text-[10px] text-gray-500 uppercase tracking-wide">End *</label>
           <input
-            type="date"
+            type="datetime-local"
             value={formData.endDate}
             onChange={(e) => onFieldChange("endDate", e.target.value)}
             className={inputCls(errors.endDate)}

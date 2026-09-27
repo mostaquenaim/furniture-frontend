@@ -19,7 +19,6 @@ export function QuickShopModal({
 }) {
   const { product, isLoading } = useFetchAProduct(slug);
 
-  console.log(product, "product");
   const router = useRouter();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -64,17 +63,13 @@ export function QuickShopModal({
 
   if (!product) return null;
 
-  // ProductSize has no date window of its own — its price is already final,
-  // so it's used as-is rather than gating it behind the *product-level*
-  // discount window (which would hide a real, currently-charged variant
-  // discount whenever the product-level window happens to be inactive).
-  // Falls back to product.price/basePrice — already window-checked
-  // server-side via sanitizeDiscount — only when no variant is selected.
+  // The selected size's price is exactly what checkout charges — the API
+  // already resets it to basePrice outside the product's discount window
+  // (sanitizeDiscount). product.price/basePrice (the cheapest size) is only
+  // the fallback before a variant is resolved.
   const basePrice = currentVariant?.size?.basePrice ?? product.basePrice;
   const discountedPrice =
     currentVariant?.size?.price ?? product.price ?? basePrice;
-
-  console.log(discountedPrice, "discountedPrice");
 
   const maxQuantity = Math.min(10, currentVariant?.size?.quantity || 0);
 
@@ -156,23 +151,21 @@ export function QuickShopModal({
           </h2>
 
           <div className="mb-6">
-            {discountedPrice < basePrice ? (
+            {basePrice - discountedPrice >= 1 ? (
               <div className="flex items-center gap-3">
                 <p className="text-lg font-medium text-red-600">
-                  <TakaIcon /> {discountedPrice}
+                  <TakaIcon /> {discountedPrice.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-400 line-through">
-                  <TakaIcon /> {basePrice}
+                  <TakaIcon /> {basePrice.toLocaleString()}
                 </p>
-                {basePrice - discountedPrice >= 1 && (
-                  <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
-                    ৳{basePrice - discountedPrice} OFF
-                  </span>
-                )}
+                <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
+                  ৳{(basePrice - discountedPrice).toLocaleString()} OFF
+                </span>
               </div>
             ) : (
               <p className="text-lg font-medium">
-                <TakaIcon /> {basePrice}
+                <TakaIcon /> {basePrice.toLocaleString()}
               </p>
             )}
           </div>

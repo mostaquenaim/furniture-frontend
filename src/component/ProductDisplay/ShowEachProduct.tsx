@@ -547,7 +547,7 @@ export default function ShowEachProduct() {
         });
       }
 
-      router.push("/checkout");
+      router.push("/checkout/shipping-address");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         const errorMessage = (err.response?.data as { message?: string })?.message;
@@ -635,12 +635,10 @@ export default function ShowEachProduct() {
     return <div className="p-20 text-center">Product Not Found</div>;
 
   // Price Calculation
-  // ProductSize has no date window of its own — its price is already final,
-  // so it's used as-is rather than gating it behind the *product-level*
-  // discount window (which would hide a real, currently-charged variant
-  // discount whenever the product-level window happens to be inactive).
-  // Falls back to product.price/basePrice — already window-checked
-  // server-side via sanitizeDiscount — only when no variant is selected.
+  // The selected size's price is exactly what checkout charges — the API
+  // already resets it to basePrice outside the product's discount window
+  // (sanitizeDiscount). product.price/basePrice (the cheapest size) is only
+  // the fallback before a variant is resolved.
   const basePrice = currentVariant?.size?.basePrice ?? product.basePrice;
   const discountedPrice =
     currentVariant?.size?.price ?? product.price ?? basePrice;
@@ -700,7 +698,7 @@ export default function ShowEachProduct() {
               <div className="flex-1">
                 <p className="text-sm font-medium mb-1">{product.title}</p>
                 <p className="text-xs text-gray-600 mb-1">
-                  ৳{discountedPrice.toFixed(2)}
+                  ৳{discountedPrice.toLocaleString()}
                 </p>
                 <p className="text-xs text-gray-500">
                   Color: {currentVariant?.color?.color?.name}
@@ -881,7 +879,9 @@ export default function ShowEachProduct() {
               ৳{discountedPrice.toLocaleString()}
             </p>
             {isDiscountActive && (
-              <p className="text-gray-400 line-through text-lg">৳{basePrice}</p>
+              <p className="text-gray-400 line-through text-lg">
+                ৳{basePrice.toLocaleString()}
+              </p>
             )}
           </div>
           {/* Fully out-of-stock: every color/size was filtered out server-side.
