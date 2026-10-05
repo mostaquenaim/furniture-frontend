@@ -21,3 +21,12 @@ export const getVisitorId = async () => {
 
   return visitorId;
 };
+
+// Query params that identify the cart owner on the shared /cart/* routes.
+// Logged-in requests are identified by their token; guests must send their
+// visitorId, or the backend rejects the request.
+export const cartOwnerParams = async (): Promise<{ visitorId?: string }> => {
+  if (isAuthenticated()) return {};
+  const visitorId = await getVisitorId();
+  return visitorId ? { visitorId } : {};
+};

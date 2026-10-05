@@ -34,7 +34,7 @@ import useFetchCarts from "@/hooks/Cart/useCarts";
 import useFetchRelatedProducts from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import useFetchProducts from "@/hooks/Products/useFetchProducts";
 import useFetchProductReview from "@/hooks/Products/Review/useFetchProductReview";
-import { getVisitorId } from "@/utils/visitor";
+import { cartOwnerParams, getVisitorId } from "@/utils/visitor";
 import useIsWished from "@/hooks/Wish/useIsWished";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
 import { GTMProduct, pushGTMEvent } from "@/lib/gtm";
@@ -503,8 +503,20 @@ export default function ShowEachProduct() {
     try {
       const productSizeId = selectedSizeId || currentVariant?.color?.sizes?.[0]?.id;
 
-      await axiosSecure.delete("/cart/clear");
-      await axiosSecure.post("/cart/items", { productSizeId, quantity });
+      if (isAuthenticated()) {
+        await axiosSecure.delete("/cart/clear");
+        await axiosSecure.post("/cart/items", { productSizeId, quantity });
+      } else {
+        // Guests own their cart by visitorId (not reachable until guest
+        // checkout opens Buy Now to guests — see the gate above)
+        const params = await cartOwnerParams();
+        await axiosSecure.delete("/cart/clear", { params });
+        await axiosPublic.post("/guest/cart/items", {
+          visitorId: params.visitorId,
+          productSizeId,
+          quantity,
+        });
+      }
 
       refetch();
 

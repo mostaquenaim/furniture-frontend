@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -16,8 +15,7 @@ import { useEffect, useMemo } from "react";
 import useFetchRelatedProducts from "@/hooks/Products/RelatedProducts/useFetchRelatedProducts";
 import LoadingDots from "../Loading/LoadingDS";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
-import { isAuthenticated } from "@/utils/auth";
-import { getVisitorId } from "@/utils/visitor";
+import { cartOwnerParams } from "@/utils/visitor";
 import { pushGTMEvent } from "@/lib/gtm";
 
 const buildCartItem = (item: any) => {
@@ -205,9 +203,11 @@ const CartItemComponent = ({
 
   // update quantity
   const updateQuantity = async (quantity: number) => {
-    await axiosSecure.patch(`/cart/items/${item.id}`, {
-      quantity,
-    });
+    await axiosSecure.patch(
+      `/cart/items/${item.id}`,
+      { quantity },
+      { params: await cartOwnerParams() },
+    );
 
     pushGTMEvent({
       event: "add_to_cart",
@@ -221,10 +221,8 @@ const CartItemComponent = ({
 
   // remove cart / delete cart
   const handleRemoveItem = async () => {
-    let visitorId = null;
-    isAuthenticated() && (visitorId = getVisitorId());
     await axiosSecure.delete(`/cart/items/${item.id}`, {
-      data: { visitorId },
+      params: await cartOwnerParams(),
     });
 
     pushGTMEvent({
