@@ -149,7 +149,7 @@ const AllProducts = () => {
         `/product/${productId}/toggle-status`,
       );
 
-      //   console.log(response.data);
+      // // console.log(response.data);
 
       // Refetch products to update the list
       await refetch();
