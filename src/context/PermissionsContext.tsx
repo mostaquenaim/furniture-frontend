@@ -79,3 +79,15 @@ export const useHasPermission = (action: string | string[]) => {
   const required = Array.isArray(action) ? action : [action];
   return required.some((a) => actions.includes(a));
 };
+
+/**
+ * Fail-CLOSED variant for destructive controls (e.g. permanent delete): false
+ * while loading or on error, so the control only appears once the backend has
+ * confirmed the grant. The backend still enforces the permission either way.
+ */
+export const useHasPermissionStrict = (action: string) => {
+  const { role, actions, loading, error } = usePermissions();
+  if (loading || error) return false;
+  if (role === "SUPERADMIN") return true;
+  return actions.includes(action);
+};

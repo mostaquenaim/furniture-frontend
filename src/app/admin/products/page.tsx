@@ -15,6 +15,8 @@ import {
 } from "@/types/product.types";
 import { Search } from "lucide-react";
 import DemoGenerateButton from "@/component/admin/DemoGenerateButton";
+import ProductDeleteModal from "@/component/admin/Product/ProductDeleteModal";
+import { useHasPermissionStrict } from "@/context/PermissionsContext";
 import {
   SortableHeader,
   ariaSort,
@@ -54,6 +56,9 @@ const AllProducts = () => {
   const [isActive, setIsActive] = useState<boolean | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  // superadmin, or a role a superadmin granted PRODUCT_DELETE
+  const canDelete = useHasPermissionStrict("PRODUCT_DELETE");
   // newest products first by default
   const [sort, setSort] = useState<SortState<ProductSortKey>>({
     sortBy: "createdAt",
@@ -162,6 +167,16 @@ const AllProducts = () => {
       // toast.error("Failed to update product status");
     } finally {
       setTogglingId(null);
+    }
+  };
+
+  const handleDeleted = () => {
+    setDeleteTarget(null);
+    // deleting the only row on the last page would leave an empty page
+    if (products.length === 1 && currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    } else {
+      refetch();
     }
   };
 
@@ -449,6 +464,15 @@ const AllProducts = () => {
                               ? "Disable"
                               : "Enable"}
                         </button>
+                        {canDelete && (
+                          <button
+                            onClick={() => setDeleteTarget(product)}
+                            className="text-red-700 hover:text-red-900 text-sm font-medium"
+                            title="Permanently delete product"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -561,6 +585,14 @@ const AllProducts = () => {
                         ? "Disable"
                         : "Enable"}
                   </button>
+                  {canDelete && (
+                    <button
+                      onClick={() => setDeleteTarget(product)}
+                      className="text-red-700 font-medium"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -633,6 +665,14 @@ const AllProducts = () => {
             Page {meta.page} of {meta.totalPages}
           </div>
         </div>
+      )}
+
+      {deleteTarget && (
+        <ProductDeleteModal
+          product={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={handleDeleted}
+        />
       )}
     </div>
   );
