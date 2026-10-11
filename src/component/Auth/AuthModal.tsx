@@ -51,7 +51,6 @@ export default function AuthModal({
   const [customerName, setCustomerName] = useState("");
   const [password, setPassword] = useState("");
   const [mobileNumber, setMobileNumber] = useState("+880");
-  const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -63,7 +62,6 @@ export default function AuthModal({
   >("email");
 
   const [useMobileForSignin, setUseMobileForSignin] = useState<boolean>(true);
-  const [showTooltip, setShowTooltip] = useState(false);
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -176,7 +174,6 @@ export default function AuthModal({
 
       interface Payload {
         password?: string;
-        keepSignedIn: boolean;
         phone?: string | null;
         email?: string | null;
         // clientIp?: string; // Add client IP to payload
@@ -184,7 +181,6 @@ export default function AuthModal({
 
       const payload: Payload = {
         // password,
-        keepSignedIn,
         // clientIp,
       };
 
@@ -288,21 +284,16 @@ export default function AuthModal({
     try {
       interface payloadType {
         phone: string | null;
-        email?: string | null;
         password?: string;
         name: string;
-        keepSignedIn: boolean;
       }
+      // No email here: the sign-up form has no email field, and the shared
+      // `email` state may hold leftovers from the sign-in form.
       const payload: payloadType = {
         phone: mobileNumber,
         password: password || undefined,
         name: customerName,
-        keepSignedIn,
       };
-
-      if (email.trim()) {
-        payload.email = email.trim();
-      }
 
       const res = await axiosPublic.post("/auth/register", payload, {
         withCredentials: true,
@@ -352,7 +343,6 @@ export default function AuthModal({
         "/auth/verify-otp",
         {
           code: otp,
-          keepSignedIn,
           emailOrPhone:
             verificationTarget === "email" ? email : `${mobileNumber}`,
           type: verificationTarget,
@@ -467,38 +457,6 @@ export default function AuthModal({
     );
   };
 
-  // keep sign signed info tooltip
-  const keepMeSignedInInfo = () => {
-    return (
-      <div className="relative inline-block ml-1">
-        <span
-          onClick={() => setShowTooltip(!showTooltip)}
-          className="text-gray-400 cursor-pointer select-none"
-        >
-          ⓘ
-        </span>
-
-        {showTooltip && (
-          <div className="absolute z-50 top-7 left-1/2 -translate-x-1/2 w-64">
-            {/* Tooltip box */}
-            <div className="relative bg-gray-700 text-white text-xs p-3 rounded shadow-lg font-extralight">
-              Selecting “keep me signed in” reduces the number of times you will
-              be asked to sign in on this device. To keep your account secure,
-              use this option only on your personal device.
-              {/* Arrow */}
-              <div
-                className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 
-                        border-l-8 border-r-8 border-b-8
-                        border-l-transparent border-r-transparent
-                        border-b-gray-700"
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div
       className={`fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/20 transition-opacity duration-300 ease-out
@@ -583,20 +541,6 @@ export default function AuthModal({
 
                 {/* password  */}
                 {passWordField()}
-
-                <div className="flex items-center mb-4">
-                  <input
-                    type="checkbox"
-                    id="keepSignedIn"
-                    checked={keepSignedIn}
-                    onChange={(e) => setKeepSignedIn(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="keepSignedIn" className="text-sm">
-                    Keep me signed in
-                  </label>
-                  {keepMeSignedInInfo()}
-                </div>
 
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
@@ -683,20 +627,6 @@ export default function AuthModal({
                   <div className="flex gap-2">{mobileNumberField()}</div>
                 </div>
                 {/* {passWordField()} */}
-                {/* keep me signed in  */}
-                <div className="flex items-center mb-4">
-                  <input
-                    type="checkbox"
-                    id="keepSignedInSignup"
-                    checked={keepSignedIn}
-                    onChange={(e) => setKeepSignedIn(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="keepSignedInSignup" className="text-sm">
-                    Keep me signed in
-                  </label>
-                  {keepMeSignedInInfo()}
-                </div>
                 {/* error  */}
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
                 {/* submit button */}

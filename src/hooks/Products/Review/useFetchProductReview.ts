@@ -14,6 +14,11 @@ interface UseFetchProductReviewParams {
   slug?: string;
   minRating?: number;
   maxRating?: number;
+  /**
+   * Staff-only (needs REVIEW_MANAGE): setting it uses the moderation endpoint,
+   * which can return hidden reviews. null = all, true = hidden only.
+   * Leave undefined on the storefront — the public list is visible-only.
+   */
   isHidden?: boolean | null;
   isFeatured?: boolean;
   fromDate?: string; // YYYY-MM-DD
@@ -54,8 +59,12 @@ const useFetchProductReview = ({
     if (fromDate) params.append("fromDate", fromDate);
     if (toDate) params.append("toDate", toDate);
 
+    // The public list refuses isHidden; hidden reviews come only from the
+    // staff moderation endpoint
+    const endpoint =
+      isHidden !== undefined ? "/product/admin/reviews" : "/product/reviews";
     const response = await axiosSecure.get<ProductReviewsResponse>(
-      `/product/reviews?${params.toString()}`,
+      `${endpoint}?${params.toString()}`,
     );
 
     return response.data;

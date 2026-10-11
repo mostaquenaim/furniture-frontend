@@ -3,7 +3,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import useFetchProducts from "@/hooks/Products/useFetchProducts";
+import useFetchAdminProducts from "@/hooks/Products/useFetchAdminProducts";
 import { FiChevronLeft, FiChevronRight, FiRefreshCw } from "react-icons/fi";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import LoadingDots from "@/component/Loading/LoadingDS";
@@ -67,7 +67,7 @@ const AllProducts = () => {
 
   const axiosSecure = useAxiosSecure();
 
-  const { products, meta, isLoading, isFetching, refetch } = useFetchProducts({
+  const { products, meta, isLoading, isFetching, refetch } = useFetchAdminProducts({
     page: currentPage,
     limit: PRODUCTS_PER_PAGE,
     search: search || undefined,
