@@ -26,6 +26,7 @@ const useFetchColors = ({
       const response = await axiosPublic.get<Color[]>(`/colors?isActive=${isActive}`);
       return response.data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return {

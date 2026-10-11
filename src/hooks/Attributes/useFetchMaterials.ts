@@ -38,6 +38,7 @@ const useFetchMaterials = ({
       );
       return response.data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return {

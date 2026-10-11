@@ -19,6 +19,7 @@ const useFetchPromoBanners = (isActive?: ActiveFilter) => {
       const { data } = await axiosPublic.get("/promo-banners", { params });
       return data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return { banners: data ?? [], isLoading, refetch };
