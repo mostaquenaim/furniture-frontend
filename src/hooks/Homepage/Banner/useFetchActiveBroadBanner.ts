@@ -12,6 +12,7 @@ const useFetchActiveBroadBanner = () => {
       const { data } = await axiosSecure.get("/broad-banner/active");
       return data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return { banner: data ?? null, isLoading, refetch };
