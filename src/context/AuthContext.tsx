@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { getCustomerInfo } from "@/utils/customer";
+import { getCustomerInfo, refreshSession } from "@/utils/customer";
 
 type User = {
   id: string;
@@ -63,6 +63,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
+
+    // Keeps an active customer signed in; the old token stays valid meanwhile
+    refreshSession().then((fresh) => {
+      if (fresh) setToken(fresh);
+    });
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
