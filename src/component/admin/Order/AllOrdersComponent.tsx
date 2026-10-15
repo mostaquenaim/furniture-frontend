@@ -161,6 +161,46 @@ const PAYMENT_STATUS: Record<PaymentStatus, { label: string; color: string }> =
     ON_HOLD: { label: "On Hold", color: "bg-yellow-50 text-yellow-700" },
   };
 
+const renderPaymentBadge = (order: FullOrder) => {
+  const isCod = order.deliveryMethod === "COD";
+
+  if (isCod) {
+    // If order is delivered or paid
+    if (order.status === "DELIVERED" || order.paymentStatus === "PAID") {
+      return (
+        <Badge label="COD (Paid)" colorClass="bg-emerald-50 text-emerald-700" />
+      );
+    }
+    // If partial deposit was paid for COD
+    if (order.paymentStatus === "PARTIALLY_PAID") {
+      return (
+        <Badge
+          label="COD (Deposit Paid)"
+          colorClass="bg-amber-50 text-amber-700"
+        />
+      );
+    }
+    // In-progress COD order (show COD instead of Pending!)
+    return (
+      <Badge
+        label="COD"
+        colorClass="bg-indigo-50 text-indigo-700 font-semibold"
+      />
+    );
+  }
+
+  // Standard Online Payment statuses (Pending, Paid, Failed, etc.)
+  return (
+    <Badge
+      label={PAYMENT_STATUS[order.paymentStatus]?.label ?? order.paymentStatus}
+      colorClass={
+        PAYMENT_STATUS[order.paymentStatus]?.color ??
+        "bg-slate-100 text-slate-600"
+      }
+    />
+  );
+};
+
 const FRAUD_STATUS: Record<
   FraudStatus,
   { label: string; color: string; icon: React.ReactNode }
@@ -519,8 +559,9 @@ function CancelOrderSection({
         <div className="space-y-2 pt-1">
           <p className="text-xs text-slate-500">
             Reserved stock goes back on sale.
-            {willRefund && " Everything paid on this order will be refunded."}
-            {" "}The customer is notified. This can&apos;t be undone.
+            {willRefund &&
+              " Everything paid on this order will be refunded."}{" "}
+            The customer is notified. This can&apos;t be undone.
           </p>
           <textarea
             autoFocus
@@ -838,6 +879,28 @@ function OrderDetailDrawer({
 
           {/* Financials */}
           <DrawerSection title="Financials" tint="slate">
+            <DrawerRow
+              label="Payment Method"
+              value={
+                order.deliveryMethod === "COD"
+                  ? "Cash on Delivery (COD)"
+                  : "Online Payment"
+              }
+            />
+            <DrawerRow
+              label="Payment Status"
+              value={
+                order.deliveryMethod === "COD"
+                  ? order.status === "DELIVERED" ||
+                    order.paymentStatus === "PAID"
+                    ? "COD (Paid)"
+                    : order.paymentStatus === "PARTIALLY_PAID"
+                      ? "COD (Deposit Paid)"
+                      : "Cash on Delivery (COD)"
+                  : (PAYMENT_STATUS[order.paymentStatus]?.label ??
+                    order.paymentStatus)
+              }
+            />
             <DrawerRow
               label="Subtotal"
               value={taka(
@@ -1607,18 +1670,7 @@ export default function AllOrdersComponent() {
               </td>
 
               {/* Payment status */}
-              <td className="px-4 py-3.5">
-                <Badge
-                  label={
-                    PAYMENT_STATUS[order.paymentStatus]?.label ??
-                    order.paymentStatus
-                  }
-                  colorClass={
-                    PAYMENT_STATUS[order.paymentStatus]?.color ??
-                    "bg-slate-100 text-slate-600"
-                  }
-                />
-              </td>
+              <td className="px-4 py-3.5">{renderPaymentBadge(order)}</td>
 
               {/* Fraud status */}
               <td className="px-4 py-3.5">
