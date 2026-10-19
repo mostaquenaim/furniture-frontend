@@ -8,7 +8,12 @@ const message = encodeURIComponent("Hello! I have a question about a product.");
 export default function WhatsAppButton() {
   const pathname = usePathname();
   const { company } = useFetchCompany();
-  const phone = (company?.whatsapp ?? "").replace(/\D/g, "");
+  let phone = (company?.whatsapp ?? "").replace(/\D/g, "");
+
+  // If digits exist and don't start with "+88", prepend "+88"
+  if (phone && !phone.startsWith("+88") && !phone.startsWith("88")) {
+    phone = "+88" + phone;
+  }
 
   if (!phone || pathname.startsWith("/admin")) return null;
 
