@@ -20,6 +20,7 @@ import WhatsAppButton from "@/component/WhatsApp/WhatsAppButton";
 import { Suspense } from "react";
 import PageViewTracker from "@/component/PageView/PageViewTracker";
 import ImageFallbackHandler from "@/component/Shared/ImageFallbackHandler";
+import MessengerButton from "@/component/Messenger/MessengerButton";
 
 const avenir = localFont({
   src: "../../public/fonts/avenir/AvenirNext-Regular.woff",
@@ -65,8 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: company?.metaTitle || company?.name || "Ondorkotha",
-    description:
-      company?.metaDescription || "Premium Furniture Marketplace",
+    description: company?.metaDescription || "Premium Furniture Marketplace",
     ...(company?.favicon && { icons: { icon: company.favicon } }),
     ...(company?.ogImage && {
       openGraph: { images: [company.ogImage] },
@@ -99,7 +99,11 @@ export default async function RootLayout({
           <RoleBasedHeader />
           {children}
           <RoleBasedFooter />
-          <WhatsAppButton />
+          {process.env.NEXT_PUBLIC_IS_MESSENGER_ENABLED ? (
+            <MessengerButton />
+          ) : process.env.NEXT_PUBLIC_IS_WHATSAPP_ENABLED ? (
+            <WhatsAppButton />
+          ) : null}
           <Toaster
             position="top-center"
             toastOptions={{
