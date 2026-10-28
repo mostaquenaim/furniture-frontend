@@ -163,6 +163,7 @@ export default function ShowEachProduct() {
       limit: 8,
       sortBy: "trendScore",
       order: "desc",
+      thumb: true,
     });
 
   const {

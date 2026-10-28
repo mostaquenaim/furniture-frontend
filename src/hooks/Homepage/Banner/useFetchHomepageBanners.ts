@@ -19,6 +19,7 @@ const useFetchHomepageBanners = (isActive?: ActiveFilter) => {
       const { data } = await axiosSecure.get("/homepage-banners", { params });
       return data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return { banners: data ?? [], isLoading, refetch };

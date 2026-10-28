@@ -10,6 +10,7 @@ import LoadingDots from '../Loading/LoadingDS';
 import useAxiosSecure from '@/hooks/Axios/useAxiosSecure';
 import useFetchInvoiceSettings from '@/hooks/Settings/useFetchInvoiceSettings';
 import toast from 'react-hot-toast';
+import { Invoice } from '@/types/invoice';
 
 // ── tiny helpers ────────────────────────────────────────────────────────────
 const taka = (n: number | string) =>
@@ -21,6 +22,7 @@ const StatusPill = ({ status }: { status: string }) => {
     UNPAID:    { bg: 'bg-amber-50 text-amber-700 ring-amber-200',        dot: 'bg-amber-400',   label: 'Pending' },
     CANCELLED: { bg: 'bg-red-50 text-red-600 ring-red-200',              dot: 'bg-red-500',     label: 'Cancelled' },
     REFUNDED:  { bg: 'bg-slate-50 text-slate-500 ring-slate-200',        dot: 'bg-slate-400',   label: 'Refunded' },
+    PARTIALLY_PAID: { bg: 'bg-amber-50 text-amber-700 ring-amber-200',   dot: 'bg-amber-400',   label: 'Partially Paid' },
   };
   const c = cfg[status] ?? cfg.UNPAID;
   return (
@@ -29,6 +31,19 @@ const StatusPill = ({ status }: { status: string }) => {
       {c.label}
     </span>
   );
+};
+
+// Invoice has no status column — derive the badge from the order (same rule as
+// the backend PDF builder). Cancellation/refund wins over the payment state.
+const invoiceStatus = (invoice: Invoice): string => {
+  const orderStatus = invoice.order?.status;
+  const paymentStatus = invoice.order?.paymentStatus;
+
+  if (orderStatus === 'CANCELLED' || orderStatus === 'FAILED') return 'CANCELLED';
+  if (paymentStatus === 'REFUNDED' || paymentStatus === 'PARTIALLY_REFUNDED') return 'REFUNDED';
+  if (paymentStatus === 'PAID' || invoice.paidAt) return 'PAID';
+  if (paymentStatus === 'PARTIALLY_PAID') return 'PARTIALLY_PAID';
+  return 'UNPAID';
 };
 
 // ── main component ───────────────────────────────────────────────────────────
@@ -187,10 +202,10 @@ const InvoiceComp = () => {
               </p>
               <p className="inv-mono text-[#e2c97e] text-xs mt-1">{invoice.invoiceNo}</p>
               <div className="mt-3">
-                <StatusPill status={invoice.order.status ?? 'UNPAID'} />
+                <StatusPill status={invoiceStatus(invoice)} />
                 {/* Print fallback */}
                 <p className="hidden print:block inv-mono text-[10px] text-slate-400 uppercase tracking-widest mt-2">
-                  {invoice.order.status ?? 'UNPAID'}
+                  {invoiceStatus(invoice).replace(/_/g, ' ')}
                 </p>
               </div>
             </div>

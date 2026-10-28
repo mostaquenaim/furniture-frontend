@@ -24,6 +24,7 @@ const useFetchHomepageGallery = (onlyActive = false) => {
       });
       return res.data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return { items: data ?? [], isLoading, refetch };

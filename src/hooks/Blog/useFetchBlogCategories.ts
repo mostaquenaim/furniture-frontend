@@ -25,6 +25,7 @@ const useFetchBlogCategories = () => {
       const res = await axiosPublic.get("/blogs/categories");
       return res.data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return {

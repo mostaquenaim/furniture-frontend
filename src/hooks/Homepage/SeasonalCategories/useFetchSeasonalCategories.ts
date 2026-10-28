@@ -33,6 +33,7 @@ const useFetchSeasonalCategories = (isActive?: ActiveFilter) => {
       const res = await axiosSecure.get("/seasonal-categories", { params });
       return res.data;
     },
+    refetchOnWindowFocus: false,
   });
 
   return { categories: data ?? [], isLoading, refetch };

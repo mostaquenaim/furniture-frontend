@@ -42,6 +42,7 @@ const useFetchBlogs = ({
       return res.data;
     },
     placeholderData: (previousData) => previousData,
+    refetchOnWindowFocus: false,
   });
 
   return {
