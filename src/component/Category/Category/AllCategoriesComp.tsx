@@ -80,6 +80,7 @@ const AllCategoriesComp = () => {
         isLoading={isDeleting}
         title="Delete category?"
         message={`This will permanently delete "${deleteTarget?.name}". This cannot be undone.`}
+        requireTypedText={deleteTarget?.name}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
