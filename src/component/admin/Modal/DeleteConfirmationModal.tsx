@@ -1,11 +1,13 @@
 import { Trash2 } from "lucide-react";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 
 interface ConfirmationModalProps {
   open: boolean;
   title?: string;
   message?: string;
   confirmText?: string;
+  // When set, the confirm button stays disabled until this exact text is typed.
+  requireTypedText?: string;
   cancelText?: string;
   icon?: ReactNode;
   isLoading?: boolean;
@@ -19,6 +21,7 @@ export const DeleteConfirmationModal: FC<ConfirmationModalProps> = ({
   title = "Are you sure?",
   message = "This action cannot be undone.",
   confirmText = "Confirm",
+  requireTypedText,
   cancelText = "Cancel",
   icon,
   isLoading,
@@ -26,7 +29,16 @@ export const DeleteConfirmationModal: FC<ConfirmationModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  const [typed, setTyped] = useState("");
+
+  useEffect(() => {
+    setTyped("");
+  }, [open, requireTypedText]);
+
   if (!open) return null;
+
+  const typedOk =
+    !requireTypedText || typed.trim() === requireTypedText.trim();
 
   const confirmStyle =
     variant === "danger"
@@ -56,6 +68,29 @@ export const DeleteConfirmationModal: FC<ConfirmationModalProps> = ({
         {/* Message */}
         <p className="text-sm text-gray-500 text-center mb-6">{message}</p>
 
+        {requireTypedText && (
+          <label className="block text-sm text-gray-600 mb-6">
+            <span className="block mb-1">
+              Type{" "}
+              <span className="font-semibold text-gray-900">
+                {requireTypedText}
+              </span>{" "}
+              to confirm
+            </span>
+            <input
+              type="text"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && typedOk && !isLoading) onConfirm();
+              }}
+              disabled={isLoading}
+              autoFocus
+              className="w-full gray-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          </label>
+        )}
+
         {/* Actions */}
         <div className="flex gap-3">
           <button
@@ -68,8 +103,8 @@ export const DeleteConfirmationModal: FC<ConfirmationModalProps> = ({
 
           <button
             onClick={onConfirm}
-            disabled={isLoading}
-            className={`flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 ${confirmStyle}`}
+            disabled={isLoading || !typedOk}
+            className={`flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${confirmStyle}`}
           >
             {isLoading ? "Processing..." : confirmText}
           </button>

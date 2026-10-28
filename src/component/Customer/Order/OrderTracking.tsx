@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -314,7 +315,7 @@ const TrackOrderContent = ({ guest = false }: { guest?: boolean }) => {
                       <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden shrink-0">
                         {item.image ? (
                           <img
-                            src={item.image}
+                            src={cldUrl(item.image, 160)}
                             alt={item.name}
                             className="w-full h-full object-cover"
                           />

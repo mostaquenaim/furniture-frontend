@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import { notFound, useParams } from "next/navigation";
 import { Tag, ChevronLeft, Calendar } from "lucide-react";
 import Link from "next/link";
@@ -191,7 +192,11 @@ export default function BlogPostPage() {
         <div className="max-w-6xl mx-auto px-4 md:px-10 mb-20">
           <div className="aspect-video md:aspect-[21/9] overflow-hidden rounded-sm shadow-md">
             <img
-              src={post.image}
+              {...responsiveImg(
+                post.image,
+                "(min-width: 1152px) 1152px, 100vw",
+                1200,
+              )}
               alt={post.title}
               className="w-full h-full object-cover"
             />

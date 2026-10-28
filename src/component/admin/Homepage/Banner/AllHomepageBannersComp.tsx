@@ -23,7 +23,11 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
 import useFetchHomepageBanners from "@/hooks/Homepage/Banner/useFetchHomepageBanners";
-import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
+import {
+  checkImageDimensions,
+  IMAGE_SPECS,
+  specLabel,
+} from "@/utils/imageDimensions";
 
 // Types
 export interface Banner {
@@ -142,6 +146,11 @@ const AllBannersComp: React.FC = () => {
     }
   }, [formData.image, formData.device]);
 
+  const spec =
+    formData.device === "MOBILE"
+      ? IMAGE_SPECS.heroMobile
+      : IMAGE_SPECS.heroDesktop;
+
   const removeImage = useCallback(() => {
     setFormData((prev) => ({ ...prev, image: null }));
     setImagePreview(null);
@@ -205,7 +214,7 @@ const AllBannersComp: React.FC = () => {
         let imageUrl = formData.image;
 
         if (formData.image instanceof File) {
-          imageUrl = await handleUploadWithCloudinary(formData.image);
+          imageUrl = await handleUploadWithCloudinary(formData.image, spec);
         }
 
         const payload = {
@@ -231,7 +240,9 @@ const AllBannersComp: React.FC = () => {
       } catch (error: any) {
         const apiError = error as ApiError;
         toast.error(
-          apiError?.response?.data?.message || error?.message || "Operation failed",
+          apiError?.response?.data?.message ||
+            error?.message ||
+            "Operation failed",
         );
         console.error("Error saving banner:", error);
       } finally {
@@ -349,7 +360,7 @@ const AllBannersComp: React.FC = () => {
                     device={formData.device}
                   />
                 </td>
-                <td className="px-6 py-4 min-w-[220px]">
+                <td className="px-6 py-4 min-w-55">
                   <BannerInfoForm
                     title={formData.title}
                     link={formData.link}
@@ -651,7 +662,9 @@ const BannerImageUpload: React.FC<BannerImageUploadProps> = ({
       </label>
     )}
     <p className="text-[10px] text-gray-400 whitespace-nowrap">
-      {device === "MOBILE" ? specLabel(IMAGE_SPECS.heroMobile) : specLabel(IMAGE_SPECS.heroDesktop)}
+      {device === "MOBILE"
+        ? specLabel(IMAGE_SPECS.heroMobile)
+        : specLabel(IMAGE_SPECS.heroDesktop)}
     </p>
     {error && <p className="text-xs text-red-600">{error}</p>}
   </div>

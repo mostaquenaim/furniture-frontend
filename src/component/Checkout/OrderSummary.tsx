@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { usePathname, useRouter } from "next/navigation";
@@ -136,10 +137,11 @@ const OrderSummary = ({
                 cartItems.map((item: any) => (
                   <div key={item.id} className="flex gap-3">
                     <img
-                      src={
+                      src={cldUrl(
                         item?.productSize?.color?.product?.images?.[0]?.image ||
-                        ""
-                      }
+                          "",
+                        160,
+                      )}
                       alt={
                         item?.productSize?.color?.product?.title || "Product"
                       }

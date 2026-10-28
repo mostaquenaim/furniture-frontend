@@ -1,5 +1,6 @@
 "use client";
 
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -50,7 +51,11 @@ function SaleCard({ product }: { product: Product }) {
           <img
             loading="lazy"
             decoding="async"
-            src={hovered && secondImage ? secondImage.image : mainImage.image}
+            {...responsiveImg(
+              hovered && secondImage ? secondImage.image : mainImage.image,
+              "(min-width: 640px) 25vw, 50vw",
+              1200,
+            )}
             alt={product.title}
             className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.04]"
           />

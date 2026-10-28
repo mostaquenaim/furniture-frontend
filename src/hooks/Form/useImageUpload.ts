@@ -1,3 +1,4 @@
+import { IMAGE_SPECS } from "@/utils/imageDimensions";
 import { useState } from "react";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import { ProductImageItem } from "@/component/admin/Product/ImageUploader";
@@ -7,7 +8,7 @@ export const useImageUpload = () => {
 
   const uploadIfNew = async (img: ProductImageItem): Promise<string> => {
     if (!img.file) return img.preview as string;
-    return await handleUploadWithCloudinary(img.file);
+    return await handleUploadWithCloudinary(img.file, IMAGE_SPECS.product);
   };
 
   const uploadMultipleImages = async (images: ProductImageItem[]) => {

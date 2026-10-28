@@ -461,7 +461,7 @@ export default function CreateEditBlogPage() {
 
       if (formData.imageFile instanceof File) {
         const optimized = await optimizeImage(formData.imageFile);
-        imageUrl = await handleUploadWithCloudinary(optimized);
+        imageUrl = await handleUploadWithCloudinary(optimized, IMAGE_SPECS.blogCover);
       }
 
       const payload = {

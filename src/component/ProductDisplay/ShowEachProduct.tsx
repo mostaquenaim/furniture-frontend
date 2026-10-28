@@ -40,6 +40,7 @@ import useIsWished from "@/hooks/Wish/useIsWished";
 import { FullScreenCenter } from "../Screen/FullScreenCenter";
 import { GTMProduct, pushGTMEvent } from "@/lib/gtm";
 import { devLog } from "@/utils/devlog";
+import { cldUrl, responsiveImg } from "@/utils/cloudinaryImage";
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -701,13 +702,11 @@ export default function ShowEachProduct() {
             </p>
             <div className="hidden md:flex items-start gap-3">
               <img
-                src={
-                  (displayImages &&
-                    displayImages[activeImgIndex] &&
-                    displayImages[activeImgIndex]?.image &&
-                    displayImages[activeImgIndex]?.image) ||
-                  "/images/placeholder.svg"
-                }
+                src={cldUrl(
+                  displayImages?.[activeImgIndex]?.image ||
+                    "/images/placeholder.svg",
+                  160,
+                )}
                 alt={
                   (displayImages?.[activeImgIndex] as { alt?: string })
                     ?.alt || product.title
@@ -754,7 +753,8 @@ export default function ShowEachProduct() {
                   }`}
                 >
                   <img
-                    src={img.image}
+                    src={cldUrl(img.image, 160)}
+                    loading="lazy"
                     alt={img.alt || `${product.title} thumbnail ${idx + 1}`}
                     className="w-full aspect-4/5 object-cover"
                   />
@@ -796,7 +796,13 @@ export default function ShowEachProduct() {
             )}
 
             <img
-              src={displayImages?.[activeImgIndex]?.image || "/images/placeholder.svg"}
+              // Desktop keeps the full 1200px so the 2x hover zoom stays sharp
+              {...responsiveImg(
+                displayImages?.[activeImgIndex]?.image ||
+                  "/images/placeholder.svg",
+                "(min-width: 1024px) 1200px, 100vw",
+                1200,
+              )}
               alt={
                 (displayImages?.[activeImgIndex] as { alt?: string })?.alt ||
                 product.title
@@ -938,7 +944,7 @@ export default function ShowEachProduct() {
                     >
                       {c.color.image && (
                         <img
-                          src={c.color.image}
+                          src={cldUrl(c.color.image, 120)}
                           alt={c.color.name}
                           className="w-full h-full object-cover"
                         />
@@ -1236,7 +1242,12 @@ export default function ShowEachProduct() {
             onClick={() => setIsLightboxOpen(false)}
           >
             <img
-              src={displayImages?.[activeImgIndex]?.image || "/images/placeholder.svg"}
+              {...responsiveImg(
+                displayImages?.[activeImgIndex]?.image ||
+                  "/images/placeholder.svg",
+                "100vw",
+                1200,
+              )}
               alt={
                 (displayImages?.[activeImgIndex] as { alt?: string })?.alt ||
                 product.title

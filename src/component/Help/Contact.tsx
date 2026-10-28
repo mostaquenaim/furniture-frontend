@@ -21,7 +21,10 @@ import {
   Linkedin,
 } from "lucide-react";
 import { FaTiktok, FaWhatsapp } from "react-icons/fa";
+import { AxiosError } from "axios";
+import toast from "react-hot-toast";
 import useFetchCompany from "@/hooks/Company/useFetchCompany";
+import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 
 const ContactComponent = () => {
   const [formData, setFormData] = useState({
@@ -70,6 +73,7 @@ const ContactComponent = () => {
   ];
 
   const { company } = useFetchCompany();
+  const axiosPublic = useAxiosPublic();
 
   const socials = (
     company
@@ -116,14 +120,16 @@ const ContactComponent = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      await axiosPublic.post("/contact", {
+        name: formData.name,
+        email: formData.email,
+        orderNumber: formData.orderNumber || undefined,
+        subject: formData.subject,
+        message: formData.message,
+      });
 
-    setIsSubmitted(true);
-    setIsLoading(false);
-
-    // Reset form after submission
-    setTimeout(() => {
+      setIsSubmitted(true);
       setFormData({
         name: "",
         email: "",
@@ -132,7 +138,16 @@ const ContactComponent = () => {
         message: "",
       });
       setSelectedTopic("general");
-    }, 3000);
+    } catch (err) {
+      const message = (err as AxiosError<{ message?: string | string[] }>)
+        .response?.data?.message;
+      toast.error(
+        (Array.isArray(message) ? message[0] : message) ||
+          "Could not send your message. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -153,9 +168,9 @@ const ContactComponent = () => {
             <div className="grid md:grid-cols-3 gap-6 mt-12">
               <div className="p-6 bg-gray-50 rounded-xl">
                 <Mail className="w-8 h-8 text-gray-700 mb-4" />
-                <p className="font-medium">Check Your Email</p>
+                <p className="font-medium">Watch Your Inbox</p>
                 <p className="text-sm text-gray-600 mt-2">
-                  We've sent a confirmation to {formData.email}
+                  We&apos;ll reply to the email address you gave us
                 </p>
               </div>
               <div className="p-6 bg-gray-50 rounded-xl">
@@ -320,6 +335,7 @@ const ContactComponent = () => {
                         type="text"
                         name="name"
                         required
+                        maxLength={100}
                         value={formData.name}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
@@ -334,6 +350,7 @@ const ContactComponent = () => {
                         type="email"
                         name="email"
                         required
+                        maxLength={200}
                         value={formData.email}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
@@ -349,6 +366,7 @@ const ContactComponent = () => {
                     <input
                       type="text"
                       name="orderNumber"
+                      maxLength={50}
                       value={formData.orderNumber}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
@@ -364,6 +382,7 @@ const ContactComponent = () => {
                       type="text"
                       name="subject"
                       required
+                      maxLength={200}
                       value={formData.subject}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
@@ -378,6 +397,7 @@ const ContactComponent = () => {
                     <textarea
                       name="message"
                       required
+                      maxLength={5000}
                       rows={6}
                       value={formData.message}
                       onChange={handleInputChange}

@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -358,7 +359,7 @@ const OrderHistoryPage = () => {
                                     <img
                                       loading="lazy"
                                       decoding="async"
-                                      src={image}
+                                      src={cldUrl(image, 160)}
                                       alt={item.productTitle}
                                       className="w-full h-full object-cover"
                                     />

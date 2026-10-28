@@ -212,7 +212,7 @@ const AllSeasonalCategoriesComp: React.FC = () => {
         // Upload to Cloudinary only if a new File was selected
         let imageUrl: string = formData.image as string;
         if (formData.image instanceof File) {
-          imageUrl = await handleUploadWithCloudinary(formData.image);
+          imageUrl = await handleUploadWithCloudinary(formData.image, IMAGE_SPECS.seasonalCategory);
         }
 
         const payload = {

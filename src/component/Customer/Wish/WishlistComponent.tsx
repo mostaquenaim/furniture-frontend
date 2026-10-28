@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -274,7 +275,7 @@ const WishlistComponent = () => {
                       <img
                         loading="lazy"
                         decoding="async"
-                        src={item.images?.[0]?.image || "/images/placeholder.svg"}
+                        src={cldUrl(item.images?.[0]?.image || "/images/placeholder.svg", 640)}
                         alt={item.title}
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />

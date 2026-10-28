@@ -20,7 +20,11 @@ import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { DeleteConfirmationModal } from "../../Modal/DeleteConfirmationModal";
 import useFetchBroadBanners from "@/hooks/Homepage/Banner/useFetchBroadBanners";
-import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
+import {
+  checkImageDimensions,
+  IMAGE_SPECS,
+  specLabel,
+} from "@/utils/imageDimensions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -180,7 +184,7 @@ const BroadBannerManagement: React.FC = () => {
       try {
         let imageUrl: string = formData.image as string;
         if (formData.image instanceof File) {
-          imageUrl = await handleUploadWithCloudinary(formData.image);
+          imageUrl = await handleUploadWithCloudinary(formData.image, IMAGE_SPECS.broadBanner);
         }
 
         const payload = {

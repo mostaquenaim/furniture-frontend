@@ -107,6 +107,7 @@ const AdminDrawer = () => {
     "/admin/orders": badgeCounts.pendingOrders || undefined,
     "/admin/returns": badgeCounts.pendingReturns || undefined,
     "/admin/refunds": badgeCounts.pendingRefunds || undefined,
+    "/admin/contact-messages": badgeCounts.openContactMessages || undefined,
   };
 
   const visibleSections = navSections

@@ -133,7 +133,7 @@ const AllColorsComp: React.FC = () => {
     try {
       let imageUrl: File | string | null | undefined = formData.image;
       if (formData.image instanceof File) {
-        imageUrl = await handleUploadWithCloudinary(formData.image);
+        imageUrl = await handleUploadWithCloudinary(formData.image, IMAGE_SPECS.colorSwatch);
       }
       const payload = { ...formData, image: imageUrl || null };
       if (id) {

@@ -111,6 +111,7 @@ const AllSeriesComp = () => {
         isLoading={isDeleting}
         title="Delete series?"
         message={`This will permanently delete "${deleteTarget?.name}". This cannot be undone.`}
+        requireTypedText={deleteTarget?.name}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
@@ -371,7 +372,7 @@ const OrderDetails = () => {
                     <img
                       loading="lazy"
                       decoding="async"
-                      src={item.image || "/images/placeholder.svg"}
+                      src={cldUrl(item.image || "/images/placeholder.svg", 640)}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
@@ -572,7 +573,7 @@ const OrderDetails = () => {
               <img
                 loading="lazy"
                 decoding="async"
-                src={selectedItem?.image || "/images/placeholder.svg"}
+                src={cldUrl(selectedItem?.image || "/images/placeholder.svg", 160)}
                 className="w-16 h-20 object-cover"
                 alt=""
               />

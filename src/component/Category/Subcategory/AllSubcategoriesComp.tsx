@@ -77,6 +77,7 @@ const AllSubcategoriesComp = () => {
         isLoading={isDeleting}
         title="Delete Subcategory?"
         message={`This will permanently delete "${deleteTarget?.name}". This cannot be undone.`}
+        requireTypedText={deleteTarget?.name}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

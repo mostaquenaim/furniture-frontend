@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { Search, X, ArrowLeft, TrendingUp, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -67,7 +68,7 @@ const ProductItem = ({
         <img
           loading="lazy"
           decoding="async"
-          src={product.images?.[0]?.image || "/images/placeholder.svg"}
+          src={cldUrl(product.images?.[0]?.image || "/images/placeholder.svg", 400)}
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
         />

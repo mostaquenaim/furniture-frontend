@@ -10,6 +10,8 @@ export interface AdminBadgeCounts {
   pendingReturns: number;
   // pending/processing refunds, plus failed ones not yet retried
   pendingRefunds: number;
+  // contact-form messages not yet marked handled
+  openContactMessages: number;
 }
 
 // Window event that tells the sidebar its counts may be out of date.
@@ -40,6 +42,7 @@ export default function useAdminBadgeCounts(): AdminBadgeCounts {
     pendingOrders: 0,
     pendingReturns: 0,
     pendingRefunds: 0,
+    openContactMessages: 0,
   });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

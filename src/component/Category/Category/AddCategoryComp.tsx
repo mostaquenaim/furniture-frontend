@@ -15,7 +15,11 @@ import useFetchACategory from "@/hooks/Categories/Categories/useFetchACategory";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
 import { EntityFormLayout } from "../EntityFormLayout";
-import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
+import {
+  checkImageDimensions,
+  IMAGE_SPECS,
+  specLabel,
+} from "@/utils/imageDimensions";
 
 interface CategoryFormData {
   name: string;
@@ -98,6 +102,8 @@ const AddOrUpdateCategoryComp = () => {
     }));
   };
 
+  const spec = IMAGE_SPECS.category;
+
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -107,8 +113,8 @@ const AddOrUpdateCategoryComp = () => {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be under 2MB");
+    if (file.size > spec.maxMB * 1024 * 1024) {
+      toast.error(`Image must be under ${spec.maxMB}MB`);
       return;
     }
 
@@ -152,7 +158,7 @@ const AddOrUpdateCategoryComp = () => {
 
       // Upload only if new file selected
       if (formData.image) {
-        imageUrl = await handleUploadWithCloudinary(formData.image);
+        imageUrl = await handleUploadWithCloudinary(formData.image, spec);
       }
 
       const payload = {
