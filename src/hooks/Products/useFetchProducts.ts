@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { FetchProductsParams, Product } from "@/types/product.types";
 import useAxiosPublic from "../Axios/useAxiosPublic";
-import { AxiosError } from "axios";
+import { AxiosError, AxiosInstance } from "axios";
 
 /**
  * Metadata for paginated product response
@@ -29,7 +29,7 @@ interface ProductsResponse {
 /**
  * Return type for the useFetchProducts hook
  */
-interface UseFetchProductsReturn {
+export interface UseFetchProductsReturn {
   products: Product[];
   meta: ProductsMeta;
   isLoading: boolean;
@@ -39,11 +39,18 @@ interface UseFetchProductsReturn {
   refetch: () => void;
 }
 
-const useFetchProducts = (
-  params: FetchProductsParams = {},
+/**
+ * Shared by the storefront listing (useFetchProducts) and the staff listings
+ * (useFetchAdminProducts). `staff` adds the isActive / includeOutOfStock
+ * filters, which only the staff endpoints accept — the public /product/all
+ * refuses them.
+ */
+export const useProductsQuery = (
+  axios: AxiosInstance,
+  endpoint: string,
+  params: FetchProductsParams,
+  staff: boolean,
 ): UseFetchProductsReturn => {
-  const axiosPublic = useAxiosPublic();
-
   const fetchProducts = async (): Promise<ProductsResponse> => {
     // Build query parameters, excluding null/undefined values
     const queryParams: Record<string, string | number | boolean> = {};
@@ -64,14 +71,14 @@ const useFetchProducts = (
       queryParams.search = params.search.trim();
     }
 
-    if (typeof params.isActive === "boolean") {
+    if (staff && typeof params.isActive === "boolean") {
       queryParams.isActive = params.isActive;
     }
 
     if (params?.sortBy) queryParams.sortBy = params.sortBy;
     if (params?.order) queryParams.order = params.order;
     if (params?.thumb) queryParams.thumb = params.thumb;
-    if (params?.includeOutOfStock)
+    if (staff && params?.includeOutOfStock)
       queryParams.includeOutOfStock = params.includeOutOfStock;
 
     // Fix: Use plural parameter names as expected by backend
@@ -86,13 +93,9 @@ const useFetchProducts = (
 
     if (params?.maxPrice !== undefined) queryParams.maxPrice = params.maxPrice;
 
-    const response = await axiosPublic.get<ProductsResponse>("/product/all", {
+    const response = await axios.get<ProductsResponse>(endpoint, {
       params: queryParams,
     });
-
-    if (process.env.NODE_ENV === "development") {
-    // console.log("Fetched products:", response.data);
-    }
 
     return response.data;
   };
@@ -100,10 +103,11 @@ const useFetchProducts = (
   // Construct query key for React Query caching
   const queryKey = [
     "products",
+    endpoint,
     params.page ?? 1,
     params.limit ?? null,
     params.search ?? "",
-    params.isActive ?? null,
+    staff ? (params.isActive ?? null) : null,
     params?.order,
     params?.thumb,
     params?.sortBy,
@@ -112,7 +116,7 @@ const useFetchProducts = (
     params?.subCategoryIds?.join(",") ?? "",
     params?.minPrice ?? null,
     params?.maxPrice ?? null,
-    params?.includeOutOfStock ?? false,
+    staff ? (params?.includeOutOfStock ?? false) : false,
   ] as const;
 
   const {
@@ -150,6 +154,18 @@ const useFetchProducts = (
     error: error as Error | null,
     refetch,
   };
+};
+
+/**
+ * Storefront product listing: active, in-stock products only. isActive /
+ * includeOutOfStock are ignored here — staff screens use
+ * useFetchAdminProducts.
+ */
+const useFetchProducts = (
+  params: FetchProductsParams = {},
+): UseFetchProductsReturn => {
+  const axiosPublic = useAxiosPublic();
+  return useProductsQuery(axiosPublic, "/product/all", params, false);
 };
 
 export default useFetchProducts;

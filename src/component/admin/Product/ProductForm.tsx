@@ -20,7 +20,7 @@ import useFetchCategoriesBySeriesIds from "@/hooks/Admin/Categories/useFetchCate
 import useFetchSubCategoriesByCategoryIds from "@/hooks/Categories/Subcategories/useFetchSubCategoriesByCategoryIds";
 import GotoArrows from "@/component/Arrow/GotoArrows";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
-import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
+import { revalidateProductPage } from "@/lib/api/actions/revalidateProductPage";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useFetchMaterials from "@/hooks/Attributes/useFetchMaterials";
 import useFetchTags from "@/hooks/Tags/useFetchTags";
@@ -203,7 +203,6 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   const isEditMode = Boolean(productId);
   const router = useRouter();
   const axiosSecure = useAxiosSecure();
-  const axiosPublic = useAxiosPublic();
 
   // Loading states
   const [pageLoading, setPageLoading] = useState(isEditMode); // only true in edit mode while fetching
@@ -269,7 +268,8 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
 
     const fetchProduct = async () => {
       try {
-        const { data } = await axiosPublic.get(`/product/${productId}?admin=true`);
+        // Staff-only full view (out-of-stock sizes, tags, inactive materials)
+        const { data } = await axiosSecure.get(`/product/${productId}/admin`);
         hydrateForm(data);
         isHydrating.current = false;
       } catch {
@@ -939,6 +939,13 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
         };
 
         await axiosSecure.patch(`/product/${productId}`, payload);
+        // Refresh the ISR-cached product page (JSON-LD/metadata) and homepage
+        // now rather than after their revalidate window; old and new slug in
+        // case the slug was edited.
+        revalidateProductPage(productId).catch(() => {});
+        if (formData.slug && formData.slug !== productId) {
+          revalidateProductPage(formData.slug).catch(() => {});
+        }
         isDirty.current = false;
         toast.success("Product updated successfully");
       } else {

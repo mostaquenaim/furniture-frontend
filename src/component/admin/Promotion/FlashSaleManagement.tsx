@@ -4,7 +4,7 @@
 import React, { useState, useCallback, useMemo, useEffect, FC } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
-import useFetchProducts from "@/hooks/Products/useFetchProducts";
+import useFetchAdminProducts from "@/hooks/Products/useFetchAdminProducts";
 import {
   Edit3,
   Save,
@@ -378,13 +378,17 @@ const FlashSaleFormModal: FC<FlashSaleFormModalProps> = ({
     return () => clearTimeout(t);
   }, [search]);
 
-  const { products: searchResults, isLoading: searching } = useFetchProducts({
-    search: debouncedSearch,
-    limit: 8,
-    thumb: true,
-    enabled: debouncedSearch.length > 1,
-    includeOutOfStock: true,
-  });
+  const { products: searchResults, isLoading: searching } =
+    useFetchAdminProducts(
+      {
+        search: debouncedSearch,
+        limit: 8,
+        thumb: true,
+        enabled: debouncedSearch.length > 1,
+        includeOutOfStock: true,
+      },
+      "/product/admin/flash-sale-picker",
+    );
 
   const selectedIds = useMemo(() => new Set(selected.map((p) => p.id)), [selected]);
 
