@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { InfoIcon } from "lucide-react";
 import Title from "../Headers/Title";
 import TakaIcon from "../TakaIcon";
@@ -281,7 +282,7 @@ const CartItemComponent = ({
              hover:shadow-md hover:-translate-y-0.5"
         >
           <img
-            src={item?.productSize?.color?.product?.images?.[0]?.image || "/images/placeholder.svg"}
+            src={cldUrl(item?.productSize?.color?.product?.images?.[0]?.image || "/images/placeholder.svg", 400)}
             alt={item?.productSize?.color?.product?.title || "Product"}
             className="object-cover w-full h-full
                transition-transform duration-300

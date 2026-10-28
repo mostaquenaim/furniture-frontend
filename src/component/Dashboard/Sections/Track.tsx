@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { cldUrl } from "@/utils/cloudinaryImage";
 import useTrackOrder from "@/hooks/Track/useTrack";
 import { useState } from "react";
 
@@ -171,7 +172,7 @@ const Track = () => {
                     <img
                       loading="lazy"
                       decoding="async"
-                      src={item.image || "/images/placeholder.svg"}
+                      src={cldUrl(item.image || "/images/placeholder.svg", 160)}
                       alt={item.name}
                       className="w-16 h-20 object-cover bg-gray-100"
                     />

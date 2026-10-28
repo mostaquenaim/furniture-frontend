@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+import { IMAGE_SPECS } from "@/utils/imageDimensions";
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Save, X, Search } from "lucide-react";
@@ -772,7 +773,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
   // ─── Image upload helper ─────────────────────────────────────────────────
   const uploadIfNew = async (img: ProductImageItem): Promise<string> => {
     if (!img.file) return img.preview as string;
-    return await handleUploadWithCloudinary(img.file);
+    return await handleUploadWithCloudinary(img.file, IMAGE_SPECS.product);
   };
 
   // ─── Validation ──────────────────────────────────────────────────────────
@@ -953,7 +954,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
         const uploadPromises = [
           ...defaultImages.map(async (img) => {
             if (!img.file) return null;
-            const url = await handleUploadWithCloudinary(img.file);
+            const url = await handleUploadWithCloudinary(img.file, IMAGE_SPECS.product);
             return { url, serialNo: img.serialNo, alt: img.alt?.trim() || undefined };
           }),
           ...formData.selectedColors.flatMap((colorId) =>
@@ -961,7 +962,7 @@ const ProductForm = ({ propProductId }: ProductFormProps) => {
               ? []
               : (colorImages[colorId] || []).map(async (img) => {
                   if (!img.file) return null;
-                  const url = await handleUploadWithCloudinary(img.file);
+                  const url = await handleUploadWithCloudinary(img.file, IMAGE_SPECS.product);
                   return { url, colorId };
                 }),
           ),

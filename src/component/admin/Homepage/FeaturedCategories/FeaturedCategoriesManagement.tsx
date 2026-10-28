@@ -200,7 +200,7 @@ const FeaturedCategoriesManagement: React.FC = () => {
       try {
         let imageUrl: string = formData.image as string;
         if (formData.image instanceof File) {
-          imageUrl = await handleUploadWithCloudinary(formData.image);
+          imageUrl = await handleUploadWithCloudinary(formData.image, IMAGE_SPECS.featuredCategory);
         }
 
         const payload = {

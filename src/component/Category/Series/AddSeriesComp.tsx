@@ -11,7 +11,11 @@ import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useFetchASeries from "@/hooks/Categories/Series/useFetchASeries";
 import { FullScreenCenter } from "@/component/Screen/FullScreenCenter";
 import LoadingDots from "@/component/Loading/LoadingDS";
-import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
+import {
+  checkImageDimensions,
+  IMAGE_SPECS,
+  specLabel,
+} from "@/utils/imageDimensions";
 
 interface SeriesFormData {
   name: string;
@@ -91,6 +95,8 @@ const AddOrUpdateSeriesComp = () => {
     setFormData((prev) => ({ ...prev, slug }));
   };
 
+  const spec = IMAGE_SPECS.series;
+
   // handle image upload / change / update
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,8 +107,8 @@ const AddOrUpdateSeriesComp = () => {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be under 2MB");
+    if (file.size > spec.maxMB * 1024 * 1024) {
+      toast.error(`Image must be under ${spec.maxMB}MB`);
       return;
     }
 
@@ -134,7 +140,7 @@ const AddOrUpdateSeriesComp = () => {
 
       // Upload only if new file selected
       if (formData.image) {
-        imageUrl = await handleUploadWithCloudinary(formData.image);
+        imageUrl = await handleUploadWithCloudinary(formData.image, spec);
       }
 
       const finalData = {

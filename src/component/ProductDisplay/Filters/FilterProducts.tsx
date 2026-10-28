@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { cldUrl } from "@/utils/cloudinaryImage";
 import priceData from "@/data/PriceData";
 import sortData from "@/data/SortData";
 import useFetchSeriesWiseSubcategories from "@/hooks/Categories/Subcategories/useFetchSeriesWiseSubcategories";
@@ -69,7 +70,7 @@ const FilterDropdown = ({
                   item.image ? (
                     <div className="w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
                       <img
-                        src={item.image}
+                        src={cldUrl(item.image, 48)}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
@@ -82,7 +83,7 @@ const FilterDropdown = ({
                   )
                 ) : type === "Material" && item.imageUrl ? (
                   <img
-                    src={item.imageUrl}
+                    src={cldUrl(item.imageUrl, 48)}
                     alt={item.name}
                     className="w-5 h-5 rounded border border-gray-300 object-cover"
                   />
@@ -279,7 +280,7 @@ const FilterProducts = ({
                 {color.image ? (
                   <div className="w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
                     <img
-                      src={color.image}
+                      src={cldUrl(color.image, 48)}
                       alt={color.name}
                       className="w-full h-full object-cover"
                     />
@@ -481,7 +482,7 @@ const FilterProducts = ({
                           {color.image ? (
                             <div className="w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
                               <img
-                                src={color.image}
+                                src={cldUrl(color.image, 48)}
                                 alt={color.name}
                                 className="w-full h-full object-cover"
                               />

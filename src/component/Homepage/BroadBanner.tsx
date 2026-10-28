@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import useFetchActiveBroadBanner from "@/hooks/Homepage/Banner/useFetchActiveBroadBanner";
 import Link from "next/link";
 
@@ -24,7 +25,10 @@ const BroadBanner = () => {
       className="block w-full overflow-hidden transition-opacity hover:opacity-95"
     >
       <img
-        src={banner.image || "/images/home/homepage-large-image.jpg"}
+        {...responsiveImg(
+          banner.image || "/images/home/homepage-large-image.jpg",
+          "100vw",
+        )}
         alt={banner.title || "Promotional Banner"}
         // Standardizing height/aspect ratio to prevent Layout Shift
         className="w-full h-auto object-cover aspect-video md:aspect-21/9 lg:aspect-32/9"

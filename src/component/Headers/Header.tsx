@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { FC, Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -500,10 +501,7 @@ const Header = () => {
                 <div className="h-10 w-28 rounded animate-pulse bg-gray-200" />
               ) : company?.logo ? (
                 <img
-                  src={
-                    company?.logo
-                    // || "/logo/ondorkotha-logo-2.png"
-                  }
+                  src={cldUrl(company.logo, 400)}
                   alt={company?.name || "Company Logo"}
                   className="h-10 w-auto"
                 />

@@ -5,26 +5,39 @@ export interface ImageSpec {
   height: number;
 }
 
+export interface SlotSpec extends ImageSpec {
+  /** Upload limit in MB, enforced by handleUploadWithCloudinary (most uploaders also check it up front) */
+  maxMB: number;
+  /** Widest version Cloudinary will serve (c_limit, so it never upscales) */
+  maxWidth: number;
+}
+
 /**
  * Recommended upload sizes, derived from how each image is rendered on the
  * storefront (aspect ratio of its container). Single source of truth for both
  * the hint text next to each uploader and the dimension check below.
  */
 export const IMAGE_SPECS = {
-  heroDesktop: { width: 1920, height: 480 }, // aspect-4/1 slider (md+)
-  heroMobile: { width: 1080, height: 1080 }, // aspect-square slider
-  broadBanner: { width: 1920, height: 540 }, // lg:aspect-32/9
-  seasonalCategory: { width: 800, height: 200 }, // aspect-4/1
-  galleryHeading: { width: 1920, height: 100 }, // full-width, 96px tall
-  galleryItem: { width: 600, height: 1000 }, // aspect-3/5
-  featuredCategory: { width: 800, height: 800 }, // aspect-square
-  series: { width: 1000, height: 1000 }, // aspect-square grids
-  category: { width: 800, height: 800 },
-  subcategory: { width: 800, height: 800 },
-  blogCover: { width: 1200, height: 675 }, // 16:9; optimizer caps at 1200
-  product: { width: 960, height: 1200 }, // 4:5; optimizer caps at 1200
-  colorSwatch: { width: 200, height: 200 },
-} satisfies Record<string, ImageSpec>;
+  heroDesktop: { width: 1920, height: 480, maxMB: 10, maxWidth: 1920 }, // aspect-4/1 slider (md+)
+  heroMobile: { width: 1080, height: 1080, maxMB: 10, maxWidth: 1080 }, // aspect-square slider
+  broadBanner: { width: 1920, height: 540, maxMB: 5, maxWidth: 1920 }, // lg:aspect-32/9
+  seasonalCategory: { width: 800, height: 200, maxMB: 5, maxWidth: 1600 }, // aspect-4/1
+  galleryHeading: { width: 1920, height: 100, maxMB: 5, maxWidth: 1920 }, // full-width, 96px tall
+  galleryItem: { width: 600, height: 1000, maxMB: 5, maxWidth: 1200 }, // aspect-3/5
+  featuredCategory: { width: 800, height: 800, maxMB: 5, maxWidth: 1200 }, // aspect-square
+
+  // Catalog structure
+  series: { width: 1000, height: 1000, maxMB: 2, maxWidth: 1600 }, // aspect-square grids
+  category: { width: 800, height: 800, maxMB: 2, maxWidth: 1200 },
+  subcategory: { width: 800, height: 800, maxMB: 2, maxWidth: 1200 },
+
+  // Content and products (these pass through optimizeImage first)
+  blogCover: { width: 1200, height: 675, maxMB: 10, maxWidth: 1200 }, // 16:9; optimizer caps at 1200
+  product: { width: 960, height: 1200, maxMB: 10, maxWidth: 1200 }, // 4:5; optimizer caps at 1200
+
+  // Attributes
+  colorSwatch: { width: 200, height: 200, maxMB: 5, maxWidth: 400 },
+} satisfies Record<string, SlotSpec>;
 
 const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 
@@ -80,10 +93,7 @@ const evaluate = async (file: File, spec: ImageSpec) => {
  * Advisory check for multi-file pickers: one summary toast instead of one
  * per file.
  */
-export const checkImagesDimensions = async (
-  files: File[],
-  spec: ImageSpec,
-) => {
+export const checkImagesDimensions = async (files: File[], spec: ImageSpec) => {
   const results = await Promise.all(files.map((f) => evaluate(f, spec)));
   const flagged = results.filter((r) => r && (r.ratioOff || r.tooSmall));
   if (flagged.length === 0) return;

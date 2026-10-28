@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import { useRouter } from "next/navigation";
 
@@ -39,10 +40,15 @@ const CategoryNavigation = () => {
               <img
                 loading="lazy"
                 decoding="async"
-                src={category.image || FALLBACK_IMAGE}
+                {...responsiveImg(
+                  category.image || FALLBACK_IMAGE,
+                  "50vw",
+                  1000,
+                )}
                 alt={category.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
+                  e.currentTarget.removeAttribute("srcset");
                   e.currentTarget.src = FALLBACK_IMAGE;
                 }}
               />

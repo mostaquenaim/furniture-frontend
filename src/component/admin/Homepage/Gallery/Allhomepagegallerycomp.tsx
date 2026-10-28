@@ -25,7 +25,11 @@ import useFetchHomepageGallery, {
   HomepageGalleryItem,
 } from "@/hooks/Homepage/Gallery/useFetchHomepageGallery";
 import { useHasPermission } from "@/context/PermissionsContext";
-import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
+import {
+  checkImageDimensions,
+  IMAGE_SPECS,
+  specLabel,
+} from "@/utils/imageDimensions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -160,10 +164,16 @@ const AllHomepageGalleryComp: React.FC = () => {
     if (formData.image instanceof File) {
       void checkImageDimensions(
         formData.image,
-        formData.isHeading ? IMAGE_SPECS.galleryHeading : IMAGE_SPECS.galleryItem,
+        formData.isHeading
+          ? IMAGE_SPECS.galleryHeading
+          : IMAGE_SPECS.galleryItem,
       );
     }
   }, [formData.image, formData.isHeading]);
+
+  const gallerySpec = formData.isHeading
+    ? IMAGE_SPECS.galleryHeading
+    : IMAGE_SPECS.galleryItem;
 
   const removeImage = useCallback(() => {
     setFormData((prev) => ({ ...prev, image: null }));
@@ -209,7 +219,7 @@ const AllHomepageGalleryComp: React.FC = () => {
       try {
         let imageUrl: string = formData.image as string;
         if (formData.image instanceof File) {
-          imageUrl = await handleUploadWithCloudinary(formData.image);
+          imageUrl = await handleUploadWithCloudinary(formData.image, gallerySpec);
         }
 
         const payload = {
@@ -541,7 +551,9 @@ const AllHomepageGalleryComp: React.FC = () => {
                     ) : (
                       <StatusBadge
                         isActive={item.isActive}
-                        onToggle={canUpdate ? () => toggleStatus(item) : undefined}
+                        onToggle={
+                          canUpdate ? () => toggleStatus(item) : undefined
+                        }
                       />
                     )}
                   </td>
@@ -698,7 +710,9 @@ const GalleryImageUpload: FC<GalleryImageUploadProps> = ({
       </label>
     )}
     <p className="text-[10px] text-gray-400 whitespace-nowrap">
-      {isHeading ? `${specLabel(IMAGE_SPECS.galleryHeading)}, text centered` : specLabel(IMAGE_SPECS.galleryItem)}
+      {isHeading
+        ? `${specLabel(IMAGE_SPECS.galleryHeading)}, text centered`
+        : specLabel(IMAGE_SPECS.galleryItem)}
     </p>
     {error && <p className="text-xs text-red-600">{error}</p>}
   </div>
@@ -794,7 +808,9 @@ const StatusBadge: FC<StatusBadgeProps> = ({ isActive, onToggle }) => (
     onClick={onToggle}
     disabled={!onToggle}
     className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
-      onToggle ? "hover:scale-105 active:scale-95 cursor-pointer" : "cursor-default"
+      onToggle
+        ? "hover:scale-105 active:scale-95 cursor-pointer"
+        : "cursor-default"
     } ${
       isActive
         ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"

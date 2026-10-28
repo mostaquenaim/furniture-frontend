@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/purity */
 /* eslint-disable @next/next/no-img-element */
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import { Product } from "@/types/product.types";
 import Link from "next/link";
 import TakaIcon from "../TakaIcon";
@@ -64,11 +65,13 @@ const EachProductShow = ({
                 <img
                   loading="lazy"
                   decoding="async"
-                  src={
+                  {...responsiveImg(
                     hoveredProduct === product.id && productImage
                       ? productImage
-                      : mainImage.image
-                  }
+                      : mainImage.image,
+                    "(min-width: 768px) 33vw, 50vw",
+                    1200,
+                  )}
                   alt={mainImage.alt || product.title}
                   className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
                 />

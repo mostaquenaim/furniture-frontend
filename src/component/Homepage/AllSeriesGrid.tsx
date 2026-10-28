@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
 import Link from "next/link";
 
@@ -28,10 +29,15 @@ const AllSeriesGrid = () => {
                 <img
                   loading="lazy"
                   decoding="async"
-                  src={series.image || FALLBACK}
+                  {...responsiveImg(
+                    series.image || FALLBACK,
+                    "(min-width: 1024px) 16vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw",
+                    1000,
+                  )}
                   alt={series.name}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
+                    e.currentTarget.removeAttribute("srcset");
                     e.currentTarget.src = FALLBACK;
                   }}
                 />

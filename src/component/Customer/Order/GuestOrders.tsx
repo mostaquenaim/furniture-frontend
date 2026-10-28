@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -150,7 +151,7 @@ const GuestOrders = () => {
                         {thumbs.map((src, idx) => (
                           <img
                             key={idx}
-                            src={src}
+                            src={cldUrl(src, 96)}
                             alt=""
                             loading="lazy"
                             className="w-10 h-10 rounded-full border-2 border-white object-cover bg-gray-100"

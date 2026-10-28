@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import useFetchBlogCategories from "@/hooks/Blog/useFetchBlogCategories";
 import useFetchBlogs from "@/hooks/Blog/useFetchBlogs";
 import Link from "next/link";
@@ -133,7 +134,11 @@ export default function AllBlogsComponent() {
                       <img
                         loading="lazy"
                         decoding="async"
-                        src={post.image || "/images/placeholder.svg"}
+                        {...responsiveImg(
+                          post.image || "/images/placeholder.svg",
+                          "(min-width: 1024px) 37vw, (min-width: 768px) 50vw, 100vw",
+                          1200,
+                        )}
                         alt={post.title}
                         className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
                       />

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import { responsiveImg } from "@/utils/cloudinaryImage";
 import { Product } from "@/types/product.types";
 import { ChevronLeft, ChevronRight, Heart, X } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -107,7 +108,12 @@ export function QuickShopModal({
             <Heart size={12} fill="currentColor" /> 596
           </div>
           <img
-            src={sortedImages[currentImageIndex]?.image || "/images/placeholder.svg"}
+            {...responsiveImg(
+              sortedImages[currentImageIndex]?.image ||
+                "/images/placeholder.svg",
+              "(min-width: 768px) 55vw, 100vw",
+              1200,
+            )}
             alt={
               (sortedImages[currentImageIndex] as { alt?: string })?.alt ||
               product.title

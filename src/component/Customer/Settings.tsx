@@ -1,5 +1,6 @@
 "use client";
 
+import { cldUrl } from "@/utils/cloudinaryImage";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -227,7 +228,7 @@ const Settings = () => {
             <div className="w-16 h-16 bg-gray-100 rounded-sm flex items-center justify-center overflow-hidden">
               {profile.avatar ? (
                 <img
-                  src={profile.avatar}
+                  src={cldUrl(profile.avatar, 160)}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />

@@ -10,7 +10,11 @@ import useAxiosSecure from "@/hooks/Axios/useAxiosSecure";
 import { handleUploadWithCloudinary } from "@/data/handleUploadWithCloudinary";
 import useAxiosPublic from "@/hooks/Axios/useAxiosPublic";
 import useFetchSeries from "@/hooks/Categories/Series/useFetchSeries";
-import { checkImageDimensions, IMAGE_SPECS, specLabel } from "@/utils/imageDimensions";
+import {
+  checkImageDimensions,
+  IMAGE_SPECS,
+  specLabel,
+} from "@/utils/imageDimensions";
 
 interface Category {
   id: number;
@@ -74,7 +78,7 @@ const AddSubcategory = () => {
     const fetchCategories = async () => {
       try {
         const res = await axiosPublic.get(
-          `/series/${formData.seriesId}/categories`
+          `/series/${formData.seriesId}/categories`,
         );
         setCategoryList(res.data);
       } catch {
@@ -97,6 +101,8 @@ const AddSubcategory = () => {
     }));
   };
 
+  const spec = IMAGE_SPECS.subcategory;
+
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -106,8 +112,8 @@ const AddSubcategory = () => {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be under 2MB");
+    if (file.size > spec.maxMB * 1024 * 1024) {
+      toast.error(`Image must be under ${spec.maxMB}MB`);
       return;
     }
 
@@ -150,7 +156,7 @@ const AddSubcategory = () => {
       let imageUrl = "";
 
       if (formData.image) {
-        imageUrl = await handleUploadWithCloudinary(formData.image);
+        imageUrl = await handleUploadWithCloudinary(formData.image, spec);
       }
 
       await axiosSecure.post("/subcategory", {
@@ -168,7 +174,7 @@ const AddSubcategory = () => {
       if (axios.isAxiosError(err)) {
         toast.error(
           (err.response?.data as { message?: string })?.message ||
-            "Failed to create subcategory"
+            "Failed to create subcategory",
         );
       } else {
         toast.error("Failed to create subcategory");
