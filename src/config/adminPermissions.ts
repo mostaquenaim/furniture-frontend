@@ -78,7 +78,10 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
         icon: Ticket,
         href: "/admin/tickets",
         requiredAction: "TICKET_VIEW",
-        sub: [{ href: "/admin/tickets", label: "All Tickets" }],
+        sub: [
+          { href: "/admin/tickets", label: "All Tickets" },
+          { href: "/admin/contact-messages", label: "Contact Messages", requiredAction: "TICKET_VIEW" },
+        ],
       },
     ],
   },
